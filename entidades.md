@@ -5,6 +5,7 @@
   - created_at (timestamp)
   - updated_at (timestamp)
   - invite_code (String, unique)
+  - members (List of GroupMember)
 
 - User:
   - id (UUID, PK)
@@ -15,12 +16,7 @@
   - is_active (Booelan, default: true)
   - created_at (timestamp)
   - updated_at (timestamp)
-
-- GroupMember:
-  - id (UUID, PK)
-  - group_id (UUID, FK -> Group)
-  - user_id (UUID, FK -> User)
-  - joined_at (timestamp)
+  - joined_at (timestamp, optional)
 
 # Shopping
 
@@ -41,12 +37,9 @@
 - ShoppingItem:
   - id (UUID, PK)
   - group_id (UUID, FK -> Group)
-  - category_id (UUID, FK -> Category)
-  - added_by (UUID, FK -> User)
+  - category_id (UUID, FK -> Category, optional)
   - name (String)
   - quantity (Integer, default: 1)
-  - is_purchased (Boolean, default: false)
-  - priority (Enum: low, medium, high. Optional)
   - created_at (timestamp)
   - updated_at (timestamp)
 
@@ -60,6 +53,7 @@
 - ExpenseItem:
   - id (UUID, PK)
   - owner (FK -> User)
+  - involved (List of User)
   - price (Decimal)
   - expense_date (timestamp)
   - created_at (timestamp)
@@ -75,9 +69,20 @@
 - CleaningTask:
   - id (UUID, PK)
   - title (String)
-  - created_by (UUID, FK -> User)
-  - assigned_to (UUID, FK -> User, optional)
-  - recurrence_pattern (String, optional) 
-  - completed_at (timestamp)
+  - date (timestamp)
+  - assigned_to (UUID, FK -> List of User)
+  - ? recurrence_pattern (String, optional) 
+  - completed (boolean, default: false)
   - created_at (timestamp)
   - updated_at (timestamp)
+
+# Bulletin Board
+
+- News:
+  - id (UUID, PK)
+  - group_id (UUID, FK -> Group)
+  - actor_id (UUID, FK -> User)
+  - type (Enum: MEMBER_ADDED, MEMBER_REMOVED, SHOPPING, EXPENSE_ADDED, EXPENSE_PAID, CLEANING_TASK_ADDED)
+  - name (String)
+  - description (String)
+  - created_at (timestamp)
