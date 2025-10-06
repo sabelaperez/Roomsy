@@ -1,9 +1,6 @@
 package com.roomsy.backend.model;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -13,18 +10,25 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 @Entity
-@Table(name = "groups")
-public class Group {
+@Table(name = "categories")
+public class Category {
 
     // Attributes
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-    
+    private String id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
     @NotNull
     @Column(nullable = false)
     @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
     private String name;
+
+    // Hacer un enum con colores predefinidos
+    private String color;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -34,33 +38,17 @@ public class Group {
     @Column
     private Timestamp updated_at;
 
-    @Column(unique = true)
-    private String invite_code;
-
-    @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    private List<User> members = new ArrayList<>();
-
     // Constructors
-    public Group() {}
+    public Category() {}
 
-    public Group(String name, String invite_code) {
+    public Category(Group group, String name, String color) {
+        this.group = group;
         this.name = name;
-        this.invite_code = invite_code;
+        this.color = color;
     }
 
     // Getters and Setters
 
 
     // Functions
-    public void addMember(User user) {
-        if (user == null) return;
-        members.add(user);
-        user.setGroup(this);
-    }
-
-    public void removeMember(User user) {
-        if (user == null) return;
-        members.remove(user);
-        user.setGroup(null);
-    }
 }

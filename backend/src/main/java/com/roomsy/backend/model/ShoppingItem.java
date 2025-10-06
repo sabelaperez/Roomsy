@@ -1,30 +1,37 @@
 package com.roomsy.backend.model;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 @Entity
-@Table(name = "groups")
-public class Group {
+@Table(name = "shopping_items")
+public class ShoppingItem {
 
     // Attributes
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    
-    @NotNull
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = true)
+    private Category category;
+
     @Column(nullable = false)
     @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
     private String name;
+
+    @Column(nullable = false)
+    private Integer quantity = 1;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -34,33 +41,18 @@ public class Group {
     @Column
     private Timestamp updated_at;
 
-    @Column(unique = true)
-    private String invite_code;
-
-    @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    private List<User> members = new ArrayList<>();
-
     // Constructors
-    public Group() {}
+    public ShoppingItem() {}
 
-    public Group(String name, String invite_code) {
+    public ShoppingItem(Group group, Category category, String name, Integer quantity) {
+        this.group = group;
+        this.category = category;
         this.name = name;
-        this.invite_code = invite_code;
+        this.quantity = quantity;
     }
 
     // Getters and Setters
 
 
     // Functions
-    public void addMember(User user) {
-        if (user == null) return;
-        members.add(user);
-        user.setGroup(this);
-    }
-
-    public void removeMember(User user) {
-        if (user == null) return;
-        members.remove(user);
-        user.setGroup(null);
-    }
 }

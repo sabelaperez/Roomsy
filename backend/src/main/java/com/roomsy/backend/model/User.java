@@ -1,31 +1,35 @@
 package com.roomsy.backend.model;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "users")
 public class User {
+
+    // Attributes
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @NotNull
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     @Email
     private String email;
 
     @NotNull
     @Size(min = 4, max = 20)
     @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username can only contain letters, numbers, and underscores")
-    @Column(length = 20)
+    @Column(length = 20, nullable = false)
     private String username;
 
     @Size(min = 4, max = 50)
@@ -35,76 +39,36 @@ public class User {
     @Column(length = 50)
     private String hashPassword;
 
-    private boolean isActive;
+    private boolean isActive = true;
 
-    private Date createdAt;
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Timestamp createdAt;
 
-    private Date updatedAt;
+    @UpdateTimestamp
+    @Column
+    private Timestamp updatedAt;
 
-    private Date joinedAt;
+    private Timestamp joinedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
+    @ManyToOne(optional = true, fetch = FetchType.LAZY) 
+    @JoinColumn(name = "group_id", nullable = true) // Pode non pertencer a ningún grupo
     private Group group;
 
+    // Constructors
+    public User() {}
 
+    public User(String email, String username, String fullName, String hashPassword) {
+        this.email = email;
+        this.username = username;
+        this.fullName = fullName;
+        this.hashPassword = hashPassword;
+    }
 
+    // Getters and Setters
+    public void setGroup(Group group) {
+        this.group = group;
+    }
 
-
+    // Functions
 }
-
-/*  - id (UUID, PK)
-  - email (String, unique)
-  - username (String)
-  - full_name (String)
-  - password_hash (String)
-  - is_active (Booelan, default: true)
-  - created_at (timestamp)
-  - updated_at (timestamp)
-  - joined_at (timestamp, optional)*/
-
-/*package gal.usc.etse.es.restdemo.model;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "authors")
-public class Author {
-    @Id
-    private String id;
-    @Column
-    private String name;
-
-    public Author() {
-    }
-
-    public Author(
-            String id,
-            String name
-    ) {
-        this.id = id;
-        this.name = name;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public Author setId(String id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Author setName(String name) {
-        this.name = name;
-        return this;
-    }
-}
-*/
