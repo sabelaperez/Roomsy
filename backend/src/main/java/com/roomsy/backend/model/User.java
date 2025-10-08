@@ -1,5 +1,6 @@
 package com.roomsy.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -22,37 +23,40 @@ public class User {
     private UUID id;
 
     @NotNull
-    @Column(unique = true, nullable = false)
     @Email
+    @Column(unique = true, nullable = false)
     private String email;
 
     @NotNull
     @Size(min = 4, max = 20)
     @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username can only contain letters, numbers, and underscores")
-    @Column(length = 20, nullable = false)
+    @Column(nullable = false, length = 20)
     private String username;
 
     @Size(min = 4, max = 50)
     @Column(length = 50)
     private String fullName;
 
-    @Column(length = 50)
+    @NotNull
+    @Column(nullable = false, length = 60)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String hashPassword;
 
+    @Column(nullable = false)
     private boolean isActive = true;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(nullable = false, updatable = false)
     private Timestamp createdAt;
 
     @UpdateTimestamp
-    @Column
+    @Column(nullable = false)
     private Timestamp updatedAt;
 
     private Timestamp joinedAt;
 
-    @ManyToOne(optional = true, fetch = FetchType.LAZY) 
-    @JoinColumn(name = "group_id", nullable = true) // Pode non pertencer a ningún grupo
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id") // Pode non pertencer a ningún grupo
     private Group group;
 
     // Constructors
