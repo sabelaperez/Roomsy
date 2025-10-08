@@ -2,12 +2,11 @@ package com.roomsy.backend.model;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -40,18 +39,18 @@ public class CleaningTask {
     @JoinTable(name = "cleaning_task_users",
         joinColumns = @JoinColumn(name = "cleaning_task_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id"))
-    @NotEmpty(message = "Debe asignarse al menos un usuario")
+    @NotEmpty(message = "At least one user must be assigned")
     private List<User> assignedTo = new ArrayList<>();
 
     private boolean completed = false;
 
     @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
     // Constructors
     public CleaningTask() {}

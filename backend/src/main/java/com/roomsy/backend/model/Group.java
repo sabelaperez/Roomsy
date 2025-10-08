@@ -28,14 +28,14 @@ public class Group {
 
     @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
     @Column(unique = true)
-    private String invite_code;
+    private String inviteCode;
 
     @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<User> members = new ArrayList<>();
@@ -52,9 +52,9 @@ public class Group {
     // Constructors
     public Group() {}
 
-    public Group(String name, String invite_code) {
+    public Group(String name, String inviteCode) {
         this.name = name;
-        this.invite_code = invite_code;
+        this.inviteCode = inviteCode;
     }
 
     // Getters and Setters

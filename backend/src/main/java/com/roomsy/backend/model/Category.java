@@ -3,11 +3,11 @@ package com.roomsy.backend.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
