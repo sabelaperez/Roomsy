@@ -40,6 +40,15 @@ public class Group {
     @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<User> members = new ArrayList<>();
 
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<ShoppingItem> shoppingItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<ExpenseItem> expenseItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<CleaningTask> cleaningTasks = new ArrayList<>();
+
     // Constructors
     public Group() {}
 
