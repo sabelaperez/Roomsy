@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -47,13 +47,13 @@ public class User {
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(nullable = false)
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
 
-    private Timestamp joinedAt;
+    private LocalDateTime joinedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id") // Pode non pertencer a ningún grupo
