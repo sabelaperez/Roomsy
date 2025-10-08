@@ -57,6 +57,4 @@ public class ShoppingItem {
 
     // Getters and Setters
 
-
-    // Functions
 }

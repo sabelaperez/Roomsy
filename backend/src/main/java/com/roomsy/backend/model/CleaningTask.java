@@ -64,7 +64,4 @@ public class CleaningTask {
 
     // Getters and Setters
 
-
-    // Functions
-
 }

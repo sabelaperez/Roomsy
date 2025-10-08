@@ -53,6 +53,4 @@ public class Category {
 
     // Getters and Setters
 
-
-    // Functions
 }

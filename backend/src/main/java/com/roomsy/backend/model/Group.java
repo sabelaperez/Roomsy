@@ -58,18 +58,27 @@ public class Group {
     }
 
     // Getters and Setters
+    public List<User> getMembers() {
+        return members;
+    }
 
+    public void setMembers(List<User> members) {
+        this.members = members;
+    }
 
     // Functions
     public void addMember(User user) {
         if (user == null) return;
-        members.add(user);
-        user.setGroup(this);
+        if (!this.members.contains(user)) {
+            this.members.add(user);
+            user.setGroup(this);
+        }      
     }
 
     public void removeMember(User user) {
         if (user == null) return;
-        members.remove(user);
-        user.setGroup(null);
+        if (this.members.remove(user)) {
+            user.setGroup(null);
+        }
     }
 }

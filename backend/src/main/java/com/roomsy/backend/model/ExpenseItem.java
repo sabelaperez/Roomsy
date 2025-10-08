@@ -67,6 +67,4 @@ public class ExpenseItem {
 
     // Getters and Setters
 
-
-    // Functions
 }

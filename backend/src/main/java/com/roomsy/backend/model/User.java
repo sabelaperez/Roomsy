@@ -79,6 +79,4 @@ public class User {
     public void setGroup(Group group) {
         this.group = group;
     }
-
-    // Functions
 }
