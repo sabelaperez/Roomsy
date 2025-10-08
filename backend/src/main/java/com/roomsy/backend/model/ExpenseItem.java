@@ -1,6 +1,6 @@
 package com.roomsy.backend.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,11 +39,11 @@ public class ExpenseItem {
 
     @CreationTimestamp
     @Column(updatable = false)
-    private Timestamp created_at;
+    private LocalDateTime created_at;
 
     @UpdateTimestamp
     @Column
-    private Timestamp updated_at;
+    private LocalDateTime updated_at;
 
     // Constructors´
     public ExpenseItem() {}

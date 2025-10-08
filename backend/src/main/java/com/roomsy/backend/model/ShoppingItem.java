@@ -1,6 +1,6 @@
 package com.roomsy.backend.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,11 +35,11 @@ public class ShoppingItem {
 
     @CreationTimestamp
     @Column(updatable = false)
-    private Timestamp created_at;
+    private LocalDateTime created_at;
 
     @UpdateTimestamp
     @Column
-    private Timestamp updated_at;
+    private LocalDateTime updated_at;
 
     // Constructors
     public ShoppingItem() {}
