@@ -43,6 +43,7 @@ public class User {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String hashPassword;
 
+    @NotNull
     @Column(nullable = false)
     private boolean isActive = true;
 
@@ -54,6 +55,8 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @NotNull
+    @Column(nullable = false)
     private LocalDateTime joinedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -63,11 +66,12 @@ public class User {
     // Constructors
     public User() {}
 
-    public User(String email, String username, String fullName, String hashPassword) {
+    public User(String email, String username, String fullName, String hashPassword, LocalDateTime joinedAt) {
         this.email = email;
         this.username = username;
         this.fullName = fullName;
         this.hashPassword = hashPassword;
+        this.joinedAt = joinedAt;
     }
 
     // Getters and Setters

@@ -45,5 +45,19 @@ public class News {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    // Constructors
+    public News() {}
 
+    public News(Group group, User actor, NewsType type, String name, String description) {
+        this.group = group;
+        this.actor = actor;
+        this.type = type;
+        this.name = name;
+        this.description = description;
+    }
+
+    // Getters and Setters
+
+
+    // Functions
 }

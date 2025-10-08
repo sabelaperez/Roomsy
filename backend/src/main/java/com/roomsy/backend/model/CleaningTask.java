@@ -12,6 +12,7 @@ import java.util.List;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotEmpty;
 
 @Entity 
 @Table(name = "cleaning_tasks")
@@ -39,6 +40,7 @@ public class CleaningTask {
     @JoinTable(name = "cleaning_task_users",
         joinColumns = @JoinColumn(name = "cleaning_task_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @NotEmpty(message = "Debe asignarse al menos un usuario")
     private List<User> assignedTo = new ArrayList<>();
 
     private boolean completed = false;
@@ -54,10 +56,11 @@ public class CleaningTask {
     // Constructors
     public CleaningTask() {}
 
-    public CleaningTask(Group group, String title, LocalDateTime date) {
+    public CleaningTask(Group group, String title, LocalDateTime date, List<User> assignedTo) {
         this.group = group;
         this.title = title;
         this.date = date;
+        this.assignedTo = assignedTo;
     }
 
     // Getters and Setters
