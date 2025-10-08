@@ -1,6 +1,5 @@
 package com.roomsy.backend.model;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 

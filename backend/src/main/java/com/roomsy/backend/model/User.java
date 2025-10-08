@@ -34,6 +34,7 @@ public class User {
     private String username;
 
     @Size(min = 4, max = 50)
+    @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Full name can only contain letters, numbers, and spaces")
     @Column(length = 50)
     private String fullName;
 
