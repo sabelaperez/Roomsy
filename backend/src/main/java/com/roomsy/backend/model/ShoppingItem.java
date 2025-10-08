@@ -39,11 +39,11 @@ public class ShoppingItem {
 
     @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
     // Constructors
     public ShoppingItem() {}
@@ -57,6 +57,4 @@ public class ShoppingItem {
 
     // Getters and Setters
 
-
-    // Functions
 }

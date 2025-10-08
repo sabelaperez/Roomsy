@@ -36,7 +36,7 @@ public class ExpenseItem {
     @JoinTable(name = "expense_item_users",
         joinColumns = @JoinColumn(name = "expense_item_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private List<User> users_involved = new ArrayList<>();   
+    private List<User> usersInvolved = new ArrayList<>();   
 
     @NotNull
     @Column(nullable = false)
@@ -44,29 +44,27 @@ public class ExpenseItem {
 
     @NotNull
     @Column(nullable = false)
-    private Date expense_date;
+    private Date expenseDate;
 
     @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
-    // Constructors´
+    // Constructors
     public ExpenseItem() {}
 
-    public ExpenseItem(Group group, User owner, List<User> users_involved, Double price, Date expense_date) {
+    public ExpenseItem(Group group, User owner, List<User> usersInvolved, Double price, Date expenseDate) {
         this.group = group;
         this.owner = owner;
-        this.users_involved = users_involved;
+        this.usersInvolved = usersInvolved;
         this.price = price;
-        this.expense_date = expense_date;
+        this.expenseDate = expenseDate;
     }
 
     // Getters and Setters
 
-
-    // Functions
 }
