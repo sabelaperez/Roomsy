@@ -66,6 +66,14 @@ public class Group {
         return members;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setMembers(List<User> members) {
         this.members = members;
     }

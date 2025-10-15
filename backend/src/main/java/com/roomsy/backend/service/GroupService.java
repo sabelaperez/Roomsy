@@ -70,5 +70,13 @@ public class GroupService {
             return groupRepository.save(group);
         }
     }
+
+    @Transactional
+    public Group changeGroupName(UUID groupId, String newName) {
+        Group group = groupRepository.findById(groupId)
+            .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + groupId));
+        group.setName(newName);
+        return groupRepository.save(group);
+    }
     
 }
