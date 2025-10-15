@@ -58,6 +58,10 @@ public class Group {
     }
 
     // Getters and Setters
+    public UUID getId() {
+        return id;
+    }
+
     public List<User> getMembers() {
         return members;
     }

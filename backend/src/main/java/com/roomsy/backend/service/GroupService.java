@@ -1,14 +1,15 @@
 package com.roomsy.backend.service;
 
-import java.util.List;
 import java.util.UUID;
 
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.roomsy.backend.exception.InvalidOperationException;
+import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.repository.GroupRepository;
+import com.roomsy.backend.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -35,15 +36,14 @@ public class GroupService {
                 // ya es miembro -> nada que hacer
                 return group;
             }
-            throw new BadRequestException("User already belongs to another group. Remove or move before adding.");
+            throw new InvalidOperationException("User already belongs to another group. Remove or move before adding.");
         }
 
         // Mantener ambos lados de la relación
         group.addMember(user);
         userRepository.save(user);
-        groupRepository.save(group);
-
-        return group;
+        
+        return groupRepository.save(group);
     }
 
     @Transactional
@@ -54,14 +54,21 @@ public class GroupService {
             .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         if (user.getGroup() == null || !user.getGroup().getId().equals(groupId)) {
-            throw new BadRequestException("User is not a member of the specified group.");
+            throw new InvalidOperationException("User is not a member of the specified group.");
         }
 
         // Mantener ambos lados
         group.removeMember(user); // usa método auxiliar
+        user.setGroup(null); // desvincular usuario
         userRepository.save(user); // persistir el cambio (user.group = null)
-        groupRepository.save(group);
-        
-        return group;
+
+        // Si no quedan miembros, eliminar el grupo entero
+        if (group.getMembers() == null || group.getMembers().isEmpty()) {
+            groupRepository.delete(group);
+            return null; // el grupo ya no existe
+        } else {
+            return groupRepository.save(group);
+        }
     }
+    
 }
