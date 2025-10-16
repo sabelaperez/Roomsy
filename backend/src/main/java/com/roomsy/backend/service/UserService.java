@@ -32,34 +32,42 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User updateUser(@NonNull UUID id, @NonNull User updatedUser) throws Exception {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("User not found with id: " + id));
-
-        // Update only non-null fields
-        if (updatedUser.getEmail() != null) {
-            // Check if email is already taken by another user
-            if (userRepository.existsByEmail(updatedUser.getEmail()) &&
-                    !existingUser.getEmail().equals(updatedUser.getEmail())) {
-                throw new Exception("Email already in use");
-            }
-            existingUser.setEmail(updatedUser.getEmail());
+    @Transactional
+    public User updateEmail(UUID id, String newEmail) throws Exception {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new Exception("User not found"));
+        if (userRepository.existsByEmail(newEmail) && !user.getEmail().equals(newEmail)) {
+            throw new Exception("Email already in use");
         }
-
-        if (updatedUser.getUsername() != null) {
-            existingUser.setUsername(updatedUser.getUsername());
-        }
-
-        if (updatedUser.getFullName() != null) {
-            existingUser.setFullName(updatedUser.getFullName());
-        }
-
-        if (updatedUser.getHashPassword() != null) {
-            existingUser.setHashPassword(updatedUser.getHashPassword());
-        }
-
-        return userRepository.save(existingUser);
+        user.setEmail(newEmail);
+        return userRepository.save(user);
     }
+
+    // Completar cuando se implemente seguridad
+    @Transactional
+    public void updatePassword(UUID id, String currentPassword, String newPassword) throws Exception {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new Exception("User not found"));
+        // verify currentPassword (compare hashes)...
+        // hash newPassword...
+        String hashedNewPassword = "password";
+        user.setHashPassword(hashedNewPassword);
+        userRepository.save(user);
+    }
+
+    // Crear método de patchUser con un PatchUserDTO con username y fullname
+    /*    @Transactional
+    public User patchUser(UUID id, PatchUserDto dto) throws Exception {
+        User user = userRepository.findById(id)
+                     .orElseThrow(() -> new Exception("User not found"));
+        if (dto.getUsername() != null) {
+            user.setUsername(dto.getUsername());
+        }
+        if (dto.getFullName() != null) {
+            user.setFullName(dto.getFullName());
+        }
+        return userRepository.save(user);
+    }*/
 
     public void deactivateUser(@NonNull UUID id) throws Exception {
         User user = userRepository.findById(id)
@@ -84,9 +92,5 @@ public class UserService {
 
     public boolean emailExists(@NonNull String email) {
         return userRepository.existsByEmail(email);
-    }
-
-    public boolean usernameExists(@NonNull String username) {
-        return userRepository.existsByUsername(username);
     }
 }
