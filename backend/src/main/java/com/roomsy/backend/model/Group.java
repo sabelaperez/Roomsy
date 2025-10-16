@@ -34,6 +34,7 @@ public class Group {
     @Column
     private LocalDateTime updatedAt;
 
+    @NotNull
     @Column(unique = true)
     private String inviteCode;
 
