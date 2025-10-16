@@ -23,7 +23,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User addUser(@NonNull User user) throws Exception {
+    public User createUser(@NonNull User user) throws Exception {
         // Check if email already exists
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new Exception("Email already in use");
