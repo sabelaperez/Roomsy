@@ -32,6 +32,15 @@ public class ExpenseItem {
     private User owner;
 
     @NotNull
+    @Column(nullable = false)
+    private String nome;
+
+    @NotNull
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ExpenseType expenseType;
+
+    @NotNull
     @ManyToMany
     @JoinTable(name = "expense_item_users",
         joinColumns = @JoinColumn(name = "expense_item_id"),
@@ -57,9 +66,11 @@ public class ExpenseItem {
     // Constructors
     public ExpenseItem() {}
 
-    public ExpenseItem(Group group, User owner, List<User> usersInvolved, Double price, Date expenseDate) {
+    public ExpenseItem(Group group, User owner, String nome, ExpenseType expenseType, List<User> usersInvolved, Double price, Date expenseDate) {
         this.group = group;
         this.owner = owner;
+        this.nome = nome;
+        this.expenseType = expenseType;
         this.usersInvolved = usersInvolved;
         this.price = price;
         this.expenseDate = expenseDate;

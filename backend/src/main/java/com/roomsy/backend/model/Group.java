@@ -59,8 +59,20 @@ public class Group {
     }
 
     // Getters and Setters
+    public UUID getId() {
+        return id;
+    }
+
     public List<User> getMembers() {
         return members;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setMembers(List<User> members) {
