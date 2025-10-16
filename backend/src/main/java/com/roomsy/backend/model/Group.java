@@ -56,9 +56,10 @@ public class Group {
     // Constructors
     public Group() {}
 
-    public Group(String name, String inviteCode) {
-        this.name = name;
+    public Group(String name, String inviteCode, User creator) {
+        this.name = name; // Considerar a xeración aleatoria do nome
         this.inviteCode = inviteCode;
+        this.members.add(creator);
     }
 
     // Getters and Setters
@@ -80,6 +81,14 @@ public class Group {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getInviteCode() {
+        return inviteCode;
+    }
+
+    public void setInviteCode(String inviteCode) {
+        this.inviteCode = inviteCode;
     }
 
     public List<CleaningTask> getCleaningTasks() {

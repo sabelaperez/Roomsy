@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.roomsy.backend.exception.InvalidOperationException;
@@ -15,6 +16,7 @@ import com.roomsy.backend.model.ShoppingItem;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.repository.GroupRepository;
 import com.roomsy.backend.repository.UserRepository;
+import com.roomsy.backend.util.InviteCodeGenerator;
 
 import jakarta.transaction.Transactional;
 
@@ -22,6 +24,9 @@ import jakarta.transaction.Transactional;
 public class GroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+
+    private static final int CODE_LENGTH = 10;
+    private static final int MAX_ATTEMPTS = 6;
 
     @Autowired
     public GroupService(GroupRepository groupRepository, UserRepository userRepository) {
@@ -34,8 +39,39 @@ public class GroupService {
             .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + groupId));
     }
 
+    private String generateUniqueCode() {
+        for (int i = 0; i < MAX_ATTEMPTS; i++) {
+            String code = InviteCodeGenerator.generate(CODE_LENGTH);
+            if (!groupRepository.existsByInviteCode(code)) {
+                return code;
+            }
+        }
+        throw new IllegalStateException("Unable to generate unique invite code");
+    }
+
     @Transactional
-    public Group createGroup(String name, String inviteCode, User creator) {
+    public String regenerateInviteCode(UUID groupId) throws ResourceNotFoundException {
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            String newCode = InviteCodeGenerator.generate(CODE_LENGTH);
+            if (groupRepository.existsByInviteCode(newCode)) {
+                continue; // colisión, reintentar
+            }
+            try {
+                Group group = getGroupById(groupId);
+                group.setInviteCode(newCode);
+                groupRepository.saveAndFlush(group); // forzar persistencia inmediata
+                return newCode;
+            } catch (DataIntegrityViolationException e) {
+                // posible condición de carrera: otro hilo creó el mismo code entre exists y save
+                // reintentar
+            }
+        }
+        throw new IllegalStateException("Could not generate unique invite code after retries");
+    }
+
+    @Transactional
+    public Group createGroup(String name, User creator) {
+        String inviteCode = generateUniqueCode();
         Group group = new Group(name, inviteCode, creator);
         return groupRepository.save(group);
     }
@@ -112,5 +148,4 @@ public class GroupService {
         Group group = getGroupById(groupId);
         return new ArrayList<>(group.getShoppingItems());
     } 
-    
 }
