@@ -48,6 +48,9 @@ public class Group {
     private List<ExpenseItem> expenseItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<SharedExpense> sharedExpenses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<CleaningTask> cleaningTasks = new ArrayList<>();
 
     // Constructors
@@ -67,6 +70,10 @@ public class Group {
         return members;
     }
 
+    public void setMembers(List<User> members) {
+        this.members = members;
+    }
+
     public String getName() {
         return name;
     }
@@ -75,8 +82,20 @@ public class Group {
         this.name = name;
     }
 
-    public void setMembers(List<User> members) {
-        this.members = members;
+    public List<CleaningTask> getCleaningTasks() {
+        return cleaningTasks;
+    }
+
+    public List<ExpenseItem> getExpenseItems() {
+        return expenseItems;
+    }
+
+    public List<SharedExpense> getSharedExpenses() {
+        return sharedExpenses;
+    }
+
+    public List<ShoppingItem> getShoppingItems() {
+        return shoppingItems;
     }
 
     // Functions

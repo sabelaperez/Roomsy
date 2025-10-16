@@ -1,6 +1,5 @@
 package com.roomsy.backend.repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +10,5 @@ import com.roomsy.backend.model.Group;
 public interface GroupRepository extends JpaRepository<Group, UUID> {
     Optional<Group> findById(UUID id);
     
-
     Optional<Group> getGroupByInviteCode(String inviteCode);
 }
