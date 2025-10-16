@@ -17,12 +17,10 @@ import java.util.UUID;
 @Service
 public class UserService {
     private final UserRepository userRepository;
-    private final GroupRepository groupRepository;
 
     @Autowired
     public UserService(UserRepository userRepository, GroupRepository groupRepository) {
         this.userRepository = userRepository;
-        this.groupRepository = groupRepository;
     }
 
     public User addUser(@NonNull User user) throws Exception {
@@ -32,26 +30,6 @@ public class UserService {
         }
 
         return userRepository.save(user);
-    }
-
-    public Optional<User> getUserByEmail(@NonNull String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    public Optional<User> getUserByUsername(@NonNull String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public Optional<User> getUserById(@NonNull UUID id) {
-        return userRepository.findById(id);
-    }
-
-    public Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
-    }
-
-    public Page<User> getUsersByActiveStatus(boolean isActive, Pageable pageable) {
-        return userRepository.findByIsActive(isActive, pageable);
     }
 
     public User updateUser(@NonNull UUID id, @NonNull User updatedUser) throws Exception {
