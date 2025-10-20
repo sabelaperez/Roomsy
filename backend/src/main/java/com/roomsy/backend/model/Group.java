@@ -34,8 +34,7 @@ public class Group {
     @Column
     private LocalDateTime updatedAt;
 
-    @NotNull
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String inviteCode;
 
     @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
@@ -56,10 +55,8 @@ public class Group {
     // Constructors
     public Group() {}
 
-    public Group(String name, String inviteCode, User creator) {
+    public Group(String name) {
         this.name = name; // Considerar a xeración aleatoria do nome
-        this.inviteCode = inviteCode;
-        this.members.add(creator);
     }
 
     // Getters and Setters

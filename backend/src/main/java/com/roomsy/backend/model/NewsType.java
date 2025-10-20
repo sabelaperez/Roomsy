@@ -1,10 +1,10 @@
 package com.roomsy.backend.model;
 
 public enum NewsType {
-    MEMBER_ADDED,
-    MEMBER_REMOVED,
+    MEMBER_ADDED, // Feita
+    MEMBER_REMOVED, //Feita
     SHOPPING,
     EXPENSE_ADDED,
     EXPENSE_PAID,
-    CLEANING_TASK_ADDED
+    CLEANING_TASK_ADDED //Feita
 }
