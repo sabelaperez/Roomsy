@@ -1,5 +1,7 @@
 package com.roomsy.backend.service;
 
+import com.roomsy.backend.exception.DuplicateResourceException;
+import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.repository.GroupRepository;
@@ -23,21 +25,21 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User createUser(@NonNull User user) throws Exception {
+    public User createUser(@NonNull User user) throws DuplicateResourceException {
         // Check if email already exists
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new Exception("Email already in use");
+            throw new DuplicateResourceException("Email already in use");
         }
 
         return userRepository.save(user);
     }
 
     @Transactional
-    public User updateEmail(UUID id, String newEmail) throws Exception {
+    public User updateEmail(UUID id, String newEmail) throws ResourceNotFoundException, DuplicateResourceException {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         if (userRepository.existsByEmail(newEmail) && !user.getEmail().equals(newEmail)) {
-            throw new Exception("Email already in use");
+            throw new DuplicateResourceException("Email already in use");
         }
         user.setEmail(newEmail);
         return userRepository.save(user);
@@ -45,9 +47,9 @@ public class UserService {
 
     // Completar cuando se implemente seguridad
     @Transactional
-    public void updatePassword(UUID id, String currentPassword, String newPassword) throws Exception {
+    public void updatePassword(UUID id, String currentPassword, String newPassword) throws ResourceNotFoundException {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         // verify currentPassword (compare hashes)...
         // hash newPassword...
         String hashedNewPassword = "password";
@@ -69,23 +71,23 @@ public class UserService {
         return userRepository.save(user);
     }*/
 
-    public void deactivateUser(@NonNull UUID id) throws Exception {
+    public void deactivateUser(@NonNull UUID id) throws ResourceNotFoundException {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         user.setActive(false);
         userRepository.save(user);
     }
 
-    public User activateUser(@NonNull UUID id) throws Exception {
+    public User activateUser(@NonNull UUID id) throws ResourceNotFoundException {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         user.setActive(true);
         return userRepository.save(user);
     }
 
-    public void deleteUser(@NonNull UUID id) throws Exception {
+    public void deleteUser(@NonNull UUID id) throws ResourceNotFoundException {
         if (!userRepository.existsById(id)) {
-            throw new Exception("User not found with id: " + id);
+            throw new ResourceNotFoundException("User not found with id: " + id);
         }
         userRepository.deleteById(id);
     }
