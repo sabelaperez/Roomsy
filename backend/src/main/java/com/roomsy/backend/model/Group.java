@@ -34,8 +34,7 @@ public class Group {
     @Column
     private LocalDateTime updatedAt;
 
-    @NotNull
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String inviteCode;
 
     @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
@@ -48,14 +47,16 @@ public class Group {
     private List<ExpenseItem> expenseItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<SharedExpense> sharedExpenses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<CleaningTask> cleaningTasks = new ArrayList<>();
 
     // Constructors
     public Group() {}
 
-    public Group(String name, String inviteCode) {
-        this.name = name;
-        this.inviteCode = inviteCode;
+    public Group(String name) {
+        this.name = name; // Considerar a xeración aleatoria do nome
     }
 
     // Getters and Setters
@@ -67,6 +68,10 @@ public class Group {
         return members;
     }
 
+    public void setMembers(List<User> members) {
+        this.members = members;
+    }
+
     public String getName() {
         return name;
     }
@@ -75,8 +80,28 @@ public class Group {
         this.name = name;
     }
 
-    public void setMembers(List<User> members) {
-        this.members = members;
+    public String getInviteCode() {
+        return inviteCode;
+    }
+
+    public void setInviteCode(String inviteCode) {
+        this.inviteCode = inviteCode;
+    }
+
+    public List<CleaningTask> getCleaningTasks() {
+        return cleaningTasks;
+    }
+
+    public List<ExpenseItem> getExpenseItems() {
+        return expenseItems;
+    }
+
+    public List<SharedExpense> getSharedExpenses() {
+        return sharedExpenses;
+    }
+
+    public List<ShoppingItem> getShoppingItems() {
+        return shoppingItems;
     }
 
     // Functions

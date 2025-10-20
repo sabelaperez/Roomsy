@@ -22,6 +22,7 @@ public class CleaningTask {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
@@ -63,5 +64,41 @@ public class CleaningTask {
     }
 
     // Getters and Setters
+    public UUID getId() {
+        return id;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDateTime date) {
+        this.date = date;
+    }
+
+    public List<User> getAssignedTo() {
+        return assignedTo;
+    }
+
+    public void setAssignedTo(List<User> assignedTo) {
+        this.assignedTo = assignedTo;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
 
 }
