@@ -33,7 +33,7 @@ public class ExpenseItem {
 
     @NotNull
     @Column(nullable = false)
-    private String nome;
+    private String name;
 
     @NotNull
     @Column(nullable = false)
@@ -66,10 +66,10 @@ public class ExpenseItem {
     // Constructors
     public ExpenseItem() {}
 
-    public ExpenseItem(Group group, User owner, String nome, ExpenseType expenseType, List<User> usersInvolved, Double price, Date expenseDate) {
+    public ExpenseItem(Group group, User owner, String name, ExpenseType expenseType, List<User> usersInvolved, Double price, Date expenseDate) {
         this.group = group;
         this.owner = owner;
-        this.nome = nome;
+        this.name = name;
         this.expenseType = expenseType;
         this.usersInvolved = usersInvolved;
         this.price = price;
@@ -78,4 +78,72 @@ public class ExpenseItem {
 
     // Getters and Setters
 
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String nome) {
+        this.name = nome;
+    }
+
+    public ExpenseType getExpenseType() {
+        return expenseType;
+    }
+
+    public void setExpenseType(ExpenseType expenseType) {
+        this.expenseType = expenseType;
+    }
+
+    public List<User> getUsersInvolved() {
+        return usersInvolved;
+    }
+
+    public void setUsersInvolved(List<User> usersInvolved) {
+        this.usersInvolved = usersInvolved;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public Date getExpenseDate() {
+        return expenseDate;
+    }
+
+    public void setExpenseDate(Date expenseDate) {
+        this.expenseDate = expenseDate;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }
