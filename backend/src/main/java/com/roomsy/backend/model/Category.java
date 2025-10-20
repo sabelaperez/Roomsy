@@ -57,10 +57,6 @@ public class Category {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public Group getGroup() {
         return group;
     }
@@ -89,15 +85,8 @@ public class Category {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 }
