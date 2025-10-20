@@ -1,5 +1,6 @@
 package com.roomsy.backend.service;
 
+import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.Category;
 import com.roomsy.backend.model.ShoppingItem;
 import com.roomsy.backend.repository.ShoppingItemRepository;
@@ -33,25 +34,25 @@ public class ShoppingItemService {
         shoppingItemRepository.deleteById(id);
     }
 
-    public ShoppingItem updateCategory(@NonNull UUID id, @NonNull Category category) throws Exception {
+    public ShoppingItem updateCategory(@NonNull UUID id, @NonNull Category category) throws ResourceNotFoundException {
         ShoppingItem shoppingItem = shoppingItemRepository.findById(id)
-                .orElseThrow(() -> new Exception("ShoppingItem with that id does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("ShoppingItem with that id does not exist"));
 
         shoppingItem.setCategory(category);
         return shoppingItemRepository.save(shoppingItem);
     }
 
-    public ShoppingItem updateName(@NonNull UUID id, @NonNull String name) throws Exception {
+    public ShoppingItem updateName(@NonNull UUID id, @NonNull String name) throws ResourceNotFoundException {
         ShoppingItem shoppingItem = shoppingItemRepository.findById(id)
-                .orElseThrow(() -> new Exception("ShoppingItem with that id does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("ShoppingItem with that id does not exist"));
 
         shoppingItem.setName(name);
         return shoppingItemRepository.save(shoppingItem);
     }
 
-    public ShoppingItem updateQuantity(@NonNull UUID id, @NonNull Integer quantity) throws Exception {
+    public ShoppingItem updateQuantity(@NonNull UUID id, @NonNull Integer quantity) throws ResourceNotFoundException {
         ShoppingItem shoppingItem = shoppingItemRepository.findById(id)
-                .orElseThrow(() -> new Exception("ShoppingItem with that id does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("ShoppingItem with that id does not exist"));
 
         shoppingItem.setQuantity(quantity);
         return shoppingItemRepository.save(shoppingItem);
