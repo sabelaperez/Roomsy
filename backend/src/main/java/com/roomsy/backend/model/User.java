@@ -39,12 +39,10 @@ public class User {
     @Column(length = 50)
     private String fullName;
 
-    @NotNull
     @Column(nullable = false, length = 60)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String hashPassword;
 
-    @NotNull
     @Column(nullable = false)
     private boolean isActive = true;
 
@@ -56,7 +54,6 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @NotNull
     @Column(nullable = false)
     private LocalDateTime joinedAt;
 
