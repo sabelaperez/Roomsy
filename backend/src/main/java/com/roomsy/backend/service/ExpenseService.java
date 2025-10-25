@@ -31,14 +31,31 @@ public class ExpenseService {
         return expenseItemRepository.save(expenseItem);
     }
 
+    // Pensar nas precondicións
     @Transactional
     public void deleteExpenseItem(@NonNull UUID id) throws ResourceNotFoundException {
-        if(!expenseItemRepository.existsById(id)) {
-            throw new ResourceNotFoundException("ExpenseItem with that id does not exist");
+
+        ExpenseItem expenseItem = expenseItemRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("ExpenseItem not found"));
+
+        // Reverse that expense item in the SharedExpenses
+        Double splitAmount = expenseItem.getPrice() / expenseItem.getUsersInvolved().size();
+
+        for(User user : expenseItem.getUsersInvolved()) {
+            List<User> usersInvolved = new ArrayList<>();
+            usersInvolved.add(expenseItem.getOwner());
+            ExpenseItem reverseExpenseItem = new ExpenseItem(
+                    expenseItem.getGroup(),
+                    user,
+                    expenseItem.getName(),
+                    expenseItem.getExpenseType(),
+                    usersInvolved,
+                    splitAmount,
+                    expenseItem.getExpenseDate()
+                    );
+            generateSplitExpenses(expenseItem.getGroup(), reverseExpenseItem);
         }
 
         expenseItemRepository.deleteById(id);
-        // TODO: gasto compensatorio (no se elimina de la DB realmente, se revierte)
     }
 
     /**
