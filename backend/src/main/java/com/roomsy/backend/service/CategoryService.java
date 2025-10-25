@@ -20,7 +20,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public Category createCategory(@NonNull Category category) throws Exception {
+    public Category createCategory(@NonNull Category category) throws IllegalArgumentException {
         if(categoryRepository.existsByGroupAndName(category.getGroup(), category.getName())) {
             throw new IllegalArgumentException("A category with that name already exists in the group");
         }
@@ -28,7 +28,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public void deleteCategory(@NonNull UUID id) throws Exception {
+    public void deleteCategory(@NonNull UUID id) throws IllegalArgumentException {
         if(!categoryRepository.existsById(id)) {
             throw new IllegalArgumentException("Category with that id does not exist");
         }
@@ -36,7 +36,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public Category updateName(@NonNull UUID id, String newName) throws Exception {
+    public Category updateName(@NonNull UUID id, String newName) throws IllegalArgumentException {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category with that id does not exist"));
 
@@ -45,7 +45,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public Category updateColor(@NonNull UUID id, String newColor) throws Exception {
+    public Category updateColor(@NonNull UUID id, String newColor) throws IllegalArgumentException {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category with that id does not exist"));
 
