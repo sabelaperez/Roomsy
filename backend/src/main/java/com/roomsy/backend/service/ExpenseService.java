@@ -3,9 +3,12 @@ package com.roomsy.backend.service;
 import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.ExpenseItem;
 import com.roomsy.backend.model.Group;
+import com.roomsy.backend.model.News;
+import com.roomsy.backend.model.NewsType;
 import com.roomsy.backend.model.SharedExpense;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.repository.ExpenseItemRepository;
+import com.roomsy.backend.repository.NewsRepository;
 import com.roomsy.backend.repository.SharedExpenseRepository;
 import jakarta.transaction.Transactional;
 import org.jspecify.annotations.NonNull;
@@ -17,24 +20,31 @@ import java.util.*;
 @Service
 public class ExpenseService {
 
-    private ExpenseItemRepository expenseItemRepository;
-    private SharedExpenseRepository sharedExpenseRepository;
+    private final ExpenseItemRepository expenseItemRepository;
+    private final SharedExpenseRepository sharedExpenseRepository;
+    private final NewsRepository newsRepository;
 
     @Autowired
-    public ExpenseService(ExpenseItemRepository expenseItemRepository,  SharedExpenseRepository sharedExpenseRepository) {
+    public ExpenseService(ExpenseItemRepository expenseItemRepository,  SharedExpenseRepository sharedExpenseRepository, NewsRepository newsRepository) {
         this.expenseItemRepository = expenseItemRepository;
         this.sharedExpenseRepository = sharedExpenseRepository;
+        this.newsRepository = newsRepository;
     }
 
     @Transactional
     public ExpenseItem createExpenseItem(@NonNull ExpenseItem expenseItem) throws Exception {
+        // Xerar unha noticia do tipo EXPENSE_ADDED
+        News addedExpenseNews = new News(expenseItem.getGroup(), expenseItem.getOwner(), NewsType.EXPENSE_ADDED,
+                "Expense Added by " + expenseItem.getOwner().getFullName(), 
+                "An expense item named '" + expenseItem.getName() + "' has been added with amount " + expenseItem.getPrice() + ".");
+        newsRepository.save(addedExpenseNews);
+
         return expenseItemRepository.save(expenseItem);
     }
 
     // Pensar nas precondicións
     @Transactional
     public void deleteExpenseItem(@NonNull UUID id) throws ResourceNotFoundException {
-
         ExpenseItem expenseItem = expenseItemRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("ExpenseItem not found"));
 
         // Reverse that expense item in the SharedExpenses
@@ -168,5 +178,19 @@ public class ExpenseService {
         }
 
         return settlements;
+    }
+
+    public boolean paySharedExpense(@NonNull UUID id) {
+        SharedExpense payedExpense = sharedExpenseRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("SharedExpense not found"));
+        boolean result = sharedExpenseRepository.deleteByIdReturningBoolean(id);
+        if (result) {
+            // Xerar unha noticia do tipo EXPENSE_PAID
+            News paidExpNews = new News(payedExpense.getGroup(), payedExpense.getNotPaid(), NewsType.EXPENSE_PAID,
+                    "An expense has been paid", "The user " + payedExpense.getNotPaid().getFullName() + " has paid an expense of amount " + payedExpense.getQuantity() + " to " + payedExpense.getPayer().getFullName() + ".");
+            newsRepository.save(paidExpNews);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

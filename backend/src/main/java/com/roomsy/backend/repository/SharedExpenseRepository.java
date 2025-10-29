@@ -9,4 +9,5 @@ import java.util.UUID;
 
 public interface SharedExpenseRepository   extends JpaRepository<SharedExpense, UUID> {
     List<SharedExpense> findByGroup(Group group);
+    boolean deleteByIdReturningBoolean(UUID id);
 }
