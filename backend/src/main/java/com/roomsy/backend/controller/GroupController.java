@@ -41,6 +41,12 @@ public class GroupController {
                 .body(GroupResponse.fromEntity(savedGroup));
     }
 
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<Void> deleteGroup(@PathVariable UUID groupId) {
+        groupService.deleteGroup(groupId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{groupId}")
     public ResponseEntity<GroupResponse> getGroup(@PathVariable UUID groupId) {
         Group group = groupService.getGroupById(groupId);
@@ -86,6 +92,16 @@ public class GroupController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping
+    public ResponseEntity<List<GroupResponse>> getGroups() {
+        List<Group> groups = groupService.getGroups();
+        List<GroupResponse> response = groups.stream()
+                .map(GroupResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{groupId}/members")
     public ResponseEntity<List<UserSummaryResponse>> getGroupMembers(@PathVariable UUID groupId) {
         List<User> members = groupService.getGroupMembers(groupId);
@@ -121,6 +137,16 @@ public class GroupController {
         var shoppingItems = groupService.getGroupShoppingItems(groupId);
         List<ShoppingItemResponse> response = shoppingItems.stream()
                 .map(ShoppingItemResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{groupId}/categories")
+    public ResponseEntity<List<CategoryResponse>> getGroupCategories(@PathVariable UUID groupId) {
+        var categories = groupService.getGroupCategories(groupId);
+        List<CategoryResponse> response = categories.stream()
+                .map(CategoryResponse::fromEntity)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);

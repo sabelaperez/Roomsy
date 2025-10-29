@@ -1,8 +1,11 @@
 package com.roomsy.backend.service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import com.roomsy.backend.model.*;
+import com.roomsy.backend.repository.CategoryRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -10,13 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.roomsy.backend.exception.InvalidOperationException;
 import com.roomsy.backend.exception.ResourceNotFoundException;
-import com.roomsy.backend.model.ExpenseItem;
-import com.roomsy.backend.model.Group;
-import com.roomsy.backend.model.News;
-import com.roomsy.backend.model.NewsType;
-import com.roomsy.backend.model.SharedExpense;
-import com.roomsy.backend.model.ShoppingItem;
-import com.roomsy.backend.model.User;
 import com.roomsy.backend.repository.GroupRepository;
 import com.roomsy.backend.repository.NewsRepository;
 import com.roomsy.backend.repository.UserRepository;
@@ -29,15 +25,17 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final NewsRepository newsRepository;
+    private final CategoryRepository categoryRepository;
 
     private static final int CODE_LENGTH = 10;
     private static final int MAX_ATTEMPTS = 6;
 
     @Autowired
-    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository) {
+    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository,  CategoryRepository categoryRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.newsRepository = newsRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     public Group getGroupById(@NonNull UUID groupId) throws ResourceNotFoundException {
@@ -78,6 +76,7 @@ public class GroupService {
     @Transactional
     public Group createGroup(@NonNull Group group, @NonNull User creator) {
         group.setInviteCode(generateUniqueCode());
+        group.addMember(creator);
         Group savedGroup = groupRepository.save(group);
         creator.setGroup(savedGroup); // mantener ambos lados
         userRepository.save(creator);
@@ -142,6 +141,15 @@ public class GroupService {
         }
     }
 
+    // TODO: hay que corregir este método, no borra el grupo, solo elimina los miembros y lo deja con 0 miembros
+    public void deleteGroup(@NonNull UUID groupId) throws ResourceNotFoundException {
+        Group group = getGroupById(groupId);
+        List<User> users = group.getMembers();
+        for (User user : users) {
+            removeUserFromGroup(groupId, user.getId());
+        }
+    }
+
     @Transactional
     public Group changeGroupName(@NonNull UUID groupId, @NonNull String newName) throws ResourceNotFoundException {
         Group group = getGroupById(groupId);
@@ -167,5 +175,13 @@ public class GroupService {
     public ArrayList<ShoppingItem> getGroupShoppingItems(@NonNull UUID groupId) throws ResourceNotFoundException {
         Group group = getGroupById(groupId);
         return new ArrayList<>(group.getShoppingItems());
-    } 
+    }
+
+    public ArrayList<Category> getGroupCategories(@NonNull UUID groupId) throws ResourceNotFoundException {
+        return new ArrayList<>(categoryRepository.getCategoriesByGroup_Id(groupId));
+    }
+
+    public List<Group> getGroups() throws ResourceNotFoundException {
+        return groupRepository.findAll();
+    }
 }
