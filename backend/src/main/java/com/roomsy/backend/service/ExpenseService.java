@@ -71,11 +71,11 @@ public class ExpenseService {
         // Add existing shared expenses to the balance
         for (SharedExpense sharedExpense : sharedExpenses) {
             UUID payerId = sharedExpense.getPayer().getId();
-            UUID payToId = sharedExpense.getPayTo().getId();
+            UUID notPaidId = sharedExpense.getNotPaid().getId();
             Double quantity = sharedExpense.getQuantity();
 
-            balances.put(payerId, balances.getOrDefault(payerId, 0.0) - quantity);
-            balances.put(payToId, balances.getOrDefault(payerId, 0.0) + quantity);
+            balances.put(payerId, balances.getOrDefault(payerId, 0.0) + quantity);
+            balances.put(notPaidId, balances.getOrDefault(notPaidId, 0.0) - quantity);
         }
 
         Map<User, Double> creditorsMap = new HashMap<>();
@@ -169,6 +169,4 @@ public class ExpenseService {
 
         return settlements;
     }
-
-
 }

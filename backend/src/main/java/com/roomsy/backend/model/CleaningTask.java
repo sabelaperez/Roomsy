@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotEmpty;
 
 @Entity 
@@ -32,12 +33,15 @@ public class CleaningTask {
     private Group group;
 
     @NotNull
-    @Column(nullable = false)
+    @Size(min = 3, max = 100)
+    @Column(nullable = false, length = 100)
     @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Title can only contain letters, numbers, and spaces")
+    @Schema(description = "Title of the cleaning task.", example = "Clean the kitchen", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 100)
     private String title;
 
     @NotNull
     @Column(nullable = false)
+    @Schema(description = "Date and time when the cleaning task is scheduled.", example = "2024-07-15T10:00:00")
     private LocalDateTime date;
 
     @ManyToMany
@@ -45,16 +49,21 @@ public class CleaningTask {
         joinColumns = @JoinColumn(name = "cleaning_task_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id"))
     @NotEmpty(message = "At least one user must be assigned")
+    @Schema(description = "List of users assigned to the cleaning task.")
     private List<User> assignedTo = new ArrayList<>();
 
+    @Column(nullable = false)
+    @Schema(description = "Indicates whether the cleaning task has been completed.", example = "false", defaultValue = "false")
     private boolean completed = false;
 
     @CreationTimestamp
     @Column(updatable = false)
+    @Schema(description = "Timestamp when the cleaning task was created.", example = "2024-06-01T12:00:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column
+    @Column(nullable = false)
+    @Schema(description = "Timestamp when the cleaning task was last updated.", example = "2024-06-01T12:00:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
 
     // Constructors
@@ -103,6 +112,4 @@ public class CleaningTask {
     public void setCompleted(boolean completed) {
         this.completed = completed;
     }
-
-
 }

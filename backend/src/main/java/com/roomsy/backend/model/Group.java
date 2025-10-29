@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "groups")
@@ -25,9 +26,10 @@ public class Group {
     private UUID id;
     
     @NotNull
-    @Column(nullable = false)
+    @Size(min = 3, max = 100)
+    @Column(nullable = false, length = 100)
     @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
-    @Schema(description = "Name of the group.", example = "Roomsy Group", pattern = "^[a-zA-Z0-9 ]+$")
+    @Schema(description = "Name of the group.", example = "Roomsy Group", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 100)
     private String name;
 
     @CreationTimestamp
