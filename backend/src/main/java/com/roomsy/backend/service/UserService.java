@@ -92,4 +92,9 @@ public class UserService {
     public boolean emailExists(@NonNull String email) {
         return userRepository.existsByEmail(email);
     }
+
+    public User getUserById(@NonNull UUID id) throws ResourceNotFoundException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }
 }

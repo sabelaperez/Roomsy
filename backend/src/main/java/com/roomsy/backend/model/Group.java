@@ -116,6 +116,14 @@ public class Group {
         return shoppingItems;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
     // Functions
     public void addMember(User user) {
         if (user == null) return;
