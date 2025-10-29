@@ -8,6 +8,7 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -15,16 +16,19 @@ import jakarta.validation.constraints.NotEmpty;
 
 @Entity 
 @Table(name = "cleaning_tasks")
+@Schema(description = "Represents a cleaning task assigned to users within a group.", requiredProperties = {"group", "title", "date", "assignedTo"})
 public class CleaningTask {
 
     // Attributes
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Schema(description = "Unique identifier of the cleaning task.", example = "3c9e27b0-d3b6-4b7e-a8c1-470f659cb8c9", accessMode = Schema.AccessMode.READ_ONLY)
     private UUID id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
+    @Schema(description = "The group to which the cleaning task belongs.")
     private Group group;
 
     @NotNull

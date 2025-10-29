@@ -2,18 +2,15 @@ package com.roomsy.backend.service;
 
 import com.roomsy.backend.exception.DuplicateResourceException;
 import com.roomsy.backend.exception.ResourceNotFoundException;
-import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.repository.GroupRepository;
 import com.roomsy.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+
 import java.util.UUID;
 
 @Service
