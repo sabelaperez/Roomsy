@@ -76,12 +76,12 @@ public class User {
     // Constructors
     public User() {}
 
-    public User(String email, String username, String fullName, String hashPassword, LocalDateTime joinedAt) {
+    public User(String email, String username, String fullName, String hashPassword) {
         this.email = email;
         this.username = username;
         this.fullName = fullName;
         this.hashPassword = hashPassword;
-        this.joinedAt = joinedAt;
+        this.joinedAt = LocalDateTime.now();;
     }
 
     // Getters and Setters
