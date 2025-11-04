@@ -141,13 +141,18 @@ public class GroupService {
         }
     }
 
-    // TODO: hay que corregir este método, no borra el grupo, solo elimina los miembros y lo deja con 0 miembros
+    @Transactional
     public void deleteGroup(@NonNull UUID groupId) throws ResourceNotFoundException {
         Group group = getGroupById(groupId);
-        List<User> users = group.getMembers();
-        for (User user : users) {
-            removeUserFromGroup(groupId, user.getId());
+        List<User> usersCopy = new ArrayList<>(group.getMembers());
+
+        for (User user : usersCopy) {
+            user.setGroup(null);
+            userRepository.save(user);
         }
+
+        group.getMembers().clear();
+        groupRepository.delete(group);
     }
 
     @Transactional
