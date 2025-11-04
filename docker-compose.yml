@@ -5,10 +5,12 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: roomsydb
+      MYSQL_USER: roomsy_user
+      MYSQL_PASSWORD: "1234"
     ports:
       - "3306:3306"
     volumes:
-        - mariadb_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
     networks:
       - mariadb_network
 
