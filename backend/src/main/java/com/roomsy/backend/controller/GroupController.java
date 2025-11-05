@@ -235,4 +235,20 @@ public class GroupController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "Get group cleaning tasks", description = "Retrieves all cleaning tasks assigned " +
+            "within the group")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cleaning tasks retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    @GetMapping("/{groupId}/cleaning-tasks")
+    public ResponseEntity<List<CleaningTaskResponse>> getGroupCleaningTasks(@PathVariable UUID groupId) {
+        var cleaningTasks = groupService.getGroupCleaningTasks(groupId);
+        List<CleaningTaskResponse> response = cleaningTasks.stream()
+                .map(CleaningTaskResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+        }
 }

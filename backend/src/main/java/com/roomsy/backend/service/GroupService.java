@@ -186,6 +186,11 @@ public class GroupService {
         return new ArrayList<>(categoryRepository.getCategoriesByGroup_Id(groupId));
     }
 
+    public ArrayList<CleaningTask> getGroupCleaningTasks(@NonNull UUID groupId) throws ResourceNotFoundException {
+        Group group = getGroupById(groupId);
+        return new ArrayList<>(group.getCleaningTasks());
+    }
+
     public List<Group> getGroups() throws ResourceNotFoundException {
         return groupRepository.findAll();
     }
