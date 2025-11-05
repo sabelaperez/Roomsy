@@ -1,0 +1,171 @@
+package com.roomsy.backend.controller;
+
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.roomsy.backend.dto.ShoppingItemRequest;
+import com.roomsy.backend.dto.ShoppingItemResponse;
+import com.roomsy.backend.model.Category;
+import com.roomsy.backend.model.Group;
+import com.roomsy.backend.model.ShoppingItem;
+import com.roomsy.backend.service.CategoryService;
+import com.roomsy.backend.service.GroupService;
+import com.roomsy.backend.service.ShoppingItemService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+
+@RestController
+@RequestMapping("/groups/{group-id}/shopping-items")
+@Tag(name = "Shopping Items", description = "Endpoints for managing shopping items within groups")
+public class ShoppingItemController {
+    private final ShoppingItemService shoppingItemService;
+    private final GroupService groupService;
+    private final CategoryService categoryService;
+
+    @Autowired
+    public ShoppingItemController(ShoppingItemService shoppingItemService, GroupService groupService, CategoryService categoryService) {
+        this.shoppingItemService = shoppingItemService;
+        this.groupService = groupService;
+        this.categoryService = categoryService;
+    }
+
+    @Operation(summary = "Create a new shopping item", description = "Creates a new shopping item within the specified group")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Shopping item created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "Group or category not found")
+    })
+    @PostMapping
+    public ResponseEntity<ShoppingItemResponse> createShoppingItem(
+            @PathVariable UUID groupId,
+            @Valid @RequestBody ShoppingItemRequest request) throws Exception {
+
+        Group group = groupService.getGroupById(groupId);
+
+        Category category = null;
+        if (request.getCategoryId() != null) {
+            category = categoryService.getCategoryById(request.getCategoryId());
+        }
+
+        ShoppingItem item = new ShoppingItem(group, category, request.getName(), request.getQuantity());
+        ShoppingItem saved = shoppingItemService.createShoppingItem(item);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ShoppingItemResponse.fromEntity(saved));
+    }
+
+    @Operation(summary = "Delete a shopping item", description = "Deletes the specified shopping item")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Shopping item deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Shopping item not found")
+    })
+    @DeleteMapping("/{item-id}")
+    public ResponseEntity<Void> deleteShoppingItem(@PathVariable("item-id") UUID itemId) {
+        shoppingItemService.deleteShoppingItem(itemId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Update shopping item category", description = "Updates the category of the specified shopping item")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Category updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Shopping item or category not found")
+    })
+    @PatchMapping("/{item-id}/category")
+    public ResponseEntity<ShoppingItemResponse> updateCategory(
+            @PathVariable("item-id") UUID itemId,
+            @Valid @RequestBody UpdateCategoryRequest request) {
+
+        Category category = categoryService.getCategoryById(request.getCategoryId());
+        ShoppingItem updated = shoppingItemService.updateCategory(itemId, category);
+        return ResponseEntity.ok(ShoppingItemResponse.fromEntity(updated));
+    }
+
+    @Operation(summary = "Update shopping item name", description = "Updates the name of the specified shopping item")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Name updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid name format"),
+            @ApiResponse(responseCode = "404", description = "Shopping item not found")
+    })
+    @PatchMapping("/{item-id}/name")
+    public ResponseEntity<ShoppingItemResponse> updateName(
+            @PathVariable("item-id") UUID itemId,
+            @Valid @RequestBody UpdateNameRequest request) {
+
+        ShoppingItem updated = shoppingItemService.updateName(itemId, request.getName());
+        return ResponseEntity.ok(ShoppingItemResponse.fromEntity(updated));
+    }
+
+    @Operation(summary = "Update shopping item quantity", description = "Updates the quantity of the specified shopping item")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Quantity updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid quantity"),
+            @ApiResponse(responseCode = "404", description = "Shopping item not found")
+    })
+    @PatchMapping("/{item-id}/quantity")
+    public ResponseEntity<ShoppingItemResponse> updateQuantity(
+            @PathVariable("item-id") UUID itemId,
+            @Valid @RequestBody UpdateQuantityRequest request) {
+
+        ShoppingItem updated = shoppingItemService.updateQuantity(itemId, request.getQuantity());
+        return ResponseEntity.ok(ShoppingItemResponse.fromEntity(updated));
+    }
+
+
+    // Request DTOs
+    public static class UpdateCategoryRequest {
+        @NotNull
+        private UUID categoryId;
+
+        public UpdateCategoryRequest() {}
+
+        public UUID getCategoryId() { 
+            return categoryId; 
+        }
+        public void setCategoryId(UUID categoryId) { 
+            this.categoryId = categoryId; 
+        }
+    }
+
+    public static class UpdateNameRequest {
+        @NotNull
+        @Size(min = 3, max = 100)
+        @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
+        private String name;
+
+        public UpdateNameRequest() {}
+
+        public String getName() { 
+            return name; 
+        }
+        public void setName(String name) { 
+            this.name = name; 
+        }
+    }
+
+    public static class UpdateQuantityRequest {
+        @NotNull
+        @Min(1)
+        private Integer quantity;
+
+        public UpdateQuantityRequest() {}
+
+        public Integer getQuantity() { 
+            return quantity; 
+        }
+        public void setQuantity(Integer quantity) { 
+            this.quantity = quantity; 
+        }
+    }
+}

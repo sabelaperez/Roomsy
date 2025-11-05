@@ -25,7 +25,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/groups/{groupId}/expenses")
+@RequestMapping("/groups/{group-id}/expenses")
 @Tag(name = "Expenses", description = "Endpoints for managing expenses within groups")
 public class ExpenseController {
     
@@ -83,8 +83,8 @@ public class ExpenseController {
             @ApiResponse(responseCode = "204", description = "Expense item deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Expense item not found"),
     })
-    @DeleteMapping("/items/{expenseItemId}")
-    public ResponseEntity<Void> deleteExpenseItem(@PathVariable UUID expenseItemId) {
+    @DeleteMapping("/items/{expense-item-id}")
+    public ResponseEntity<Void> deleteExpenseItem(@PathVariable("expense-item-id") UUID expenseItemId) {
         expenseService.deleteExpenseItem(expenseItemId);
         return ResponseEntity.noContent().build();
     }
@@ -95,8 +95,8 @@ public class ExpenseController {
             @ApiResponse(responseCode = "204", description = "Shared expense paid successfully"),
             @ApiResponse(responseCode = "404", description = "Shared expense not found"),
     })
-    @DeleteMapping("/shared/{sharedExpenseId}")
-    public ResponseEntity<Void> paySharedExpense(@PathVariable UUID sharedExpenseId) {
+    @DeleteMapping("/shared/{shared-expense-id}")
+    public ResponseEntity<Void> paySharedExpense(@PathVariable("shared-expense-id") UUID sharedExpenseId) {
         boolean paid = expenseService.paySharedExpense(sharedExpenseId);
         
         if (paid) {

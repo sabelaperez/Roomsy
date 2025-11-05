@@ -14,11 +14,16 @@ import java.util.UUID;
 @Service
 public class ShoppingItemService {
 
-    private ShoppingItemRepository shoppingItemRepository;
+    private final ShoppingItemRepository shoppingItemRepository;
 
     @Autowired
     public ShoppingItemService(ShoppingItemRepository shoppingItemRepository) {
         this.shoppingItemRepository = shoppingItemRepository;
+    }
+
+    public ShoppingItem getShoppingItemById(@NonNull UUID id) throws ResourceNotFoundException {
+        return shoppingItemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ShoppingItem not found with id: " + id));
     }
 
     @Transactional
@@ -27,7 +32,7 @@ public class ShoppingItemService {
     }
 
      @Transactional
-    public void deleteShoppingItem(@NonNull UUID id) throws Exception {
+    public void deleteShoppingItem(@NonNull UUID id) throws IllegalArgumentException {
         if(!shoppingItemRepository.existsById(id)) {
             throw new IllegalArgumentException("ShoppingItem with that id does not exist");
         }
@@ -35,25 +40,19 @@ public class ShoppingItemService {
     }
 
     public ShoppingItem updateCategory(@NonNull UUID id, @NonNull Category category) throws ResourceNotFoundException {
-        ShoppingItem shoppingItem = shoppingItemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ShoppingItem with that id does not exist"));
-
+        ShoppingItem shoppingItem = getShoppingItemById(id);
         shoppingItem.setCategory(category);
         return shoppingItemRepository.save(shoppingItem);
     }
 
     public ShoppingItem updateName(@NonNull UUID id, @NonNull String name) throws ResourceNotFoundException {
-        ShoppingItem shoppingItem = shoppingItemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ShoppingItem with that id does not exist"));
-
+        ShoppingItem shoppingItem = getShoppingItemById(id);
         shoppingItem.setName(name);
         return shoppingItemRepository.save(shoppingItem);
     }
 
     public ShoppingItem updateQuantity(@NonNull UUID id, @NonNull Integer quantity) throws ResourceNotFoundException {
-        ShoppingItem shoppingItem = shoppingItemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ShoppingItem with that id does not exist"));
-
+        ShoppingItem shoppingItem = getShoppingItemById(id);
         shoppingItem.setQuantity(quantity);
         return shoppingItemRepository.save(shoppingItem);
     }

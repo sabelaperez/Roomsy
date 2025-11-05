@@ -31,7 +31,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @RestController
-@RequestMapping("/groups/{groupId}/cleaning-tasks")
+@RequestMapping("/groups/{group-id}/cleaning-tasks")
 @Tag(name = "Cleaning Tasks", description = "Endpoints for managing cleaning tasks within groups")
 public class CleaningTaskController {
     private final CleaningTaskService cleaningTaskService;
@@ -73,8 +73,8 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "200", description = "Cleaning task returned"),
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
-    @GetMapping("/{taskId}")
-    public ResponseEntity<CleaningTaskResponse> getTask(@PathVariable UUID taskId) throws ResourceNotFoundException {
+    @GetMapping("/{task-id}")
+    public ResponseEntity<CleaningTaskResponse> getTask(@PathVariable("task-id") UUID taskId) throws ResourceNotFoundException {
         CleaningTask task = cleaningTaskService.getTaskById(taskId);
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(task));
     }
@@ -84,8 +84,8 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "204", description = "Cleaning task deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
-    @DeleteMapping("/{taskId}")
-    public ResponseEntity<Void> deleteTask(@PathVariable UUID taskId) throws ResourceNotFoundException {
+    @DeleteMapping("/{task-id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable("task-id") UUID taskId) throws ResourceNotFoundException {
         cleaningTaskService.deleteTask(taskId);
         return ResponseEntity.noContent().build();
     }
@@ -96,9 +96,9 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task or some user not found"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    @PatchMapping("/{taskId}/assign-to")
+    @PatchMapping("/{task-id}/assign-to")
     public ResponseEntity<CleaningTaskResponse> reassignTask(
-            @PathVariable UUID taskId,
+            @PathVariable("task-id") UUID taskId,
             @Valid @RequestBody ReassignRequest request) throws ResourceNotFoundException {
 
         List<User> newAssignees = request.getAssignedToIds().stream()
@@ -114,9 +114,9 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "200", description = "Task updated successfully"),
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
-    @PatchMapping("/{taskId}/completed")
+    @PatchMapping("/{task-id}/completed")
     public ResponseEntity<CleaningTaskResponse> setCompleted(
-            @PathVariable UUID taskId,
+            @PathVariable("task-id") UUID taskId,
             @Valid @RequestBody CompletedRequest request) throws ResourceNotFoundException {
 
         CleaningTask updated = cleaningTaskService.setTaskCompleted(taskId, request.isCompleted());
@@ -129,9 +129,9 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task not found"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    @PatchMapping("/{taskId}/date")
+    @PatchMapping("/{task-id}/date")
     public ResponseEntity<CleaningTaskResponse> changeDate(
-            @PathVariable UUID taskId,
+            @PathVariable("task-id") UUID taskId,
             @Valid @RequestBody DateRequest request) throws ResourceNotFoundException {
 
         CleaningTask updated = cleaningTaskService.changeTaskDate(taskId, request.getNewDate());
@@ -144,9 +144,9 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task not found"),
             @ApiResponse(responseCode = "400", description = "Invalid title")
     })
-    @PatchMapping("/{taskId}/title")
+    @PatchMapping("/{task-id}/title")
     public ResponseEntity<CleaningTaskResponse> changeTitle(
-            @PathVariable UUID taskId,
+            @PathVariable("task-id") UUID taskId,
             @Valid @RequestBody TitleRequest request) throws ResourceNotFoundException {
 
         CleaningTask updated = cleaningTaskService.changeTaskTitle(taskId, request.getTitle());

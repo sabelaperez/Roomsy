@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/groups/{groupId}/categories")
+@RequestMapping("/groups/{group-id}/categories")
 @Tag(name = "Category", description = "Endpoints for managing categories within groups")
 public class CategoryController {
     private final CategoryService categoryService;
@@ -57,8 +57,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "204", description = "Category deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
-    @DeleteMapping("/{categoryId}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable UUID categoryId) {
+    @DeleteMapping("/{category-id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable("category-id") UUID categoryId) {
         categoryService.deleteCategory(categoryId);
         return ResponseEntity.noContent().build();
     }
@@ -70,8 +70,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "Invalid name format"),
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
-    @PatchMapping("/{categoryId}/name")
-    public ResponseEntity<CategoryResponse> updateName(@PathVariable UUID categoryId,
+    @PatchMapping("/{category-id}/name")
+    public ResponseEntity<CategoryResponse> updateName(@PathVariable("category-id") UUID categoryId,
             @Valid @RequestBody UpdateNameRequest request) {
 
         Category updatedCategory = categoryService.updateName(categoryId, request.getName());
@@ -83,8 +83,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "200", description = "Category color updated successfully"),
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
-    @PatchMapping("/{categoryId}/color")
-    public ResponseEntity<CategoryResponse> updateColor(@PathVariable UUID categoryId, @RequestBody String newColor) {
+    @PatchMapping("/{category-id}/color")
+    public ResponseEntity<CategoryResponse> updateColor(@PathVariable("category-id") UUID categoryId, @RequestBody String newColor) {
 
         Category updatedCategory = categoryService.updateColor(categoryId, newColor);
         return ResponseEntity.ok(CategoryResponse.fromEntity(updatedCategory));
