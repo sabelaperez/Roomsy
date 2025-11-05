@@ -64,9 +64,9 @@ public class CleaningTaskService {
         return cleaningTaskRepository.save(existingTask);
     }
 
-    public CleaningTask changeTaskDueDate(@NonNull UUID taskId, @NonNull LocalDateTime newDueDate) throws ResourceNotFoundException {
+    public CleaningTask changeTaskDate(@NonNull UUID taskId, @NonNull LocalDateTime newDate) throws ResourceNotFoundException {
         CleaningTask existingTask = getTaskById(taskId);
-        existingTask.setDate(newDueDate);
+        existingTask.setDate(newDate);
         return cleaningTaskRepository.save(existingTask);
     }
 

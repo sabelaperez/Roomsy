@@ -52,7 +52,6 @@ public class UserController {
                 .body(UserSummaryResponse.fromEntity(saved));
     }
 
-    // Isto aquí ou mellor noutra clase como group?
     public static class CreateUserRequest {
 
         @NotBlank

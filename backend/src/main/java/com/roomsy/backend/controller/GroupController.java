@@ -250,5 +250,7 @@ public class GroupController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
-        }
+    }
+
+    // Obter todas as News do grupo
 }
