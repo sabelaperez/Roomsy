@@ -23,6 +23,11 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    public User getUserById(@NonNull UUID id) throws ResourceNotFoundException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }   
+
     public User createUser(@NonNull User user) throws DuplicateResourceException {
         // Check if email already exists
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -34,8 +39,7 @@ public class UserService {
 
     @Transactional
     public User updateEmail(UUID id, String newEmail) throws ResourceNotFoundException, DuplicateResourceException {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = getUserById(id);
         if (userRepository.existsByEmail(newEmail) && !user.getEmail().equals(newEmail)) {
             throw new DuplicateResourceException("Email already in use");
         }
@@ -46,8 +50,7 @@ public class UserService {
     // Completar cuando se implemente seguridad
     @Transactional
     public void updatePassword(UUID id, String currentPassword, String newPassword) throws ResourceNotFoundException {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = getUserById(id);
         // verify currentPassword (compare hashes)...
         // hash newPassword...
         String hashedNewPassword = "password";
@@ -70,15 +73,13 @@ public class UserService {
     }*/
 
     public void deactivateUser(@NonNull UUID id) throws ResourceNotFoundException {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        User user = getUserById(id);
         user.setActive(false);
         userRepository.save(user);
     }
 
     public User activateUser(@NonNull UUID id) throws ResourceNotFoundException {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        User user = getUserById(id);
         user.setActive(true);
         return userRepository.save(user);
     }

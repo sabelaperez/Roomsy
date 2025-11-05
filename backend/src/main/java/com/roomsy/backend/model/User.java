@@ -36,13 +36,13 @@ public class User {
     @Size(min = 4, max = 20)
     @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username can only contain letters, numbers, and underscores")
     @Column(nullable = false, length = 20)
-    @Schema(description = "Username of the user.", example = "john_doe", pattern = "^[a-zA-Z0-9_]+$")
+    @Schema(description = "Username of the user.", example = "john_doe", pattern = "^[a-zA-Z0-9_]+$", maxLength = 20)
     private String username;
 
     @Size(min = 4, max = 50)
     @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Full name can only contain letters, numbers, and spaces")
     @Column(length = 50)
-    @Schema(description = "Full name of the user.", example = "John Doe", pattern = "^[a-zA-Z0-9 ]+$")
+    @Schema(description = "Full name of the user.", example = "John Doe", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 50)
     private String fullName;
 
     @Column(nullable = false, length = 60)

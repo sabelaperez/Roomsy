@@ -30,13 +30,13 @@ public class Category {
     private Group group;
 
     @NotNull
-    @Size(min = 4, max = 50)
+    @Size(min = 3, max = 50)
     @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
     @Column(nullable = false, length = 50)
-    @Schema(description = "Name of the category.", example = "Groceries", pattern = "^[a-zA-Z0-9 ]+$")
+    @Schema(description = "Name of the category.", example = "Groceries", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 50)
     private String name;
 
-    // Hacer un enum con colores predefinidos
+    // Facer un enum con colores predefinidos
     @Schema(description = "Color associated with the category.", example = "blue")
     private String color;
 
@@ -60,7 +60,6 @@ public class Category {
     }
 
     // Getters and Setters
-
     public UUID getId() {
         return id;
     }

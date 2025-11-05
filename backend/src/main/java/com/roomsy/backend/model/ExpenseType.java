@@ -4,5 +4,6 @@ public enum ExpenseType {
     GROCERIES, 
     RENT, 
     SUPPLIES,
+    ENTERTAINMENT,
     OTHER,
 }
