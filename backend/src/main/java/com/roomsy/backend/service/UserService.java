@@ -95,11 +95,6 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    public User getUserById(@NonNull UUID id) throws ResourceNotFoundException {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-    }
-
     public List<User> getUsers() throws  ResourceNotFoundException {
         return userRepository.findAll();
     }
