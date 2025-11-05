@@ -2,7 +2,6 @@ package com.roomsy.backend.dto;
 
 import com.roomsy.backend.model.ExpenseItem;
 import com.roomsy.backend.model.ExpenseType;
-
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -10,55 +9,66 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ExpenseItemResponse {
-    
+
     private UUID id;
     private UUID groupId;
     private UUID ownerId;
-    private String ownerName;
+    private String ownerUsername;
     private String name;
     private ExpenseType expenseType;
-    private List<UUID> usersInvolvedIds;
+    private List<UserInvolvedResponse> usersInvolved;
     private Double price;
+    private Double pricePerPerson;
     private Date expenseDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Constructors
     public ExpenseItemResponse() {}
 
-    public ExpenseItemResponse(UUID id, UUID groupId, UUID ownerId, String ownerName, 
-                              String name, ExpenseType expenseType, List<UUID> usersInvolvedIds, 
-                              Double price, Date expenseDate, LocalDateTime createdAt, 
-                              LocalDateTime updatedAt) {
+    public ExpenseItemResponse(UUID id, UUID groupId, UUID ownerId, String ownerUsername,
+                               String name, ExpenseType expenseType,
+                               List<UserInvolvedResponse> usersInvolved, Double price,
+                               Double pricePerPerson, Date expenseDate,
+                               LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.groupId = groupId;
         this.ownerId = ownerId;
-        this.ownerName = ownerName;
+        this.ownerUsername = ownerUsername;
         this.name = name;
         this.expenseType = expenseType;
-        this.usersInvolvedIds = usersInvolvedIds;
+        this.usersInvolved = usersInvolved;
         this.price = price;
+        this.pricePerPerson = pricePerPerson;
         this.expenseDate = expenseDate;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    // Factory method
-    public static ExpenseItemResponse fromEntity(ExpenseItem expenseItem) {
+    public static ExpenseItemResponse fromEntity(ExpenseItem expense) {
+        List<UserInvolvedResponse> usersInvolved = expense.getUsersInvolved().stream()
+                .map(user -> new UserInvolvedResponse(
+                        user.getId(),
+                        user.getUsername()
+                ))
+                .collect(Collectors.toList());
+
+        double pricePerPerson = expense.getUsersInvolved().isEmpty()
+                ? 0.0
+                : expense.getPrice() / expense.getUsersInvolved().size();
+
         return new ExpenseItemResponse(
-                expenseItem.getId(),
-                expenseItem.getGroup().getId(),
-                expenseItem.getOwner().getId(),
-                expenseItem.getOwner().getFullName(),
-                expenseItem.getName(),
-                expenseItem.getExpenseType(),
-                expenseItem.getUsersInvolved().stream()
-                        .map(user -> user.getId())
-                        .collect(Collectors.toList()),
-                expenseItem.getPrice(),
-                expenseItem.getExpenseDate(),
-                expenseItem.getCreatedAt(),
-                expenseItem.getUpdatedAt()
+                expense.getId(),
+                expense.getGroup().getId(),
+                expense.getOwner().getId(),
+                expense.getOwner().getUsername(),
+                expense.getName(),
+                expense.getExpenseType(),
+                usersInvolved,
+                expense.getPrice(),
+                Math.round(pricePerPerson * 100.0) / 100.0, // Round to 2 decimals
+                expense.getExpenseDate(),
+                expense.getCreatedAt(),
+                expense.getUpdatedAt()
         );
     }
 
@@ -87,12 +97,12 @@ public class ExpenseItemResponse {
         this.ownerId = ownerId;
     }
 
-    public String getOwnerName() {
-        return ownerName;
+    public String getOwnerUsername() {
+        return ownerUsername;
     }
 
-    public void setOwnerName(String ownerName) {
-        this.ownerName = ownerName;
+    public void setOwnerUsername(String ownerUsername) {
+        this.ownerUsername = ownerUsername;
     }
 
     public String getName() {
@@ -111,12 +121,12 @@ public class ExpenseItemResponse {
         this.expenseType = expenseType;
     }
 
-    public List<UUID> getUsersInvolvedIds() {
-        return usersInvolvedIds;
+    public List<UserInvolvedResponse> getUsersInvolved() {
+        return usersInvolved;
     }
 
-    public void setUsersInvolvedIds(List<UUID> usersInvolvedIds) {
-        this.usersInvolvedIds = usersInvolvedIds;
+    public void setUsersInvolved(List<UserInvolvedResponse> usersInvolved) {
+        this.usersInvolved = usersInvolved;
     }
 
     public Double getPrice() {
@@ -125,6 +135,14 @@ public class ExpenseItemResponse {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public Double getPricePerPerson() {
+        return pricePerPerson;
+    }
+
+    public void setPricePerPerson(Double pricePerPerson) {
+        this.pricePerPerson = pricePerPerson;
     }
 
     public Date getExpenseDate() {
@@ -149,5 +167,34 @@ public class ExpenseItemResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    // Nested class for users involved in the expense
+    public static class UserInvolvedResponse {
+        private UUID id;
+        private String username;
+
+        public UserInvolvedResponse() {}
+
+        public UserInvolvedResponse(UUID id, String username) {
+            this.id = id;
+            this.username = username;
+        }
+
+        public UUID getId() {
+            return id;
+        }
+
+        public void setId(UUID id) {
+            this.id = id;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
     }
 }
