@@ -38,7 +38,9 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
     })
     @PostMapping
-    public ResponseEntity<UserSummaryResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
+    public ResponseEntity<UserSummaryResponse> createUser(
+        @Valid @RequestBody CreateUserRequest request
+    ) {
         User user = new User(
                 request.getEmail(),
                 request.getUsername(),

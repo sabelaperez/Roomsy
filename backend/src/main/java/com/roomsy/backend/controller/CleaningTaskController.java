@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.roomsy.backend.dto.CleaningTaskRequest;
 import com.roomsy.backend.dto.CleaningTaskResponse;
-import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.CleaningTask;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
@@ -54,9 +53,9 @@ public class CleaningTaskController {
     })
     @PostMapping
     public ResponseEntity<CleaningTaskResponse> createTask(
-            @PathVariable UUID groupId,
-            @Valid @RequestBody CleaningTaskRequest request) {
-
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody CleaningTaskRequest request
+    ) {
         Group group = groupService.getGroupById(groupId);
 
         List<User> assignees = request.getAssignedToIds().stream()
@@ -75,8 +74,11 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @GetMapping("/{task-id}")
-    public ResponseEntity<CleaningTaskResponse> getTask(@PathVariable("task-id") UUID taskId) throws ResourceNotFoundException {
-        CleaningTask task = cleaningTaskService.getTaskById(taskId);
+    public ResponseEntity<CleaningTaskResponse> getTask(
+        @PathVariable("task-id") UUID taskId,
+        @PathVariable("group-id") UUID groupId
+    ) {
+        CleaningTask task = cleaningTaskService.getTask(taskId, groupId);
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(task));
     }
 
@@ -86,8 +88,11 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @DeleteMapping("/{task-id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable("task-id") UUID taskId) throws ResourceNotFoundException {
-        cleaningTaskService.deleteTask(taskId);
+    public ResponseEntity<Void> deleteTask(
+        @PathVariable("task-id") UUID taskId,
+        @PathVariable("group-id") UUID groupId
+    ) {
+        cleaningTaskService.deleteTask(taskId, groupId);
         return ResponseEntity.noContent().build();
     }
 
@@ -100,13 +105,14 @@ public class CleaningTaskController {
     @PatchMapping("/{task-id}/assign-to")
     public ResponseEntity<CleaningTaskResponse> reassignTask(
             @PathVariable("task-id") UUID taskId,
-            @Valid @RequestBody ReassignRequest request) throws ResourceNotFoundException {
-
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody ReassignRequest request
+    ) {
         List<User> newAssignees = request.getAssignedToIds().stream()
                 .map(userService::getUserById)
                 .collect(Collectors.toList());
 
-        CleaningTask updated = cleaningTaskService.reassignTask(taskId, newAssignees);
+        CleaningTask updated = cleaningTaskService.reassignTask(taskId, groupId, newAssignees);
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
     }
 
@@ -118,9 +124,10 @@ public class CleaningTaskController {
     @PatchMapping("/{task-id}/completed")
     public ResponseEntity<CleaningTaskResponse> setCompleted(
             @PathVariable("task-id") UUID taskId,
-            @Valid @RequestBody CompletedRequest request) throws ResourceNotFoundException {
-
-        CleaningTask updated = cleaningTaskService.setTaskCompleted(taskId, request.isCompleted());
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody CompletedRequest request
+    ) {
+        CleaningTask updated = cleaningTaskService.setTaskCompleted(taskId, groupId, request.isCompleted());
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
     }
 
@@ -133,9 +140,10 @@ public class CleaningTaskController {
     @PatchMapping("/{task-id}/date")
     public ResponseEntity<CleaningTaskResponse> changeDate(
             @PathVariable("task-id") UUID taskId,
-            @Valid @RequestBody DateRequest request) throws ResourceNotFoundException {
-
-        CleaningTask updated = cleaningTaskService.changeTaskDate(taskId, request.getNewDate());
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody DateRequest request
+    ) {
+        CleaningTask updated = cleaningTaskService.changeTaskDate(taskId, groupId, request.getNewDate());
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
     }
 
@@ -148,12 +156,12 @@ public class CleaningTaskController {
     @PatchMapping("/{task-id}/title")
     public ResponseEntity<CleaningTaskResponse> changeTitle(
             @PathVariable("task-id") UUID taskId,
-            @Valid @RequestBody TitleRequest request) throws ResourceNotFoundException {
-
-        CleaningTask updated = cleaningTaskService.changeTaskTitle(taskId, request.getTitle());
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody TitleRequest request
+    ) {
+        CleaningTask updated = cleaningTaskService.changeTaskTitle(taskId, groupId,request.getTitle());
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
     }
-
 
     // Request DTOs
     public static class ReassignRequest {

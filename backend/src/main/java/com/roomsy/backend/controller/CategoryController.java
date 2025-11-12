@@ -45,10 +45,10 @@ public class CategoryController {
     })
     @PostMapping
     public ResponseEntity<CategoryResponse> createCategory (
-            @PathVariable UUID groupId,
-            @RequestBody CategoryRequest request)  {
+            @PathVariable("group-id") UUID groupId,
+            @RequestBody CategoryRequest request
+    ){        
         Group group = groupService.getGroupById(groupId);
-
         Category category = new Category(group, request.getName(), request.getColor());
         Category savedCategory = categoryService.createCategory(category);
 
@@ -63,8 +63,11 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @DeleteMapping("/{category-id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable("category-id") UUID categoryId) {
-        categoryService.deleteCategory(categoryId);
+    public ResponseEntity<Void> deleteCategory(
+        @PathVariable("category-id") UUID categoryId,
+        @PathVariable("group-id") UUID groupId
+    ) {
+        categoryService.deleteCategory(categoryId, groupId);
         return ResponseEntity.noContent().build();
     }
 
@@ -76,10 +79,12 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @PatchMapping("/{category-id}/name")
-    public ResponseEntity<CategoryResponse> updateName(@PathVariable("category-id") UUID categoryId,
-            @Valid @RequestBody UpdateNameRequest request) {
-
-        Category updatedCategory = categoryService.updateName(categoryId, request.getName());
+    public ResponseEntity<CategoryResponse> updateName(
+        @PathVariable("category-id") UUID categoryId,
+        @PathVariable("group-id") UUID groupId,
+        @Valid @RequestBody UpdateNameRequest request
+    ) {
+        Category updatedCategory = categoryService.updateName(categoryId, groupId, request.getName());
         return ResponseEntity.ok(CategoryResponse.fromEntity(updatedCategory));
     }
 
@@ -89,9 +94,12 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @PatchMapping("/{category-id}/color")
-    public ResponseEntity<CategoryResponse> updateColor(@PathVariable("category-id") UUID categoryId, @RequestBody String newColor) {
-
-        Category updatedCategory = categoryService.updateColor(categoryId, newColor);
+    public ResponseEntity<CategoryResponse> updateColor(
+        @PathVariable("category-id") UUID categoryId,
+        @PathVariable("group-id") UUID groupId,
+        @RequestBody String newColor
+    ) {
+        Category updatedCategory = categoryService.updateColor(categoryId, groupId, newColor);
         return ResponseEntity.ok(CategoryResponse.fromEntity(updatedCategory));
     }
 
