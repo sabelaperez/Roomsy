@@ -17,6 +17,7 @@ import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.ShoppingItemService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -126,6 +127,8 @@ public class ShoppingItemController {
     // Request DTOs
     public static class UpdateCategoryRequest {
         @NotNull
+        @Schema(description = "The ID of the new category for the shopping item",
+                example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         private UUID categoryId;
 
         public UpdateCategoryRequest() {}
@@ -142,6 +145,11 @@ public class ShoppingItemController {
         @NotNull
         @Size(min = 3, max = 100)
         @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
+        @Schema(description = "The new name for the shopping item",
+                example = "Bread",
+                minLength = 3,
+                maxLength = 100,
+                pattern = "^[a-zA-Z0-9 ]+$")
         private String name;
 
         public UpdateNameRequest() {}
@@ -157,6 +165,9 @@ public class ShoppingItemController {
     public static class UpdateQuantityRequest {
         @NotNull
         @Min(1)
+        @Schema(description = "The new quantity for the shopping item",
+                example = "5",
+                minimum = "1")
         private Integer quantity;
 
         public UpdateQuantityRequest() {}

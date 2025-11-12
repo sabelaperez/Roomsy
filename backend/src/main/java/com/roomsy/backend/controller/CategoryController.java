@@ -8,10 +8,15 @@ import com.roomsy.backend.service.CategoryService;
 import com.roomsy.backend.service.GroupService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -92,10 +97,12 @@ public class CategoryController {
 
     // Inner class for specific update requests
     public static class UpdateNameRequest {
-        @jakarta.validation.constraints.NotNull
-        @jakarta.validation.constraints.Size(min = 4, max = 50)
-        @jakarta.validation.constraints.Pattern(regexp = "^[a-zA-Z0-9 ]+$",
+        @NotNull
+        @Size(min = 4, max = 50)
+        @Pattern(regexp = "^[a-zA-Z0-9 ]+$",
                 message = "Name can only contain letters, numbers, and spaces")
+        @Schema(description = "New name for the category",
+                example = "Groceries")
         private String name;
 
         public String getName() {

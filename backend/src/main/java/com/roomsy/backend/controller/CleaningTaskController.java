@@ -21,6 +21,7 @@ import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -157,6 +158,8 @@ public class CleaningTaskController {
     // Request DTOs
     public static class ReassignRequest {
         @NotEmpty
+        @Schema(description = "List of user IDs to assign the task to",
+                example = "[\"3c9e27b0-d3b6-4b7e-a8c1-470f659cb8c9\", \"660e8400-e29b-41d4-a716-446655440000\"]")
         private List<UUID> assignedToIds;
 
         public ReassignRequest() {}
@@ -171,6 +174,8 @@ public class CleaningTaskController {
 
     public static class CompletedRequest {
         @NotNull
+        @Schema(description = "Indicates whether the task is completed",
+                example = "true")
         private Boolean completed;
 
         public CompletedRequest() {}
@@ -185,6 +190,8 @@ public class CleaningTaskController {
 
     public static class DateRequest {
         @NotNull
+        @Schema(description = "New date and time for the task",
+                example = "2024-12-01T14:30:00")
         private LocalDateTime newDate;
 
         public DateRequest() {}
@@ -201,6 +208,11 @@ public class CleaningTaskController {
         @NotNull
         @Size(min = 3, max = 100)
         @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Title can only contain letters, numbers, and spaces")
+        @Schema(description = "New title for the task",
+                example = "Clean the kitchen",
+                minLength = 3,
+                maxLength = 100,
+                pattern = "^[a-zA-Z0-9 ]+$")
         private String title;
 
         public TitleRequest() {}
