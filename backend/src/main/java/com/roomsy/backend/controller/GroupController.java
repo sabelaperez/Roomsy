@@ -6,10 +6,15 @@ import com.roomsy.backend.model.User;
 import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +47,7 @@ public class GroupController {
     })
     @PostMapping
     public ResponseEntity<GroupResponse> createGroup(
-        @Valid @RequestBody CreateGroupRequest request
+        @Valid @RequestBody GroupRequest request
     ) {
         User creator = userService.getUserById(request.getCreatorId());
         Group group = new Group(request.getName());
@@ -131,12 +136,12 @@ public class GroupController {
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/members")
-    public ResponseEntity<List<UserSummaryResponse>> getGroupMembers(
+    public ResponseEntity<List<UserResponse>> getGroupMembers(
         @PathVariable("group-id") UUID groupId
     ) {
         List<User> members = groupService.getGroupMembers(groupId);
-        List<UserSummaryResponse> response = members.stream()
-                .map(UserSummaryResponse::fromEntity)
+        List<UserResponse> response = members.stream()
+                .map(UserResponse::fromEntity)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -271,4 +276,28 @@ public class GroupController {
     }
 
     // Obter todas as News do grupo
+
+    // Request DTOs
+    @Schema(description = "Request object for updating a group's name")
+    public static class GroupNameRequest {
+        @NotNull(message = "Name is required")
+        @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
+        @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
+        @Schema(description = "New name of the group.", example = "Another Group Name", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 50)
+        private String name;
+
+        public GroupNameRequest() {}
+
+        public GroupNameRequest(String name) {
+                this.name = name;
+        }
+
+        public String getName() {
+                return name;
+        }
+
+        public void setName(String name) {
+                this.name = name;
+        }
+    }
 }

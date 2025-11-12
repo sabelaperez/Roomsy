@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+@Schema(description = "Request object for creating an expense item")
 public class ExpenseItemRequest {
     
     @NotNull(message = "Owner ID is required")

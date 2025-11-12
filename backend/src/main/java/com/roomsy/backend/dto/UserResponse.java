@@ -3,24 +3,24 @@ package com.roomsy.backend.dto;
 import com.roomsy.backend.model.User;
 import java.util.UUID;
 
-public class UserSummaryResponse {
+public class UserResponse {
 
     private UUID id;
     private String username;
     private String email;
     private UUID groupId;
 
-    public UserSummaryResponse() {}
+    public UserResponse() {}
 
-    public UserSummaryResponse(UUID id, String username, String email,  UUID groupId) {
+    public UserResponse(UUID id, String username, String email,  UUID groupId) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.groupId = groupId;
     }
 
-    public static UserSummaryResponse fromEntity(User user) {
-        return new UserSummaryResponse(
+    public static UserResponse fromEntity(User user) {
+        return new UserResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),

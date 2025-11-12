@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
+@Schema(description = "Request object for creating a cleaning task")
 public class CleaningTaskRequest {
     @NotNull
     @Size(min = 3, max = 100)

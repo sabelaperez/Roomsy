@@ -7,7 +7,8 @@ import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public class CreateGroupRequest {
+@Schema(description = "Request object for creating a group")
+public class GroupRequest {
 
     @NotNull(message = "Name is required")
     @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
@@ -19,9 +20,9 @@ public class CreateGroupRequest {
     @Schema(description = "ID of the user creating the group", example = "3c9e27b0-d3b6-4b7e-a8c1-470f659cb8c9")
     private UUID creatorId;
 
-    public CreateGroupRequest() {}
+    public GroupRequest() {}
 
-    public CreateGroupRequest(String name, UUID creatorId) {
+    public GroupRequest(String name, UUID creatorId) {
         this.name = name;
         this.creatorId = creatorId;
     }

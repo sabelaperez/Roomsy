@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+@Schema(description = "Request object for creating a shopping item")
 public class ShoppingItemRequest {
     @NotNull
     @Size(min = 3, max = 100)

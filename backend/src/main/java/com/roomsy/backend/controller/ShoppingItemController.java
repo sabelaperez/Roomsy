@@ -131,6 +131,7 @@ public class ShoppingItemController {
 
 
     // Request DTOs
+    @Schema(description = "Request object for updating a shopping item's category")
     public static class UpdateCategoryRequest {
         @NotNull
         @Schema(description = "The ID of the new category for the shopping item",
@@ -147,6 +148,7 @@ public class ShoppingItemController {
         }
     }
 
+    @Schema(description = "Request object for updating a shopping item's name")
     public static class UpdateNameRequest {
         @NotNull
         @Size(min = 3, max = 100)
@@ -168,6 +170,7 @@ public class ShoppingItemController {
         }
     }
 
+    @Schema(description = "Request object for updating a shopping item's quantity")
     public static class UpdateQuantityRequest {
         @NotNull
         @Min(1)

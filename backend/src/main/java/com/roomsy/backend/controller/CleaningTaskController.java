@@ -164,6 +164,7 @@ public class CleaningTaskController {
     }
 
     // Request DTOs
+    @Schema(description = "Request object for updating the assigned users of the cleaning task")
     public static class ReassignRequest {
         @NotEmpty
         @Schema(description = "List of user IDs to assign the task to",
@@ -180,6 +181,7 @@ public class CleaningTaskController {
         }
     }
 
+    @Schema(description = "Request object for updating the completed boolean of the cleaning task")
     public static class CompletedRequest {
         @NotNull
         @Schema(description = "Indicates whether the task is completed",
@@ -196,6 +198,7 @@ public class CleaningTaskController {
         }
     }
 
+    @Schema(description = "Request object for updating a cleaning task's date")
     public static class DateRequest {
         @NotNull
         @Schema(description = "New date and time for the task",
@@ -212,6 +215,7 @@ public class CleaningTaskController {
         }
     }
 
+    @Schema(description = "Request object for updating a cleaning task's title")
     public static class TitleRequest {
         @NotNull
         @Size(min = 3, max = 100)

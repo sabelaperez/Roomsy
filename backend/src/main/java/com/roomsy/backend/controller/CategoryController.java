@@ -103,7 +103,8 @@ public class CategoryController {
         return ResponseEntity.ok(CategoryResponse.fromEntity(updatedCategory));
     }
 
-    // Inner class for specific update requests
+    // Request DTOs
+    @Schema(description = "Request object for updating a category's name")
     public static class UpdateNameRequest {
         @NotNull
         @Size(min = 4, max = 50)
