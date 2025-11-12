@@ -32,8 +32,8 @@ public class SharedExpenseResponse {
                 expense.getGroup().getId(),
                 expense.getPayer().getId(),
                 expense.getPayer().getUsername(),
-                expense.getPayTo().getId(),
-                expense.getPayTo().getUsername(),
+                expense.getNotPaid().getId(),
+                expense.getNotPaid().getUsername(),
                 expense.getQuantity()
         );
     }

@@ -28,6 +28,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }   
 
+    @Transactional
     public User createUser(@NonNull User user) throws DuplicateResourceException {
         // Check if email already exists
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -93,11 +94,6 @@ public class UserService {
 
     public boolean emailExists(@NonNull String email) {
         return userRepository.existsByEmail(email);
-    }
-
-    public User getUserById(@NonNull UUID id) throws ResourceNotFoundException {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     public List<User> getUsers() throws  ResourceNotFoundException {

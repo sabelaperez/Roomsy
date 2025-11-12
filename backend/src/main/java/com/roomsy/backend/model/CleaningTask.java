@@ -109,7 +109,19 @@ public class CleaningTask {
         this.assignedTo = assignedTo;
     }
 
+    public boolean isCompleted() {
+        return completed;
+    }
+
     public void setCompleted(boolean completed) {
         this.completed = completed;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }

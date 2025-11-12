@@ -73,8 +73,8 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "Group found successfully"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @GetMapping("/{groupId}")
-    public ResponseEntity<GroupResponse> getGroupById(@PathVariable UUID groupId) {
+    @GetMapping("/{group-id}")
+    public ResponseEntity<GroupResponse> getGroupById(@PathVariable("group-id") UUID groupId) {
         Group group = groupService.getGroupById(groupId);
         return ResponseEntity.ok(GroupResponse.fromEntity(group));
     }
@@ -86,9 +86,9 @@ public class GroupController {
             @ApiResponse(responseCode = "400", description = "Invalid group name format"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @PatchMapping("/{groupId}/name")
+    @PatchMapping("/{group-id}/name")
     public ResponseEntity<GroupResponse> updateGroupName(
-            @PathVariable UUID groupId,
+            @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody GroupNameRequest request) {
 
         Group updatedGroup = groupService.changeGroupName(groupId, request.getName());
@@ -100,8 +100,8 @@ public class GroupController {
             @ApiResponse(responseCode = "204", description = "Group deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @DeleteMapping("/{groupId}")
-    public ResponseEntity<Void> deleteGroup(@PathVariable UUID groupId) {
+    @DeleteMapping("/{group-id}")
+    public ResponseEntity<Void> deleteGroup(@PathVariable("group-id") UUID groupId) {
         groupService.deleteGroup(groupId);
         return ResponseEntity.noContent().build();
     }
@@ -112,8 +112,8 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "Invite code regenerated successfully"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @PostMapping("/{groupId}/invite-code/regenerate")
-    public ResponseEntity<InviteCodeResponse> regenerateInviteCode(@PathVariable UUID groupId) {
+    @PostMapping("/{group-id}/invite-code/regenerate")
+    public ResponseEntity<InviteCodeResponse> regenerateInviteCode(@PathVariable("group-id") UUID groupId) {
         String newCode = groupService.regenerateInviteCode(groupId);
         return ResponseEntity.ok(new InviteCodeResponse(newCode));
     }
@@ -124,8 +124,8 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "Members retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @GetMapping("/{groupId}/members")
-    public ResponseEntity<List<UserSummaryResponse>> getGroupMembers(@PathVariable UUID groupId) {
+    @GetMapping("/{group-id}/members")
+    public ResponseEntity<List<UserSummaryResponse>> getGroupMembers(@PathVariable("group-id") UUID groupId) {
         List<User> members = groupService.getGroupMembers(groupId);
         List<UserSummaryResponse> response = members.stream()
                 .map(UserSummaryResponse::fromEntity)
@@ -141,10 +141,10 @@ public class GroupController {
             @ApiResponse(responseCode = "400", description = "Invalid operation - user already belongs to another group"),
             @ApiResponse(responseCode = "404", description = "Group or user not found")
     })
-    @PostMapping("/{groupId}/members/{userId}")
+    @PostMapping("/{group-id}/members/{user-id}")
     public ResponseEntity<GroupResponse> addUserToGroup(
-            @PathVariable UUID groupId,
-            @PathVariable UUID userId) {
+            @PathVariable("group-id") UUID groupId,
+            @PathVariable("user-id") UUID userId) {
 
         Group updatedGroup = groupService.addUserToGroup(groupId, userId);
         return ResponseEntity.ok(GroupResponse.fromEntity(updatedGroup));
@@ -158,7 +158,7 @@ public class GroupController {
             @ApiResponse(responseCode = "400", description = "Invalid operation - user not in specified group"),
             @ApiResponse(responseCode = "404", description = "Group or user not found")
     })
-    @DeleteMapping("/{groupId}/members/{userId}")
+    @DeleteMapping("/{group-id}/members/{user-id}")
     public ResponseEntity<GroupResponse> removeUserFromGroup(
             @PathVariable UUID groupId,
             @PathVariable UUID userId) {
@@ -179,8 +179,8 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "Expenses retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @GetMapping("/{groupId}/expenses")
-    public ResponseEntity<List<ExpenseItemResponse>> getGroupExpenses(@PathVariable UUID groupId) {
+    @GetMapping("/{group-id}/expenses")
+    public ResponseEntity<List<ExpenseItemResponse>> getGroupExpenses(@PathVariable("group-id") UUID groupId) {
         var expenses = groupService.getGroupExpenses(groupId);
         List<ExpenseItemResponse> response = expenses.stream()
                 .map(ExpenseItemResponse::fromEntity)
@@ -195,8 +195,8 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "Shared expenses retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @GetMapping("/{groupId}/shared-expenses")
-    public ResponseEntity<List<SharedExpenseResponse>> getGroupSharedExpenses(@PathVariable UUID groupId) {
+    @GetMapping("/{group-id}/shared-expenses")
+    public ResponseEntity<List<SharedExpenseResponse>> getGroupSharedExpenses(@PathVariable("group-id") UUID groupId) {
         var sharedExpenses = groupService.getGroupSharedExpenses(groupId);
         List<SharedExpenseResponse> response = sharedExpenses.stream()
                 .map(SharedExpenseResponse::fromEntity)
@@ -210,8 +210,8 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "Shopping items retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @GetMapping("/{groupId}/shopping")
-    public ResponseEntity<List<ShoppingItemResponse>> getGroupShoppingItems(@PathVariable UUID groupId) {
+    @GetMapping("/{group-id}/shopping")
+    public ResponseEntity<List<ShoppingItemResponse>> getGroupShoppingItems(@PathVariable("group-id") UUID groupId) {
         var shoppingItems = groupService.getGroupShoppingItems(groupId);
         List<ShoppingItemResponse> response = shoppingItems.stream()
                 .map(ShoppingItemResponse::fromEntity)
@@ -226,8 +226,8 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "Categories retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @GetMapping("/{groupId}/categories")
-    public ResponseEntity<List<CategoryResponse>> getGroupCategories(@PathVariable UUID groupId) {
+    @GetMapping("/{group-id}/categories")
+    public ResponseEntity<List<CategoryResponse>> getGroupCategories(@PathVariable("group-id") UUID groupId) {
         var categories = groupService.getGroupCategories(groupId);
         List<CategoryResponse> response = categories.stream()
                 .map(CategoryResponse::fromEntity)
@@ -235,4 +235,22 @@ public class GroupController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "Get group cleaning tasks", description = "Retrieves all cleaning tasks assigned " +
+            "within the group")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cleaning tasks retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    @GetMapping("/{group-id}/cleaning-tasks")
+    public ResponseEntity<List<CleaningTaskResponse>> getGroupCleaningTasks(@PathVariable("group-id") UUID groupId) {
+        var cleaningTasks = groupService.getGroupCleaningTasks(groupId);
+        List<CleaningTaskResponse> response = cleaningTasks.stream()
+                .map(CleaningTaskResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Obter todas as News do grupo
 }

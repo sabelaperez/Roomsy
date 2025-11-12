@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -42,6 +43,7 @@ public class ShoppingItem {
 
     @NotNull
     @Column(nullable = false)
+    @Min(1)
     @Schema(description = "Quantity of the shopping item.", example = "2", defaultValue = "1")
     private Integer quantity = 1;
 

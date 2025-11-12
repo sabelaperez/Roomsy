@@ -10,6 +10,10 @@ import com.roomsy.backend.service.ExpenseService;
 import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +25,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/groups/{groupId}/expenses")
+@RequestMapping("/groups/{group-id}/expenses")
+@Tag(name = "Expenses", description = "Endpoints for managing expenses within groups")
 public class ExpenseController {
     
     private final ExpenseService expenseService;
@@ -35,6 +40,13 @@ public class ExpenseController {
         this.userService = userService;
     }
 
+    @Operation(summary = "Create a new expense item in a group", description = "Creates a new expense" + 
+            " and generates split expenses among the involved users")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Expense item and split expenses created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "Group or some user not found"),
+    })
     @PostMapping
     public ResponseEntity<ExpenseItemResponse> createExpenseItem(
             @PathVariable UUID groupId,
@@ -65,14 +77,26 @@ public class ExpenseController {
                 .body(ExpenseItemResponse.fromEntity(savedExpenseItem));
     }
 
-    @DeleteMapping("/items/{expenseItemId}")
-    public ResponseEntity<Void> deleteExpenseItem(@PathVariable UUID expenseItemId) {
+    @Operation(summary = "Delete an expense item", description = "Deletes an expense item by its ID" +
+            " and updates the split expenses")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Expense item deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Expense item not found"),
+    })
+    @DeleteMapping("/items/{expense-item-id}")
+    public ResponseEntity<Void> deleteExpenseItem(@PathVariable("expense-item-id") UUID expenseItemId) {
         expenseService.deleteExpenseItem(expenseItemId);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/shared/{sharedExpenseId}")
-    public ResponseEntity<Void> paySharedExpense(@PathVariable UUID sharedExpenseId) {
+    @Operation(summary = "Pay a shared expense", description = "Deletes a shared expense by its ID" +
+            " indicating that it has been paid")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Shared expense paid successfully"),
+            @ApiResponse(responseCode = "404", description = "Shared expense not found"),
+    })
+    @DeleteMapping("/shared/{shared-expense-id}")
+    public ResponseEntity<Void> paySharedExpense(@PathVariable("shared-expense-id") UUID sharedExpenseId) {
         boolean paid = expenseService.paySharedExpense(sharedExpenseId);
         
         if (paid) {

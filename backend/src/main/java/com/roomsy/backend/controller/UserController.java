@@ -1,11 +1,13 @@
 package com.roomsy.backend.controller;
 
-import com.roomsy.backend.dto.GroupResponse;
 import com.roomsy.backend.dto.UserSummaryResponse;
-import com.roomsy.backend.exception.DuplicateResourceException;
-import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
+@Tag(name = "User", description = "Endpoints for managing users")
 public class UserController {
     private UserService userService;
 
@@ -28,6 +31,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    @Operation(summary = "Create a new user", description = "Creates a new user with the provided details")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+    })
     @PostMapping
     public ResponseEntity<UserSummaryResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
         User user = new User(
@@ -43,7 +51,6 @@ public class UserController {
                 .status(HttpStatus.CREATED)
                 .body(UserSummaryResponse.fromEntity(saved));
     }
-
 
     public static class CreateUserRequest {
 
@@ -81,6 +88,10 @@ public class UserController {
         public void setHashPassword(String hashPassword) { this.hashPassword = hashPassword; }
     }
 
+    @Operation(summary = "Get all users", description = "Retrieves a list of all existing users in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of users retrieved successfully"),
+    })
     @GetMapping
     public ResponseEntity<List<UserSummaryResponse>> getUsers() {
         List<User> users = userService.getUsers();

@@ -26,14 +26,34 @@ public class ShoppingItemResponse {
     }
 
     // Getters and Setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public UUID getGroupId() { return groupId; }
-    public void setGroupId(UUID groupId) { this.groupId = groupId; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public UUID getId() { 
+        return id; 
+    }
+    public void setId(UUID id) { 
+        this.id = id; 
+    }
+    public UUID getGroupId() { 
+        return groupId; 
+    }
+    public void setGroupId(UUID groupId) { 
+        this.groupId = groupId; 
+    }
+    public String getName() { 
+        return name; 
+    }
+    public void setName(String name) { 
+        this.name = name; 
+    }
+    public int getQuantity() { 
+        return quantity; 
+    }
+    public void setQuantity(int quantity) { 
+        this.quantity = quantity; 
+    }
+    public LocalDateTime getCreatedAt() { 
+        return createdAt; 
+    }
+    public void setCreatedAt(LocalDateTime createdAt) { 
+        this.createdAt = createdAt; 
+    }
 }

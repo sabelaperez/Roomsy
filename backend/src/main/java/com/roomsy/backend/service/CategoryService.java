@@ -18,6 +18,11 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
+    public Category getCategoryById(@NonNull UUID id) throws IllegalArgumentException {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + id));
+    }
+
     @Transactional
     public Category createCategory(@NonNull Category category) throws IllegalArgumentException {
         if(categoryRepository.existsByGroupAndName(category.getGroup(), category.getName())) {
@@ -36,18 +41,14 @@ public class CategoryService {
 
     @Transactional
     public Category updateName(@NonNull UUID id, String newName) throws IllegalArgumentException {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category with that id does not exist"));
-
+        Category category = getCategoryById(id);
         category.setName(newName);
         return categoryRepository.save(category);
     }
 
     @Transactional
     public Category updateColor(@NonNull UUID id, String newColor) throws IllegalArgumentException {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category with that id does not exist"));
-
+        Category category = getCategoryById(id);
         category.setColor(newColor);
         return categoryRepository.save(category);
     }
