@@ -8,6 +8,9 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.roomsy.backend.dto.Views;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -23,12 +26,15 @@ public class CleaningTask {
     // Attributes
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @JsonView(Views.Summary.class)
     @Schema(description = "Unique identifier of the cleaning task.", example = "3c9e27b0-d3b6-4b7e-a8c1-470f659cb8c9", accessMode = Schema.AccessMode.READ_ONLY)
     private UUID id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
+    @JsonView(Views.Summary.class)
     @Schema(description = "The group to which the cleaning task belongs.")
     private Group group;
 
@@ -36,11 +42,13 @@ public class CleaningTask {
     @Size(min = 3, max = 100)
     @Column(nullable = false, length = 100)
     @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Title can only contain letters, numbers, and spaces")
+    @JsonView(Views.Summary.class)
     @Schema(description = "Title of the cleaning task.", example = "Clean the kitchen", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 100)
     private String title;
 
     @NotNull
     @Column(nullable = false)
+    @JsonView(Views.Summary.class)
     @Schema(description = "Date and time when the cleaning task is scheduled.", example = "2024-07-15T10:00:00")
     private LocalDateTime date;
 
@@ -49,20 +57,24 @@ public class CleaningTask {
         joinColumns = @JoinColumn(name = "cleaning_task_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id"))
     @NotEmpty(message = "At least one user must be assigned")
+    @JsonView(Views.Summary.class)
     @Schema(description = "List of users assigned to the cleaning task.")
     private List<User> assignedTo = new ArrayList<>();
 
     @Column(nullable = false)
+    @JsonView(Views.Summary.class)
     @Schema(description = "Indicates whether the cleaning task has been completed.", example = "false", defaultValue = "false")
     private boolean completed = false;
 
     @CreationTimestamp
     @Column(updatable = false)
+    @JsonView(Views.Detailed.class)
     @Schema(description = "Timestamp when the cleaning task was created.", example = "2024-06-01T12:00:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(nullable = false)
+    @JsonView(Views.Detailed.class)
     @Schema(description = "Timestamp when the cleaning task was last updated.", example = "2024-06-01T12:00:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
 

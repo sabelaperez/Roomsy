@@ -1,7 +1,8 @@
 package com.roomsy.backend.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.CategoryRequest;
-import com.roomsy.backend.dto.CategoryResponse;
+import com.roomsy.backend.dto.Views;
 import com.roomsy.backend.model.Category;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.service.CategoryService;
@@ -44,7 +45,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Group not found"),
     })
     @PostMapping
-    public ResponseEntity<CategoryResponse> createCategory (
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<Category> createCategory (
             @PathVariable("group-id") UUID groupId,
             @RequestBody CategoryRequest request
     ){        
@@ -54,7 +56,7 @@ public class CategoryController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(CategoryResponse.fromEntity(savedCategory));
+                .body(savedCategory);
     }
 
     @Operation(summary = "Delete a category", description = "Deletes the specified category")
@@ -79,13 +81,14 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @PatchMapping("/{category-id}/name")
-    public ResponseEntity<CategoryResponse> updateName(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<Category> updateName(
         @PathVariable("category-id") UUID categoryId,
         @PathVariable("group-id") UUID groupId,
         @Valid @RequestBody UpdateNameRequest request
     ) {
         Category updatedCategory = categoryService.updateName(categoryId, groupId, request.getName());
-        return ResponseEntity.ok(CategoryResponse.fromEntity(updatedCategory));
+        return ResponseEntity.ok(updatedCategory);
     }
 
     @Operation(summary = "Update category color", description = "Updates the color of the specified category")
@@ -94,13 +97,14 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @PatchMapping("/{category-id}/color")
-    public ResponseEntity<CategoryResponse> updateColor(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<Category> updateColor(
         @PathVariable("category-id") UUID categoryId,
         @PathVariable("group-id") UUID groupId,
         @RequestBody String newColor
     ) {
         Category updatedCategory = categoryService.updateColor(categoryId, groupId, newColor);
-        return ResponseEntity.ok(CategoryResponse.fromEntity(updatedCategory));
+        return ResponseEntity.ok(updatedCategory);
     }
 
     // Request DTOs

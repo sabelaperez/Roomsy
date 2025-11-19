@@ -10,8 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.CleaningTaskRequest;
-import com.roomsy.backend.dto.CleaningTaskResponse;
+import com.roomsy.backend.dto.Views;
 import com.roomsy.backend.model.CleaningTask;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
@@ -52,7 +53,8 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Group or user not found")
     })
     @PostMapping
-    public ResponseEntity<CleaningTaskResponse> createTask(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<CleaningTask> createTask(
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody CleaningTaskRequest request
     ) {
@@ -65,7 +67,7 @@ public class CleaningTaskController {
         CleaningTask task = new CleaningTask(group, request.getTitle(), request.getDate(), assignees);
         CleaningTask saved = cleaningTaskService.createTask(task);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CleaningTaskResponse.fromEntity(saved));
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @Operation(summary = "Get a cleaning task by id", description = "Returns the specified cleaning task")
@@ -74,12 +76,13 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @GetMapping("/{task-id}")
-    public ResponseEntity<CleaningTaskResponse> getTask(
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<CleaningTask> getTask(
         @PathVariable("task-id") UUID taskId,
         @PathVariable("group-id") UUID groupId
     ) {
         CleaningTask task = cleaningTaskService.getTask(taskId, groupId);
-        return ResponseEntity.ok(CleaningTaskResponse.fromEntity(task));
+        return ResponseEntity.ok(task);
     }
 
     @Operation(summary = "Delete a cleaning task", description = "Deletes the specified cleaning task")
@@ -103,7 +106,8 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PatchMapping("/{task-id}/assign-to")
-    public ResponseEntity<CleaningTaskResponse> reassignTask(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<CleaningTask> reassignTask(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody ReassignRequest request
@@ -113,7 +117,7 @@ public class CleaningTaskController {
                 .collect(Collectors.toList());
 
         CleaningTask updated = cleaningTaskService.reassignTask(taskId, groupId, newAssignees);
-        return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
+        return ResponseEntity.ok(updated);
     }
 
     @Operation(summary = "Set task completed state", description = "Mark task as completed or not completed")
@@ -122,13 +126,14 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @PatchMapping("/{task-id}/completed")
-    public ResponseEntity<CleaningTaskResponse> setCompleted(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<CleaningTask> setCompleted(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody CompletedRequest request
     ) {
         CleaningTask updated = cleaningTaskService.setTaskCompleted(taskId, groupId, request.isCompleted());
-        return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
+        return ResponseEntity.ok(updated);
     }
 
     @Operation(summary = "Change task date", description = "Update the date/time of the task")
@@ -138,13 +143,14 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PatchMapping("/{task-id}/date")
-    public ResponseEntity<CleaningTaskResponse> changeDate(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<CleaningTask> changeDate(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody DateRequest request
     ) {
         CleaningTask updated = cleaningTaskService.changeTaskDate(taskId, groupId, request.getNewDate());
-        return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
+        return ResponseEntity.ok(updated);
     }
 
     @Operation(summary = "Change task title", description = "Update the title of the task")
@@ -154,13 +160,14 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "400", description = "Invalid title")
     })
     @PatchMapping("/{task-id}/title")
-    public ResponseEntity<CleaningTaskResponse> changeTitle(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<CleaningTask> changeTitle(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody TitleRequest request
     ) {
         CleaningTask updated = cleaningTaskService.changeTaskTitle(taskId, groupId,request.getTitle());
-        return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
+        return ResponseEntity.ok(updated);
     }
 
     // Request DTOs

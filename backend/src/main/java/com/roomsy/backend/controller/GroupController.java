@@ -1,7 +1,12 @@
 package com.roomsy.backend.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.*;
+import com.roomsy.backend.model.Category;
+import com.roomsy.backend.model.CleaningTask;
 import com.roomsy.backend.model.Group;
+import com.roomsy.backend.model.SharedExpense;
+import com.roomsy.backend.model.ShoppingItem;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
@@ -211,15 +216,12 @@ public class GroupController {
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/shared-expenses")
-    public ResponseEntity<List<SharedExpenseResponse>> getGroupSharedExpenses(
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<List<SharedExpense>> getGroupSharedExpenses(
         @PathVariable("group-id") UUID groupId
     ) {
         var sharedExpenses = groupService.getGroupSharedExpenses(groupId);
-        List<SharedExpenseResponse> response = sharedExpenses.stream()
-                .map(SharedExpenseResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(sharedExpenses);
     }
 
     @Operation(summary = "Get group shopping items", description = "Retrieves all shopping list items for the group")
@@ -228,15 +230,12 @@ public class GroupController {
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/shopping")
-    public ResponseEntity<List<ShoppingItemResponse>> getGroupShoppingItems(
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<List<ShoppingItem>> getGroupShoppingItems(
         @PathVariable("group-id") UUID groupId
     ) {
         var shoppingItems = groupService.getGroupShoppingItems(groupId);
-        List<ShoppingItemResponse> response = shoppingItems.stream()
-                .map(ShoppingItemResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(shoppingItems);
     }
 
     @Operation(summary = "Get group categories", description = "Retrieves all expense categories configured " +
@@ -246,15 +245,12 @@ public class GroupController {
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/categories")
-    public ResponseEntity<List<CategoryResponse>> getGroupCategories(
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<List<Category>> getGroupCategories(
         @PathVariable("group-id") UUID groupId
     ) {
         var categories = groupService.getGroupCategories(groupId);
-        List<CategoryResponse> response = categories.stream()
-                .map(CategoryResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(categories);
     }
 
     @Operation(summary = "Get group cleaning tasks", description = "Retrieves all cleaning tasks assigned " +
@@ -264,15 +260,12 @@ public class GroupController {
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/cleaning-tasks")
-    public ResponseEntity<List<CleaningTaskResponse>> getGroupCleaningTasks(
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<List<CleaningTask>> getGroupCleaningTasks(
         @PathVariable("group-id") UUID groupId
     ) {
         var cleaningTasks = groupService.getGroupCleaningTasks(groupId);
-        List<CleaningTaskResponse> response = cleaningTasks.stream()
-                .map(CleaningTaskResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(cleaningTasks);
     }
 
     // Obter todas as News do grupo

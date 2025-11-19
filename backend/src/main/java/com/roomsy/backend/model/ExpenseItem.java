@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "expense_items")
+@Schema(description = "Represents an Expense of the group")
 public class ExpenseItem {
 
     // Attributes
@@ -26,13 +27,15 @@ public class ExpenseItem {
     private UUID id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
     @Schema(description = "The group to which the expense item belongs.")
     private Group group;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "owner_id", nullable = false)
     @Schema(description = "The user who created the expense item.")
     private User owner;

@@ -8,43 +8,56 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.roomsy.backend.dto.Views;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "shared_expenses")
+@Schema(description = "Represents a divided expense within a group, including the payer, the user who has not paid, and the amount.")
 public class SharedExpense {
 
     // Attributes
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @JsonView(Views.Summary.class)
     @Schema(description = "Unique identifier of the shared expense.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", accessMode = Schema.AccessMode.READ_ONLY)
     private UUID id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
+    @JsonView(Views.Summary.class)
     @Schema(description = "The group to which the shared expense belongs.")
     private Group group;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "payer_id", nullable = false)
+    @JsonView(Views.Summary.class)
     @Schema(description = "The user who paid the shared expense.")
     private User payer;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "not_paid_id", nullable = false)
+    @JsonView(Views.Summary.class)
     @Schema(description = "The user who has not paid the shared expense.")
     private User notPaid;
 
     @NotNull
     @Column(nullable = false)
+    @JsonView(Views.Summary.class)
     @Schema(description = "The amount of the shared expense.", example = "25.50")
     private Double quantity;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
+    @JsonView(Views.Detailed.class)
     @Schema(description = "Timestamp when the shared expense was created.", example = "2024-06-15T14:30:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
 
