@@ -49,9 +49,9 @@ public class ExpenseController {
     })
     @PostMapping
     public ResponseEntity<ExpenseItemResponse> createExpenseItem(
-            @PathVariable UUID groupId,
-            @Valid @RequestBody ExpenseItemRequest request) throws Exception {
-        
+        @PathVariable("group-id") UUID groupId,
+        @Valid @RequestBody ExpenseItemRequest request
+    ) {        
         Group group = groupService.getGroupById(groupId);
         User owner = userService.getUserById(request.getOwnerId());
         
@@ -84,8 +84,11 @@ public class ExpenseController {
             @ApiResponse(responseCode = "404", description = "Expense item not found"),
     })
     @DeleteMapping("/items/{expense-item-id}")
-    public ResponseEntity<Void> deleteExpenseItem(@PathVariable("expense-item-id") UUID expenseItemId) {
-        expenseService.deleteExpenseItem(expenseItemId);
+    public ResponseEntity<Void> deleteExpenseItem(
+        @PathVariable("expense-item-id") UUID expenseItemId,
+        @PathVariable("group-id") UUID groupId
+    ) {
+        expenseService.deleteExpenseItem(expenseItemId, groupId);
         return ResponseEntity.noContent().build();
     }
 
@@ -96,8 +99,11 @@ public class ExpenseController {
             @ApiResponse(responseCode = "404", description = "Shared expense not found"),
     })
     @DeleteMapping("/shared/{shared-expense-id}")
-    public ResponseEntity<Void> paySharedExpense(@PathVariable("shared-expense-id") UUID sharedExpenseId) {
-        boolean paid = expenseService.paySharedExpense(sharedExpenseId);
+    public ResponseEntity<Void> paySharedExpense(
+        @PathVariable("shared-expense-id") UUID sharedExpenseId,
+        @PathVariable("group-id") UUID groupId
+    ) {
+        boolean paid = expenseService.paySharedExpense(sharedExpenseId, groupId);
         
         if (paid) {
             return ResponseEntity.noContent().build();

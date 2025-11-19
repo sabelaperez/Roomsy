@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.roomsy.backend.dto.CleaningTaskRequest;
 import com.roomsy.backend.dto.CleaningTaskResponse;
-import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.CleaningTask;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
@@ -21,6 +20,7 @@ import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -53,9 +53,9 @@ public class CleaningTaskController {
     })
     @PostMapping
     public ResponseEntity<CleaningTaskResponse> createTask(
-            @PathVariable UUID groupId,
-            @Valid @RequestBody CleaningTaskRequest request) {
-
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody CleaningTaskRequest request
+    ) {
         Group group = groupService.getGroupById(groupId);
 
         List<User> assignees = request.getAssignedToIds().stream()
@@ -74,8 +74,11 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @GetMapping("/{task-id}")
-    public ResponseEntity<CleaningTaskResponse> getTask(@PathVariable("task-id") UUID taskId) throws ResourceNotFoundException {
-        CleaningTask task = cleaningTaskService.getTaskById(taskId);
+    public ResponseEntity<CleaningTaskResponse> getTask(
+        @PathVariable("task-id") UUID taskId,
+        @PathVariable("group-id") UUID groupId
+    ) {
+        CleaningTask task = cleaningTaskService.getTask(taskId, groupId);
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(task));
     }
 
@@ -85,8 +88,11 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @DeleteMapping("/{task-id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable("task-id") UUID taskId) throws ResourceNotFoundException {
-        cleaningTaskService.deleteTask(taskId);
+    public ResponseEntity<Void> deleteTask(
+        @PathVariable("task-id") UUID taskId,
+        @PathVariable("group-id") UUID groupId
+    ) {
+        cleaningTaskService.deleteTask(taskId, groupId);
         return ResponseEntity.noContent().build();
     }
 
@@ -99,13 +105,14 @@ public class CleaningTaskController {
     @PatchMapping("/{task-id}/assign-to")
     public ResponseEntity<CleaningTaskResponse> reassignTask(
             @PathVariable("task-id") UUID taskId,
-            @Valid @RequestBody ReassignRequest request) throws ResourceNotFoundException {
-
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody ReassignRequest request
+    ) {
         List<User> newAssignees = request.getAssignedToIds().stream()
                 .map(userService::getUserById)
                 .collect(Collectors.toList());
 
-        CleaningTask updated = cleaningTaskService.reassignTask(taskId, newAssignees);
+        CleaningTask updated = cleaningTaskService.reassignTask(taskId, groupId, newAssignees);
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
     }
 
@@ -117,9 +124,10 @@ public class CleaningTaskController {
     @PatchMapping("/{task-id}/completed")
     public ResponseEntity<CleaningTaskResponse> setCompleted(
             @PathVariable("task-id") UUID taskId,
-            @Valid @RequestBody CompletedRequest request) throws ResourceNotFoundException {
-
-        CleaningTask updated = cleaningTaskService.setTaskCompleted(taskId, request.isCompleted());
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody CompletedRequest request
+    ) {
+        CleaningTask updated = cleaningTaskService.setTaskCompleted(taskId, groupId, request.isCompleted());
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
     }
 
@@ -132,9 +140,10 @@ public class CleaningTaskController {
     @PatchMapping("/{task-id}/date")
     public ResponseEntity<CleaningTaskResponse> changeDate(
             @PathVariable("task-id") UUID taskId,
-            @Valid @RequestBody DateRequest request) throws ResourceNotFoundException {
-
-        CleaningTask updated = cleaningTaskService.changeTaskDate(taskId, request.getNewDate());
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody DateRequest request
+    ) {
+        CleaningTask updated = cleaningTaskService.changeTaskDate(taskId, groupId, request.getNewDate());
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
     }
 
@@ -147,16 +156,19 @@ public class CleaningTaskController {
     @PatchMapping("/{task-id}/title")
     public ResponseEntity<CleaningTaskResponse> changeTitle(
             @PathVariable("task-id") UUID taskId,
-            @Valid @RequestBody TitleRequest request) throws ResourceNotFoundException {
-
-        CleaningTask updated = cleaningTaskService.changeTaskTitle(taskId, request.getTitle());
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody TitleRequest request
+    ) {
+        CleaningTask updated = cleaningTaskService.changeTaskTitle(taskId, groupId,request.getTitle());
         return ResponseEntity.ok(CleaningTaskResponse.fromEntity(updated));
     }
 
-
     // Request DTOs
+    @Schema(description = "Request object for updating the assigned users of the cleaning task")
     public static class ReassignRequest {
         @NotEmpty
+        @Schema(description = "List of user IDs to assign the task to",
+                example = "[\"3c9e27b0-d3b6-4b7e-a8c1-470f659cb8c9\", \"660e8400-e29b-41d4-a716-446655440000\"]")
         private List<UUID> assignedToIds;
 
         public ReassignRequest() {}
@@ -169,8 +181,11 @@ public class CleaningTaskController {
         }
     }
 
+    @Schema(description = "Request object for updating the completed boolean of the cleaning task")
     public static class CompletedRequest {
         @NotNull
+        @Schema(description = "Indicates whether the task is completed",
+                example = "true")
         private Boolean completed;
 
         public CompletedRequest() {}
@@ -183,8 +198,11 @@ public class CleaningTaskController {
         }
     }
 
+    @Schema(description = "Request object for updating a cleaning task's date")
     public static class DateRequest {
         @NotNull
+        @Schema(description = "New date and time for the task",
+                example = "2024-12-01T14:30:00")
         private LocalDateTime newDate;
 
         public DateRequest() {}
@@ -197,10 +215,16 @@ public class CleaningTaskController {
         }
     }
 
+    @Schema(description = "Request object for updating a cleaning task's title")
     public static class TitleRequest {
         @NotNull
         @Size(min = 3, max = 100)
         @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Title can only contain letters, numbers, and spaces")
+        @Schema(description = "New title for the task",
+                example = "Clean the kitchen",
+                minLength = 3,
+                maxLength = 100,
+                pattern = "^[a-zA-Z0-9 ]+$")
         private String title;
 
         public TitleRequest() {}

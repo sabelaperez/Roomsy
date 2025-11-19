@@ -32,7 +32,7 @@ public class ExpenseService {
     }
 
     @Transactional
-    public ExpenseItem createExpenseItem(@NonNull ExpenseItem expenseItem) throws Exception {
+    public ExpenseItem createExpenseItem(@NonNull ExpenseItem expenseItem) {
         // Xerar unha noticia do tipo EXPENSE_ADDED
         News addedExpenseNews = new News(expenseItem.getGroup(), expenseItem.getOwner(), NewsType.EXPENSE_ADDED,
                 "Expense Added by " + expenseItem.getOwner().getFullName(), 
@@ -44,8 +44,12 @@ public class ExpenseService {
 
     // Pensar nas precondicións
     @Transactional
-    public void deleteExpenseItem(@NonNull UUID id) throws ResourceNotFoundException {
-        ExpenseItem expenseItem = expenseItemRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("ExpenseItem not found"));
+    public void deleteExpenseItem(@NonNull UUID id, @NonNull UUID groupId) throws ResourceNotFoundException {
+        ExpenseItem expenseItem = expenseItemRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("ExpenseItem not found"));
+        if (!expenseItem.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("Expense item not found in the specified group");
+        }
 
         // Reverse that expense item in the SharedExpenses
         Double splitAmount = expenseItem.getPrice() / expenseItem.getUsersInvolved().size();
@@ -180,8 +184,12 @@ public class ExpenseService {
         return settlements;
     }
 
-    public boolean paySharedExpense(@NonNull UUID id) {
-        SharedExpense payedExpense = sharedExpenseRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("SharedExpense not found"));
+    public boolean paySharedExpense(@NonNull UUID id, @NonNull UUID groupId) {
+        SharedExpense payedExpense = sharedExpenseRepository
+            .findById(id).orElseThrow(() -> new ResourceNotFoundException("SharedExpense not found"));
+        if(!payedExpense.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("SharedExpense not found in the specified group");
+        }
         boolean result = sharedExpenseRepository.deleteByIdReturningBoolean(id);
         if (result) {
             // Xerar unha noticia do tipo EXPENSE_PAID

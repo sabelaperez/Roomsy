@@ -15,6 +15,8 @@ import com.roomsy.backend.model.User;
 import com.roomsy.backend.repository.CleaningTaskRepository;
 import com.roomsy.backend.repository.NewsRepository;
 
+import jakarta.annotation.Nonnull;
+
 @Service
 public class CleaningTaskService {
     private final CleaningTaskRepository cleaningTaskRepository;
@@ -25,9 +27,22 @@ public class CleaningTaskService {
         this.newsRepository = newsRepository;
     }
 
-    public CleaningTask getTaskById(@NonNull UUID taskId) throws ResourceNotFoundException {
-        return cleaningTaskRepository.findById(taskId)
+    public CleaningTask getTask(@NonNull UUID taskId, @NonNull UUID groupId) throws ResourceNotFoundException {
+        CleaningTask task = cleaningTaskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cleaning task not found with id: " + taskId));
+        if (!task.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("Cleaning task not found in the specified group");
+        }
+        return task;
+    }
+
+    public boolean existTask(@NonNull UUID taskId, @NonNull UUID groupId) throws ResourceNotFoundException {
+        CleaningTask task = cleaningTaskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cleaning task not found with id: " + taskId));
+        if (!task.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("Cleaning task not found in the specified group");
+        }
+        return true;
     }
 
     public CleaningTask createTask(CleaningTask task) {
@@ -45,33 +60,32 @@ public class CleaningTaskService {
         return cleaningTaskRepository.save(task);
     }
 
-    public void deleteTask(@NonNull UUID taskId) throws ResourceNotFoundException {
-        if(!cleaningTaskRepository.existsById(taskId)) {
-            throw new ResourceNotFoundException("Cleaning task not found with id: " + taskId);
+    public void deleteTask(@NonNull UUID taskId, @NonNull UUID groupId) throws ResourceNotFoundException {
+        if(existTask(taskId, groupId)) {
+            cleaningTaskRepository.deleteById(taskId);
         }
-        cleaningTaskRepository.deleteById(taskId);
     }
 
-    public CleaningTask reassignTask(@NonNull UUID taskId, @NonNull List<User> newAssignees) throws ResourceNotFoundException {
-        CleaningTask existingTask = getTaskById(taskId);
+    public CleaningTask reassignTask(@NonNull UUID taskId, @Nonnull UUID groupId, @NonNull List<User> newAssignees) throws ResourceNotFoundException {
+        CleaningTask existingTask = getTask(taskId, groupId);
         existingTask.setAssignedTo(newAssignees);
         return cleaningTaskRepository.save(existingTask);
     }
 
-    public CleaningTask setTaskCompleted(@NonNull UUID taskId, @NonNull boolean completed) throws ResourceNotFoundException {
-        CleaningTask existingTask = getTaskById(taskId);
+    public CleaningTask setTaskCompleted(@NonNull UUID taskId, @Nonnull UUID groupId, @NonNull boolean completed) throws ResourceNotFoundException {
+        CleaningTask existingTask = getTask(taskId, groupId);
         existingTask.setCompleted(completed);
         return cleaningTaskRepository.save(existingTask);
     }
 
-    public CleaningTask changeTaskDate(@NonNull UUID taskId, @NonNull LocalDateTime newDate) throws ResourceNotFoundException {
-        CleaningTask existingTask = getTaskById(taskId);
+    public CleaningTask changeTaskDate(@NonNull UUID taskId, @NonNull UUID groupId, @NonNull LocalDateTime newDate) throws ResourceNotFoundException {
+        CleaningTask existingTask = getTask(taskId, groupId);
         existingTask.setDate(newDate);
         return cleaningTaskRepository.save(existingTask);
     }
 
-    public CleaningTask changeTaskTitle(@NonNull UUID taskId, @NonNull String newTitle) throws ResourceNotFoundException {
-        CleaningTask existingTask = getTaskById(taskId);
+    public CleaningTask changeTaskTitle(@NonNull UUID taskId, @NonNull UUID groupId, @NonNull String newTitle) throws ResourceNotFoundException {
+        CleaningTask existingTask = getTask(taskId, groupId);
         existingTask.setTitle(newTitle);
         return cleaningTaskRepository.save(existingTask);
     }

@@ -5,6 +5,7 @@ import com.roomsy.backend.model.Category;
 import com.roomsy.backend.model.ShoppingItem;
 import com.roomsy.backend.repository.ShoppingItemRepository;
 import jakarta.transaction.Transactional;
+
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,38 +22,50 @@ public class ShoppingItemService {
         this.shoppingItemRepository = shoppingItemRepository;
     }
 
-    public ShoppingItem getShoppingItemById(@NonNull UUID id) throws ResourceNotFoundException {
-        return shoppingItemRepository.findById(id)
+    public ShoppingItem getShoppingItem(@NonNull UUID id, @NonNull UUID groupId) {
+        ShoppingItem shoppingItem = shoppingItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ShoppingItem not found with id: " + id));
+        if(!shoppingItem.getGroup().getId().equals(groupId)){
+            throw new IllegalArgumentException("ShoppingItem not found in the specified group");
+        }
+        return shoppingItem;
+    }
+
+    public boolean existShoppingItem(@NonNull UUID id, @NonNull UUID groupId) {
+        ShoppingItem shoppingItem = shoppingItemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ShoppingItem not found with id: " + id));
+        if(!shoppingItem.getGroup().getId().equals(groupId)){
+            throw new IllegalArgumentException("ShoppingItem not found in the specified group");
+        }
+        return true;
     }
 
     @Transactional
-    public ShoppingItem createShoppingItem(@NonNull ShoppingItem shoppingItem) throws Exception {
+    public ShoppingItem createShoppingItem(@NonNull ShoppingItem shoppingItem) {
         return shoppingItemRepository.save(shoppingItem);
     }
 
      @Transactional
-    public void deleteShoppingItem(@NonNull UUID id) throws IllegalArgumentException {
-        if(!shoppingItemRepository.existsById(id)) {
-            throw new IllegalArgumentException("ShoppingItem with that id does not exist");
+    public void deleteShoppingItem(@NonNull UUID id, @NonNull UUID groupId) throws IllegalArgumentException {
+        if(existShoppingItem(id, groupId)) {
+            shoppingItemRepository.deleteById(id);
         }
-        shoppingItemRepository.deleteById(id);
     }
 
-    public ShoppingItem updateCategory(@NonNull UUID id, @NonNull Category category) throws ResourceNotFoundException {
-        ShoppingItem shoppingItem = getShoppingItemById(id);
+    public ShoppingItem updateCategory(@NonNull UUID id, @NonNull UUID groupId, @NonNull Category category) throws ResourceNotFoundException {
+        ShoppingItem shoppingItem = getShoppingItem(id, groupId);
         shoppingItem.setCategory(category);
         return shoppingItemRepository.save(shoppingItem);
     }
 
-    public ShoppingItem updateName(@NonNull UUID id, @NonNull String name) throws ResourceNotFoundException {
-        ShoppingItem shoppingItem = getShoppingItemById(id);
+    public ShoppingItem updateName(@NonNull UUID id, @NonNull UUID groupId, @NonNull String name) throws ResourceNotFoundException {
+        ShoppingItem shoppingItem = getShoppingItem(id, groupId);
         shoppingItem.setName(name);
         return shoppingItemRepository.save(shoppingItem);
     }
 
-    public ShoppingItem updateQuantity(@NonNull UUID id, @NonNull Integer quantity) throws ResourceNotFoundException {
-        ShoppingItem shoppingItem = getShoppingItemById(id);
+    public ShoppingItem updateQuantity(@NonNull UUID id, @NonNull UUID groupId, @NonNull Integer quantity) throws ResourceNotFoundException {
+        ShoppingItem shoppingItem = getShoppingItem(id, groupId);
         shoppingItem.setQuantity(quantity);
         return shoppingItemRepository.save(shoppingItem);
     }

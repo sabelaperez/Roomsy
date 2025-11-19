@@ -17,6 +17,7 @@ import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.ShoppingItemService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,14 +51,14 @@ public class ShoppingItemController {
     })
     @PostMapping
     public ResponseEntity<ShoppingItemResponse> createShoppingItem(
-            @PathVariable UUID groupId,
-            @Valid @RequestBody ShoppingItemRequest request) throws Exception {
-
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody ShoppingItemRequest request
+    ) {
         Group group = groupService.getGroupById(groupId);
 
         Category category = null;
         if (request.getCategoryId() != null) {
-            category = categoryService.getCategoryById(request.getCategoryId());
+            category = categoryService.getCategory(request.getCategoryId(), groupId);
         }
 
         ShoppingItem item = new ShoppingItem(group, category, request.getName(), request.getQuantity());
@@ -72,8 +73,11 @@ public class ShoppingItemController {
             @ApiResponse(responseCode = "404", description = "Shopping item not found")
     })
     @DeleteMapping("/{item-id}")
-    public ResponseEntity<Void> deleteShoppingItem(@PathVariable("item-id") UUID itemId) {
-        shoppingItemService.deleteShoppingItem(itemId);
+    public ResponseEntity<Void> deleteShoppingItem(
+        @PathVariable("item-id") UUID itemId,
+        @PathVariable("group-id") UUID groupId
+    ) {
+        shoppingItemService.deleteShoppingItem(itemId, groupId);
         return ResponseEntity.noContent().build();
     }
 
@@ -85,10 +89,11 @@ public class ShoppingItemController {
     @PatchMapping("/{item-id}/category")
     public ResponseEntity<ShoppingItemResponse> updateCategory(
             @PathVariable("item-id") UUID itemId,
-            @Valid @RequestBody UpdateCategoryRequest request) {
-
-        Category category = categoryService.getCategoryById(request.getCategoryId());
-        ShoppingItem updated = shoppingItemService.updateCategory(itemId, category);
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody UpdateCategoryRequest request
+    ) {
+        Category category = categoryService.getCategory(request.getCategoryId(), groupId);
+        ShoppingItem updated = shoppingItemService.updateCategory(itemId, groupId, category);
         return ResponseEntity.ok(ShoppingItemResponse.fromEntity(updated));
     }
 
@@ -101,9 +106,10 @@ public class ShoppingItemController {
     @PatchMapping("/{item-id}/name")
     public ResponseEntity<ShoppingItemResponse> updateName(
             @PathVariable("item-id") UUID itemId,
-            @Valid @RequestBody UpdateNameRequest request) {
-
-        ShoppingItem updated = shoppingItemService.updateName(itemId, request.getName());
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody UpdateNameRequest request
+    ) {
+        ShoppingItem updated = shoppingItemService.updateName(itemId, groupId, request.getName());
         return ResponseEntity.ok(ShoppingItemResponse.fromEntity(updated));
     }
 
@@ -116,16 +122,20 @@ public class ShoppingItemController {
     @PatchMapping("/{item-id}/quantity")
     public ResponseEntity<ShoppingItemResponse> updateQuantity(
             @PathVariable("item-id") UUID itemId,
-            @Valid @RequestBody UpdateQuantityRequest request) {
-
-        ShoppingItem updated = shoppingItemService.updateQuantity(itemId, request.getQuantity());
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody UpdateQuantityRequest request
+    ) {
+        ShoppingItem updated = shoppingItemService.updateQuantity(itemId, groupId, request.getQuantity());
         return ResponseEntity.ok(ShoppingItemResponse.fromEntity(updated));
     }
 
 
     // Request DTOs
+    @Schema(description = "Request object for updating a shopping item's category")
     public static class UpdateCategoryRequest {
         @NotNull
+        @Schema(description = "The ID of the new category for the shopping item",
+                example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         private UUID categoryId;
 
         public UpdateCategoryRequest() {}
@@ -138,10 +148,16 @@ public class ShoppingItemController {
         }
     }
 
+    @Schema(description = "Request object for updating a shopping item's name")
     public static class UpdateNameRequest {
         @NotNull
         @Size(min = 3, max = 100)
         @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
+        @Schema(description = "The new name for the shopping item",
+                example = "Bread",
+                minLength = 3,
+                maxLength = 100,
+                pattern = "^[a-zA-Z0-9 ]+$")
         private String name;
 
         public UpdateNameRequest() {}
@@ -154,9 +170,13 @@ public class ShoppingItemController {
         }
     }
 
+    @Schema(description = "Request object for updating a shopping item's quantity")
     public static class UpdateQuantityRequest {
         @NotNull
         @Min(1)
+        @Schema(description = "The new quantity for the shopping item",
+                example = "5",
+                minimum = "1")
         private Integer quantity;
 
         public UpdateQuantityRequest() {}
