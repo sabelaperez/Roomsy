@@ -86,7 +86,7 @@ public class CategoryController {
     })
     @GetMapping()
     @JsonView(Views.Summary.class)
-    public ResponseEntity<Page<Category>> getGroupCategories(
+    public ResponseEntity<PageResponse<Category>> getGroupCategories(
             @PathVariable("group-id") UUID groupId,
             @Parameter(description = "Page number (0-indexed)", example = "0")
             @RequestParam(defaultValue = "0") int page,
@@ -103,7 +103,7 @@ public class CategoryController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         Page<Category> categories = categoryService.getCategoriesPaginated(groupId, pageable);
-        return ResponseEntity.ok(categories);
+        return ResponseEntity.ok(new PageResponse<>(categories));
     }
 
     @Operation(summary = "Get category by id", description = "Retrieves the specified category within the given group")

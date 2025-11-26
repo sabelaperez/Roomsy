@@ -1,64 +1,33 @@
 package com.roomsy.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
-// todo: HACERLO RECORD
-public class PageResponse<T> {
-    private List<T> content;
-    private int page;
-    private int size;
-    private long totalElements;
-    private int totalPages;
 
+public record PageResponse<T>(
+        @JsonView(Views.Summary.class)
+        List<T> content,
+
+        @JsonView(Views.Summary.class)
+        int page,
+
+        @JsonView(Views.Summary.class)
+        int size,
+
+        @JsonView(Views.Summary.class)
+        long totalElements,
+
+        @JsonView(Views.Summary.class)
+        int totalPages
+) {
     public PageResponse(Page<T> page) {
-        this.content = page.getContent();
-        this.page = page.getNumber();
-        this.size = page.getSize();
-        this.totalElements = page.getTotalElements();
-        this.totalPages = page.getTotalPages();
-    }
-
-    public List<T> getContent() {
-        return content;
-    }
-
-    public void setContent(List<T> content) {
-        this.content = content;
-    }
-
-    public int getPage() {
-        return page;
-    }
-
-    public void setPage(int page) {
-        this.page = page;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public long getTotalElements() {
-        return totalElements;
-    }
-
-    public void setTotalElements(long totalElements) {
-        this.totalElements = totalElements;
-    }
-
-    public int getTotalPages() {
-        return totalPages;
-    }
-
-    public void setTotalPages(int totalPages) {
-        this.totalPages = totalPages;
+        this(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
     }
 }
-
-
-
