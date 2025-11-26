@@ -1,5 +1,6 @@
 package com.roomsy.backend.dto;
 
+import com.roomsy.backend.model.Role;
 import com.roomsy.backend.model.User;
 import java.util.UUID;
 
@@ -9,14 +10,16 @@ public class UserResponse {
     private String username;
     private String email;
     private UUID groupId;
+    private Role role;
 
     public UserResponse() {}
 
-    public UserResponse(UUID id, String username, String email,  UUID groupId) {
+    public UserResponse(UUID id, String username, String email,  UUID groupId,  Role role) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.groupId = groupId;
+        this.role = role;
     }
 
     public static UserResponse fromEntity(User user) {
@@ -24,7 +27,8 @@ public class UserResponse {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getGroup() != null ? user.getGroup().getId() : null
+                user.getGroup() != null ? user.getGroup().getId() : null,
+                user.getRole()
         );
     }
 
@@ -58,5 +62,13 @@ public class UserResponse {
 
     public void setGroupId(UUID groupId) {
         this.groupId = groupId;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

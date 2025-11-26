@@ -1,5 +1,6 @@
 package com.roomsy.backend.dto;
 
+import com.roomsy.backend.model.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.UUID;
@@ -10,5 +11,6 @@ public record AuthResponse(
         @Schema(description = "User's email", example = "user@example.com") String email,
         @Schema(description = "Username", example = "john_doe") String username,
         @Schema(description = "Full name", example = "John Doe") String fullName,
+        @Schema(description = "User role", example = "USER") Role role,
         @Schema(description = "Success message", example = "Login successful") String message
 ) {}
