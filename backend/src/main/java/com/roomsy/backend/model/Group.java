@@ -46,23 +46,28 @@ public class Group {
     @Schema(description = "Unique invite code for joining the group.", example = "a4mN8V2cR1")
     private String inviteCode;
 
-    @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    //@OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @Schema(description = "List of users who are members of the group.")
     private List<User> members = new ArrayList<>();
 
-    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    //@OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, orphanRemoval = true)
     @Schema(description = "List of shopping items associated with the group.")
     private List<ShoppingItem> shoppingItems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    //@OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, orphanRemoval = true)
     @Schema(description = "List of expense items associated with the group.")
     private List<ExpenseItem> expenseItems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    //@OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, orphanRemoval = true)
     @Schema(description = "List of shared expenses associated with the group.")
     private List<SharedExpense> sharedExpenses = new ArrayList<>();
 
-    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    //@OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, orphanRemoval = true)
     @Schema(description = "List of cleaning tasks associated with the group.")
     private List<CleaningTask> cleaningTasks = new ArrayList<>();
 

@@ -7,8 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.ShoppingItemRequest;
-import com.roomsy.backend.dto.ShoppingItemResponse;
+import com.roomsy.backend.dto.Views;
 import com.roomsy.backend.model.Category;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.ShoppingItem;
@@ -50,7 +51,8 @@ public class ShoppingItemController {
             @ApiResponse(responseCode = "404", description = "Group or category not found")
     })
     @PostMapping
-    public ResponseEntity<ShoppingItemResponse> createShoppingItem(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<ShoppingItem> createShoppingItem(
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody ShoppingItemRequest request
     ) {
@@ -64,7 +66,7 @@ public class ShoppingItemController {
         ShoppingItem item = new ShoppingItem(group, category, request.getName(), request.getQuantity());
         ShoppingItem saved = shoppingItemService.createShoppingItem(item);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(ShoppingItemResponse.fromEntity(saved));
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @Operation(summary = "Delete a shopping item", description = "Deletes the specified shopping item")
@@ -87,14 +89,15 @@ public class ShoppingItemController {
             @ApiResponse(responseCode = "404", description = "Shopping item or category not found")
     })
     @PatchMapping("/{item-id}/category")
-    public ResponseEntity<ShoppingItemResponse> updateCategory(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<ShoppingItem> updateCategory(
             @PathVariable("item-id") UUID itemId,
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody UpdateCategoryRequest request
     ) {
         Category category = categoryService.getCategory(request.getCategoryId(), groupId);
         ShoppingItem updated = shoppingItemService.updateCategory(itemId, groupId, category);
-        return ResponseEntity.ok(ShoppingItemResponse.fromEntity(updated));
+        return ResponseEntity.ok(updated);
     }
 
     @Operation(summary = "Update shopping item name", description = "Updates the name of the specified shopping item")
@@ -104,13 +107,14 @@ public class ShoppingItemController {
             @ApiResponse(responseCode = "404", description = "Shopping item not found")
     })
     @PatchMapping("/{item-id}/name")
-    public ResponseEntity<ShoppingItemResponse> updateName(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<ShoppingItem> updateName(
             @PathVariable("item-id") UUID itemId,
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody UpdateNameRequest request
     ) {
         ShoppingItem updated = shoppingItemService.updateName(itemId, groupId, request.getName());
-        return ResponseEntity.ok(ShoppingItemResponse.fromEntity(updated));
+        return ResponseEntity.ok(updated);
     }
 
     @Operation(summary = "Update shopping item quantity", description = "Updates the quantity of the specified shopping item")
@@ -120,13 +124,14 @@ public class ShoppingItemController {
             @ApiResponse(responseCode = "404", description = "Shopping item not found")
     })
     @PatchMapping("/{item-id}/quantity")
-    public ResponseEntity<ShoppingItemResponse> updateQuantity(
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<ShoppingItem> updateQuantity(
             @PathVariable("item-id") UUID itemId,
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody UpdateQuantityRequest request
     ) {
         ShoppingItem updated = shoppingItemService.updateQuantity(itemId, groupId, request.getQuantity());
-        return ResponseEntity.ok(ShoppingItemResponse.fromEntity(updated));
+        return ResponseEntity.ok(updated);
     }
 
 

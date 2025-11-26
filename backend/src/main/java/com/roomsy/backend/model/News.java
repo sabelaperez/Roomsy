@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "news")
+@Schema(description = "Represents a news item related to group activities.")
 public class News {
 
     // Attributes

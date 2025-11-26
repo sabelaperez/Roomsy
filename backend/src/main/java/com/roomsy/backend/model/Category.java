@@ -6,6 +6,9 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.roomsy.backend.dto.Views;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -20,12 +23,15 @@ public class Category {
     // Attributes
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @JsonView(Views.Summary.class)
     @Schema(description = "Unique identifier of the category.", example = "3c9e27b0-d3b6-4b7e-a8c1-470f659cb8c9", accessMode = Schema.AccessMode.READ_ONLY)
     private UUID id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
+    @JsonView(Views.Summary.class)
     @Schema(description = "The group to which the category belongs.")
     private Group group;
 
@@ -33,20 +39,24 @@ public class Category {
     @Size(min = 3, max = 50)
     @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
     @Column(nullable = false, length = 50)
+    @JsonView(Views.Summary.class)
     @Schema(description = "Name of the category.", example = "Groceries", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 50)
     private String name;
 
     // Facer un enum con colores predefinidos
+    @JsonView(Views.Summary.class)
     @Schema(description = "Color associated with the category.", example = "blue")
     private String color;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
+    @JsonView(Views.Detailed.class)
     @Schema(description = "Timestamp when the category was created.", example = "2024-01-15T10:00:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(nullable = false)
+    @JsonView(Views.Detailed.class)
     @Schema(description = "Timestamp when the category was last updated.", example = "2024-01-20T15:30:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
 
