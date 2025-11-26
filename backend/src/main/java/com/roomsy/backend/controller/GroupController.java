@@ -144,15 +144,13 @@ public class GroupController {
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/members")
-    public ResponseEntity<List<UserResponse>> getGroupMembers(
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<List<User>> getGroupMembers(
         @PathVariable("group-id") UUID groupId
     ) {
         List<User> members = groupService.getGroupMembers(groupId);
-        List<UserResponse> response = members.stream()
-                .map(UserResponse::fromEntity)
-                .collect(Collectors.toList());
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(members);
     }
 
     @Operation(summary = "Add user to group", description = "Adds an existing user to a group. Users can only belong " +
