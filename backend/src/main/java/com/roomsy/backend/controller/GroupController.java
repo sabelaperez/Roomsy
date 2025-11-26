@@ -2,7 +2,6 @@ package com.roomsy.backend.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.*;
-import com.roomsy.backend.model.Category;
 import com.roomsy.backend.model.CleaningTask;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.SharedExpense;
@@ -241,20 +240,6 @@ public class GroupController {
         return ResponseEntity.ok(shoppingItems);
     }
 
-    @Operation(summary = "Get group categories", description = "Retrieves all expense categories configured " +
-            "for the group")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Categories retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Group not found")
-    })
-    @GetMapping("/{group-id}/categories")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<List<Category>> getGroupCategories(
-        @PathVariable("group-id") UUID groupId
-    ) {
-        var categories = groupService.getGroupCategories(groupId);
-        return ResponseEntity.ok(categories);
-    }
 
     @Operation(summary = "Get group cleaning tasks", description = "Retrieves all cleaning tasks assigned " +
             "within the group")
