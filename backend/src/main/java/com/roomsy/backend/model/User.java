@@ -54,6 +54,11 @@ public class User {
     @Schema(description = "Indicates whether the user is active.", example = "true", defaultValue = "true")
     private boolean isActive = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Schema(description = "Role of the user in the system.", example = "USER", defaultValue = "USER")
+    private Role role = Role.USER;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     @Schema(description = "Timestamp when the user was created.", example = "2024-01-15T10:00:00", accessMode = Schema.AccessMode.READ_ONLY)
@@ -81,7 +86,16 @@ public class User {
         this.username = username;
         this.fullName = fullName;
         this.hashPassword = hashPassword;
-        this.joinedAt = LocalDateTime.now();;
+        this.joinedAt = LocalDateTime.now();
+    }
+
+    public User(String email, String username, String fullName, String hashPassword, Role role) {
+        this.email = email;
+        this.username = username;
+        this.fullName = fullName;
+        this.hashPassword = hashPassword;
+        this.joinedAt = LocalDateTime.now();
+        this.role = role;
     }
 
     // Getters and Setters
@@ -135,6 +149,14 @@ public class User {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public LocalDateTime getCreatedAt() {

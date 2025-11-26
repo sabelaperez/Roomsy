@@ -79,7 +79,7 @@ public class AuthController {
         User savedUser = userService.createUser(user);
 
         // Generate tokens
-        String accessToken = jwtUtil.generateAccessToken(savedUser.getId(), savedUser.getEmail());
+        String accessToken = jwtUtil.generateAccessToken(savedUser.getId(), savedUser.getEmail(), savedUser.getRole());
         String refreshToken = jwtUtil.generateRefreshToken(savedUser.getId());
 
         // Store tokens in Redis
@@ -95,6 +95,7 @@ public class AuthController {
                 savedUser.getEmail(),
                 savedUser.getUsername(),
                 savedUser.getFullName(),
+                savedUser.getRole(),
                 "Registration successful"
         );
 
@@ -121,7 +122,7 @@ public class AuthController {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         // Generate tokens
-        String accessToken = jwtUtil.generateAccessToken(userDetails.getId(), userDetails.getEmail());
+        String accessToken = jwtUtil.generateAccessToken(userDetails.getId(), userDetails.getEmail(), userDetails.getRole());
         String refreshToken = jwtUtil.generateRefreshToken(userDetails.getId());
 
         // Store tokens in Redis
@@ -140,6 +141,7 @@ public class AuthController {
                 user.getEmail(),
                 user.getUsername(),
                 user.getFullName(),
+                user.getRole(),
                 "Login successful"
         );
 
@@ -191,7 +193,7 @@ public class AuthController {
         User user = userService.getUserById(userId);
 
         // Generate new access token
-        String newAccessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail());
+        String newAccessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getRole());
 
         // Store new access token in Redis
         tokenService.storeAccessToken(user.getId(), newAccessToken);
@@ -216,6 +218,7 @@ public class AuthController {
                 user.getEmail(),
                 user.getUsername(),
                 user.getFullName(),
+                user.getRole(),
                 "User retrieved successfully"
         );
 

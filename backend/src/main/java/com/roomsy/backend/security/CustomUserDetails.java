@@ -1,5 +1,6 @@
 package com.roomsy.backend.security;
 
+import com.roomsy.backend.model.Role;
 import com.roomsy.backend.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +17,7 @@ public class CustomUserDetails implements UserDetails {
     private final String username;
     private final String password;
     private final boolean isActive;
+    private final Role role;
 
     public CustomUserDetails(User user) {
         this.id = user.getId();
@@ -23,12 +25,12 @@ public class CustomUserDetails implements UserDetails {
         this.username = user.getUsername();
         this.password = user.getHashPassword();
         this.isActive = user.isActive();
+        this.role = user.getRole() != null ? user.getRole() : Role.USER;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // For now, all users have ROLE_USER
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
@@ -51,6 +53,10 @@ public class CustomUserDetails implements UserDetails {
 
     public String getEmail() {
         return email;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     @Override
