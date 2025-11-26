@@ -23,6 +23,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -67,6 +68,7 @@ public class GroupController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Groups retrieved successfully")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<GroupResponse>> getGroups() {
         List<Group> groups = groupService.getGroups();
@@ -83,6 +85,7 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "Group found successfully"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{group-id}")
     public ResponseEntity<GroupResponse> getGroupById(
         @PathVariable("group-id") UUID groupId

@@ -1,69 +1,69 @@
 package com.roomsy.backend.controller;
 
-import com.roomsy.backend.dto.UserRequest;
 import com.roomsy.backend.dto.UserResponse;
 import com.roomsy.backend.model.User;
+import com.roomsy.backend.security.CustomUserDetails;
 import com.roomsy.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
-@Tag(name = "User", description = "Endpoints for managing users")
+@Tag(name = "User", description = "Endpoints for user management")
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @Operation(summary = "Create a new user", description = "Creates a new user with the provided details")
+    @Operation(summary = "Get user by ID", description = "Retrieves detailed information about a specific user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "200", description = "User found successfully"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated"),
+            @ApiResponse(responseCode = "404", description = "User not found")
     })
-    @PostMapping
-    public ResponseEntity<UserResponse> createUser(
-        @Valid @RequestBody UserRequest request
-    ) {
-        User user = new User(
-                request.getEmail(),
-                request.getUsername(),
-                request.getFullName(),
-                request.getHashPassword()
-        );
-
-        User saved = userService.createUser(user);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(UserResponse.fromEntity(saved));
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{user-id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable("user-id") UUID userId) {
+        User user = userService.getUserById(userId);
+        return ResponseEntity.ok(UserResponse.fromEntity(user));
     }
 
-    @Operation(summary = "Get all users", description = "Retrieves a list of all existing users in the system")
+    @Operation(summary = "Delete current user", description = "Deletes the authenticated user's account")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of users retrieved successfully"),
+            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated")
     })
-    @GetMapping
-    public ResponseEntity<List<UserResponse>> getUsers() {
-        List<User> users = userService.getUsers();
-        List<UserResponse> response = users.stream()
-                .map(UserResponse::fromEntity)
-                .collect(Collectors.toList());
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        userService.deleteUser(userDetails.getId());
+        return ResponseEntity.noContent().build();
+    }
 
-        return ResponseEntity.ok(response);
-    }        
+
+    @Operation(summary = "Delete user by ID", description = "Deletes a user by their ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - insufficient permissions"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{user-id}")
+    public ResponseEntity<Void> deleteUserById(@PathVariable("user-id") UUID userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
 }
-

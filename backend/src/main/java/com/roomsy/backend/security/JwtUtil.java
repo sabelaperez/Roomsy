@@ -1,5 +1,6 @@
 package com.roomsy.backend.security;
 
+import com.roomsy.backend.model.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -28,10 +29,11 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(UUID userId, String email) {
+    public String generateAccessToken(UUID userId, String email, Role role) {
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("email", email)
+                .claim("role", role.name())
                 .claim("type", "access")
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
@@ -64,6 +66,11 @@ public class JwtUtil {
 
     public String extractEmail(String token) {
         return extractClaims(token).get("email", String.class);
+    }
+
+    public Role extractRole(String token) {
+        String roleName = extractClaims(token).get("role", String.class);
+        return roleName != null ? Role.valueOf(roleName) : Role.USER;
     }
 
     public boolean isTokenExpired(String token) {
