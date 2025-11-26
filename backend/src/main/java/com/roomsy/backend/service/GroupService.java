@@ -182,9 +182,6 @@ public class GroupService {
         return new ArrayList<>(group.getShoppingItems());
     }
 
-    public ArrayList<Category> getGroupCategories(@NonNull UUID groupId) throws ResourceNotFoundException {
-        return new ArrayList<>(categoryRepository.getCategoriesByGroup_Id(groupId));
-    }
 
     public ArrayList<CleaningTask> getGroupCleaningTasks(@NonNull UUID groupId) throws ResourceNotFoundException {
         Group group = getGroupById(groupId);
