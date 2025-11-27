@@ -50,8 +50,8 @@ public class News {
 
     @Size(max = 500)
     @Column(length = 500)
-    @Pattern(regexp = "^[a-zA-Z0-9 ,.?!'-]*$")
-    @Schema(description = "Detailed description of the news item.", example = "User John Doe has been added to the group.", pattern = "^[a-zA-Z0-9 ,.?!'-]*$", maxLength = 500)
+    @Pattern(regexp = "^[a-zA-Z0-9 ,.?!':()-]*$")
+    @Schema(description = "Detailed description of the news item.", example = "User John Doe has been added to the group.", pattern = "^[a-zA-Z0-9 ,.?!':()-]*$", maxLength = 500)
     private String description;
 
     @CreationTimestamp
