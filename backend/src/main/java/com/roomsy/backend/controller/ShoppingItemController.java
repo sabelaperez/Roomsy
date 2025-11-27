@@ -2,7 +2,13 @@ package com.roomsy.backend.controller;
 
 import java.util.UUID;
 
+import com.roomsy.backend.dto.PageResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -132,6 +138,33 @@ public class ShoppingItemController {
     ) {
         ShoppingItem updated = shoppingItemService.updateQuantity(itemId, groupId, request.getQuantity());
         return ResponseEntity.ok(updated);
+    }
+
+    @Operation(summary = "Get group shopping items", description = "Retrieves all shopping list items for the group")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shopping items retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    @GetMapping()
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<PageResponse<ShoppingItem>> getGroupShoppingItems(
+            @PathVariable("group-id") UUID groupId,
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Sort field", example = "name")
+            @RequestParam(defaultValue = "name") String sortBy,
+            @Parameter(description = "Sort direction (asc or desc)", example = "asc")
+            @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<ShoppingItem> shoppingItems = groupService.getGroupShoppingItems(groupId, pageable);
+        return ResponseEntity.ok(new PageResponse<>(shoppingItems));
     }
 
 

@@ -1,21 +1,30 @@
 package com.roomsy.backend.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.ExpenseItemRequest;
 import com.roomsy.backend.dto.ExpenseItemResponse;
+import com.roomsy.backend.dto.PageResponse;
+import com.roomsy.backend.dto.Views;
 import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.ExpenseItem;
 import com.roomsy.backend.model.Group;
+import com.roomsy.backend.model.SharedExpense;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.service.ExpenseService;
 import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -110,5 +119,60 @@ public class ExpenseController {
         } else {
             throw new ResourceNotFoundException("SharedExpense not found or could not be paid");
         }
+    }
+
+    @Operation(summary = "Get group expenses", description = "Retrieves all individual expense items associated " +
+            "with the group")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Expenses retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    @GetMapping()
+    public ResponseEntity<PageResponse<ExpenseItemResponse>> getGroupExpenses(
+            @PathVariable("group-id") UUID groupId,
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Sort field", example = "createdAt")
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @Parameter(description = "Sort direction (asc or desc)", example = "desc")
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ) {
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<ExpenseItemResponse> expenses = groupService.getGroupExpenses(groupId, pageable);
+        return ResponseEntity.ok(new PageResponse<>(expenses));
+    }
+
+    @Operation(summary = "Get group shared expenses", description = "Retrieves all shared expenses that are split " +
+            "among group members")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shared expenses retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    @GetMapping("/shared-expenses")
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<PageResponse<SharedExpense>> getGroupSharedExpenses(
+            @PathVariable("group-id") UUID groupId,
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Sort field", example = "createdAt")
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @Parameter(description = "Sort direction (asc or desc)", example = "desc")
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ) {
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<SharedExpense> sharedExpenses = groupService.getGroupSharedExpenses(groupId, pageable);
+        return ResponseEntity.ok(new PageResponse<>(sharedExpenses));
     }
 }

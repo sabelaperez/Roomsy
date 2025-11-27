@@ -2,6 +2,7 @@ package com.roomsy.backend.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.CategoryRequest;
+import com.roomsy.backend.dto.PageResponse;
 import com.roomsy.backend.dto.Views;
 import com.roomsy.backend.model.Category;
 import com.roomsy.backend.model.Group;
@@ -9,6 +10,7 @@ import com.roomsy.backend.service.CategoryService;
 import com.roomsy.backend.service.GroupService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,6 +21,10 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -72,6 +78,49 @@ public class CategoryController {
         categoryService.deleteCategory(categoryId, groupId);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Get group categories", description = "Retrieves a paginated list of categories for the specified group")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Categories retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    @GetMapping()
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<PageResponse<Category>> getGroupCategories(
+            @PathVariable("group-id") UUID groupId,
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Sort field", example = "name")
+            @RequestParam(defaultValue = "name") String sortBy,
+            @Parameter(description = "Sort direction (asc or desc)", example = "asc")
+            @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<Category> categories = categoryService.getCategoriesPaginated(groupId, pageable);
+        return ResponseEntity.ok(new PageResponse<>(categories));
+    }
+
+    @Operation(summary = "Get category by id", description = "Retrieves the specified category within the given group")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Category retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Category not found"),
+    })
+    @GetMapping("/{category-id}")
+    @JsonView(Views.Detailed.class)
+    public ResponseEntity<Category> getCategoryById(
+            @PathVariable("group-id") UUID groupId,
+            @PathVariable("category-id") UUID categoryId
+    ) {
+        Category category = categoryService.getCategory(categoryId, groupId);
+        return ResponseEntity.ok(category);
+    }
+
 
     @Operation(summary = "Update category name", description = "Updates the name of the specified category" +
             " name must be 4-50 characters long and can only contain letters, numbers, and spaces")

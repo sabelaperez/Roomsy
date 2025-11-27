@@ -96,6 +96,7 @@ public class AuthController {
                 savedUser.getUsername(),
                 savedUser.getFullName(),
                 savedUser.getRole(),
+                null,
                 "Registration successful"
         );
 
@@ -113,6 +114,8 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response) {
+
+        // todo: cambiar que si ya estas logeado tengas que hacer logout y luego login
 
         // Authenticate user
         Authentication authentication = authenticationManager.authenticate(
@@ -136,12 +139,15 @@ public class AuthController {
         // Get full user data
         User user = userService.getUserById(userDetails.getId());
 
+        UUID groupId = user.getGroup() != null ? user.getGroup().getId() : null;
+
         AuthResponse authResponse = new AuthResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getUsername(),
                 user.getFullName(),
                 user.getRole(),
+                groupId,
                 "Login successful"
         );
 
@@ -213,12 +219,15 @@ public class AuthController {
     public ResponseEntity<AuthResponse> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userService.getUserById(userDetails.getId());
 
+        UUID groupId = user.getGroup() != null ? user.getGroup().getId() : null;
+
         AuthResponse response = new AuthResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getUsername(),
                 user.getFullName(),
                 user.getRole(),
+                groupId,
                 "User retrieved successfully"
         );
 

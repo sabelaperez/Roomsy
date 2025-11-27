@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -28,6 +30,10 @@ public class CategoryService {
             throw new IllegalArgumentException("Category not found in the specified group");
         }
         return category;
+    }
+
+    public Page<Category> getCategoriesPaginated(@NonNull UUID groupId, Pageable pageable) {
+        return categoryRepository.findByGroupId(groupId, pageable);
     }
 
     public boolean existCategory(@NonNull UUID id, @NotNull UUID groupId) {

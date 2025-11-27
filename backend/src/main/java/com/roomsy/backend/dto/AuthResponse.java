@@ -12,5 +12,7 @@ public record AuthResponse(
         @Schema(description = "Username", example = "john_doe") String username,
         @Schema(description = "Full name", example = "John Doe") String fullName,
         @Schema(description = "User role", example = "USER") Role role,
+        @Schema(description = "Group ID if user belongs to a group", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", nullable = true)
+        UUID groupId,
         @Schema(description = "Success message", example = "Login successful") String message
 ) {}
