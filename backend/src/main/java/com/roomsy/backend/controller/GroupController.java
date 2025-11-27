@@ -1,12 +1,7 @@
 package com.roomsy.backend.controller;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.*;
-import com.roomsy.backend.model.Category;
-import com.roomsy.backend.model.CleaningTask;
 import com.roomsy.backend.model.Group;
-import com.roomsy.backend.model.SharedExpense;
-import com.roomsy.backend.model.ShoppingItem;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
@@ -192,85 +187,7 @@ public class GroupController {
         return ResponseEntity.ok(GroupResponse.fromEntity(updatedGroup));
     }
 
-    @Operation(summary = "Get group expenses", description = "Retrieves all individual expense items associated " +
-            "with the group")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Expenses retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Group not found")
-    })
-    @GetMapping("/{group-id}/expenses")
-    @JsonView(Views.Basic.class)
-    public ResponseEntity<List<ExpenseItemResponse>> getGroupExpenses(
-        @PathVariable("group-id") UUID groupId
-    ) {
-        var expenses = groupService.getGroupExpenses(groupId);
-        List<ExpenseItemResponse> response = expenses.stream()
-                .map(ExpenseItemResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "Get group shared expenses", description = "Retrieves all shared expenses that are split " +
-            "among group members")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Shared expenses retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Group not found")
-    })
-    @GetMapping("/{group-id}/shared-expenses")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<List<SharedExpense>> getGroupSharedExpenses(
-        @PathVariable("group-id") UUID groupId
-    ) {
-        var sharedExpenses = groupService.getGroupSharedExpenses(groupId);
-        return ResponseEntity.ok(sharedExpenses);
-    }
-
-    @Operation(summary = "Get group shopping items", description = "Retrieves all shopping list items for the group")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Shopping items retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Group not found")
-    })
-    @GetMapping("/{group-id}/shopping")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<List<ShoppingItem>> getGroupShoppingItems(
-        @PathVariable("group-id") UUID groupId
-    ) {
-        var shoppingItems = groupService.getGroupShoppingItems(groupId);
-        return ResponseEntity.ok(shoppingItems);
-    }
-
-    @Operation(summary = "Get group categories", description = "Retrieves all expense categories configured " +
-            "for the group")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Categories retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Group not found")
-    })
-    @GetMapping("/{group-id}/categories")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<List<Category>> getGroupCategories(
-        @PathVariable("group-id") UUID groupId
-    ) {
-        var categories = groupService.getGroupCategories(groupId);
-        return ResponseEntity.ok(categories);
-    }
-
-    @Operation(summary = "Get group cleaning tasks", description = "Retrieves all cleaning tasks assigned " +
-            "within the group")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cleaning tasks retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Group not found")
-    })
-    @GetMapping("/{group-id}/cleaning-tasks")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<List<CleaningTask>> getGroupCleaningTasks(
-        @PathVariable("group-id") UUID groupId
-    ) {
-        var cleaningTasks = groupService.getGroupCleaningTasks(groupId);
-        return ResponseEntity.ok(cleaningTasks);
-    }
-
-    // Obter todas as News do grupo
+    // todo: Obter todas as News do grupo
 
     // Request DTOs
     @Schema(description = "Request object for updating a group's name")

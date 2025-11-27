@@ -47,12 +47,15 @@ public class CleaningTaskService {
 
     public CleaningTask createTask(CleaningTask task) {
         // Xerar unha noticia de tipo CLEANING_TASK_ADDED
+        /*
         String description = "";
         for (User user : task.getAssignedTo()) {
             description += user.getUsername() + " ,";
         }
-        description += " are assigned to the task " + task.getTitle() + " on " + task.getDate().toString() + ".";
-        News addedNews = new News(task.getGroup(), null, NewsType.CLEANING_TASK_ADDED,
+        description += " are assigned to the task " + task.getTitle() + " on " + task.getDate().toString() + "."; */
+        String description = "prueba";
+        // todo: cambiar las cosas hardcodeadas, el task.getAssignedTo().getFirst() y así
+        News addedNews = new News(task.getGroup(), task.getAssignedTo().getFirst(), NewsType.CLEANING_TASK_ADDED,
             "Cleaning task " + task.getTitle() + " added to the group", description);
 
         // Persistir cambios

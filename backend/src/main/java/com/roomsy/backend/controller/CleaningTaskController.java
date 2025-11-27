@@ -5,9 +5,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.roomsy.backend.dto.PageResponse;
+import com.roomsy.backend.security.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -56,13 +64,16 @@ public class CleaningTaskController {
     @JsonView(Views.Summary.class)
     public ResponseEntity<CleaningTask> createTask(
             @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody CleaningTaskRequest request
+            @Valid @RequestBody CleaningTaskRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Group group = groupService.getGroupById(groupId);
 
         List<User> assignees = request.getAssignedToIds().stream()
                 .map(userService::getUserById)
                 .collect(Collectors.toList());
+
+        // comprobar que los users sean de ese grupo
 
         CleaningTask task = new CleaningTask(group, request.getTitle(), request.getDate(), assignees);
         CleaningTask saved = cleaningTaskService.createTask(task);
@@ -168,6 +179,34 @@ public class CleaningTaskController {
     ) {
         CleaningTask updated = cleaningTaskService.changeTaskTitle(taskId, groupId,request.getTitle());
         return ResponseEntity.ok(updated);
+    }
+
+    @Operation(summary = "Get group cleaning tasks", description = "Retrieves all cleaning tasks assigned " +
+            "within the group")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cleaning tasks retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    @GetMapping()
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<PageResponse<CleaningTask>> getGroupCleaningTasks(
+            @PathVariable("group-id") UUID groupId,
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Sort field", example = "createdAt")
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @Parameter(description = "Sort direction (asc or desc)", example = "desc")
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ) {
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<CleaningTask> cleaningTasks = groupService.getGroupCleaningTasks(groupId, pageable);
+        return ResponseEntity.ok(new PageResponse<>(cleaningTasks));
     }
 
     // Request DTOs

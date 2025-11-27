@@ -16,7 +16,7 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI roomsyOpenAPI() {
         Server devServer = new Server();
-        devServer.setUrl("http://localhost:8080");
+        devServer.setUrl("http://localhost:8080/api/v1");
         devServer.setDescription("Development Server");
 
         Contact contact = new Contact();

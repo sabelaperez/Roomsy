@@ -28,7 +28,7 @@ public class Group {
     @JsonView(Views.Basic.class)
     @Schema(description = "Unique identifier of the group.", example = "3c9e27b0-d3b6-4b7e-a8c1-470f659cb8c9", accessMode = Schema.AccessMode.READ_ONLY)
     private UUID id;
-    
+
     @NotNull
     @Size(min = 3, max = 100)
     @Column(nullable = false, length = 100)
@@ -150,7 +150,7 @@ public class Group {
         if (!this.members.contains(user)) {
             this.members.add(user);
             user.setGroup(this);
-        }      
+        }
     }
 
     public void removeMember(User user) {
