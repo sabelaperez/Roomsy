@@ -24,13 +24,15 @@ public class News {
     private UUID id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
     @Schema(description = "The group to which the news item belongs.")
     private Group group;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "user_id", nullable = false)
     @Schema(description = "The user who performed the action leading to the news item.")
     private User actor;
@@ -44,14 +46,14 @@ public class News {
     @NotNull
     @Size(min = 3, max = 100)
     @Column(nullable = false, length = 100)
-    @Pattern(regexp = "^[a-zA-Z0-9 ]+$")
-    @Schema(description = "The name of the news item.", example = "New member added", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 100)
+    @Pattern(regexp = "^[a-zA-Z0-9 _]+$")
+    @Schema(description = "The name of the news item.", example = "New_member_added", pattern = "^[a-zA-Z0-9 _]+$", maxLength = 100)
     private String name;
 
     @Size(max = 500)
     @Column(length = 500)
-    @Pattern(regexp = "^[a-zA-Z0-9 ,.?!':()-]*$")
-    @Schema(description = "Detailed description of the news item.", example = "User John Doe has been added to the group.", pattern = "^[a-zA-Z0-9 ,.?!':()-]*$", maxLength = 500)
+    @Pattern(regexp = "^[a-zA-Z0-9 ,.?!':()-_]*$")
+    @Schema(description = "Detailed description of the news item.", example = "User John Doe has been added to the group.", pattern = "^[a-zA-Z0-9 ,.?!':()-_]*$", maxLength = 500)
     private String description;
 
     @CreationTimestamp

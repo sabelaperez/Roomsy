@@ -50,7 +50,7 @@ public class Group {
     private LocalDateTime updatedAt;
 
     @Column(unique = true, nullable = false)
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     @Schema(description = "Unique invite code for joining the group.", example = "a4mN8V2cR1")
     private String inviteCode;
 

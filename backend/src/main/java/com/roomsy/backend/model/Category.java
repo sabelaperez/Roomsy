@@ -31,7 +31,7 @@ public class Category {
     //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     @Schema(description = "The group to which the category belongs.")
     private Group group;
 

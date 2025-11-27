@@ -112,7 +112,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @GetMapping("/{category-id}")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<Category> getCategoryById(
             @PathVariable("group-id") UUID groupId,
             @PathVariable("category-id") UUID categoryId

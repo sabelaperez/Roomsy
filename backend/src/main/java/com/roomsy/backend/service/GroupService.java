@@ -25,7 +25,6 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final NewsRepository newsRepository;
-    private final CategoryRepository categoryRepository;
     private final ExpenseItemRepository expenseItemRepository;
 
     private static final int CODE_LENGTH = 10;
@@ -36,11 +35,10 @@ public class GroupService {
 
 
     @Autowired
-    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository, CategoryRepository categoryRepository, ExpenseItemRepository expenseItemRepository, SharedExpenseRepository sharedExpenseRepository, ShoppingItemRepository shoppingItemRepository, CleaningTaskRepository cleaningTaskRepository) {
+    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository, ExpenseItemRepository expenseItemRepository, SharedExpenseRepository sharedExpenseRepository, ShoppingItemRepository shoppingItemRepository, CleaningTaskRepository cleaningTaskRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.newsRepository = newsRepository;
-        this.categoryRepository = categoryRepository;
         this.expenseItemRepository = expenseItemRepository;
         this.sharedExpenseRepository = sharedExpenseRepository;
         this.shoppingItemRepository = shoppingItemRepository;
@@ -112,7 +110,7 @@ public class GroupService {
         
         // Xerar unha noticia de tipo MEMBER_ADDED
         News addedNews = new News(group, user, NewsType.MEMBER_ADDED, 
-            "user", "pruebaaaa"); // todo: hardcodeado
+                "User " + user.getUsername() + " added to the group", null);
 
         // Persistir cambios
         newsRepository.save(addedNews);
@@ -142,7 +140,7 @@ public class GroupService {
         } else {
             // Xerar unha noticia de tipo MEMBER_REMOVED
             News removedNews = new News(group, user, NewsType.MEMBER_REMOVED, 
-                "User " + user.getUsername() + " removed from the group", null);
+                "User " + user.getUsername() + " removed from the group", null); 
 
             // Persistir cambios
             newsRepository.save(removedNews);
