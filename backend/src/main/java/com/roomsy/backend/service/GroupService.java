@@ -25,7 +25,6 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final NewsRepository newsRepository;
-    private final CategoryRepository categoryRepository;
     private final ExpenseItemRepository expenseItemRepository;
 
     private static final int CODE_LENGTH = 10;
@@ -36,11 +35,10 @@ public class GroupService {
 
 
     @Autowired
-    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository, CategoryRepository categoryRepository, ExpenseItemRepository expenseItemRepository, SharedExpenseRepository sharedExpenseRepository, ShoppingItemRepository shoppingItemRepository, CleaningTaskRepository cleaningTaskRepository) {
+    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository, ExpenseItemRepository expenseItemRepository, SharedExpenseRepository sharedExpenseRepository, ShoppingItemRepository shoppingItemRepository, CleaningTaskRepository cleaningTaskRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.newsRepository = newsRepository;
-        this.categoryRepository = categoryRepository;
         this.expenseItemRepository = expenseItemRepository;
         this.sharedExpenseRepository = sharedExpenseRepository;
         this.shoppingItemRepository = shoppingItemRepository;
