@@ -110,7 +110,7 @@ public class GroupService {
         
         // Xerar unha noticia de tipo MEMBER_ADDED
         News addedNews = new News(group, user, NewsType.MEMBER_ADDED, 
-            "user", "pruebaaaa"); // todo: hardcodeado
+                "User " + user.getUsername() + " added to the group", null);
 
         // Persistir cambios
         newsRepository.save(addedNews);
@@ -140,7 +140,7 @@ public class GroupService {
         } else {
             // Xerar unha noticia de tipo MEMBER_REMOVED
             News removedNews = new News(group, user, NewsType.MEMBER_REMOVED, 
-                "User " + user.getUsername() + " removed from the group", null);
+                "User " + user.getUsername() + " removed from the group", null); 
 
             // Persistir cambios
             newsRepository.save(removedNews);
