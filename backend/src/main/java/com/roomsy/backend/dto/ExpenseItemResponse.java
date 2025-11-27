@@ -12,18 +12,29 @@ import java.util.UUID;
 
 public class ExpenseItemResponse {
 
+    @JsonView(Views.Basic.class)
     private UUID id;
+    @JsonView(Views.Basic.class)
     private UUID groupId;
+    @JsonView(Views.Basic.class)
     private UUID ownerId;
+    @JsonView(Views.Basic.class)
     private String ownerUsername;
+    @JsonView(Views.Basic.class)
     private String name;
+    @JsonView(Views.Basic.class)
     private ExpenseType expenseType;
     @JsonView(Views.Basic.class)
     private List<User> usersInvolved;
+    @JsonView(Views.Basic.class)
     private Double price;
+    @JsonView(Views.Basic.class)
     private Double pricePerPerson;
+    @JsonView(Views.Basic.class)
     private Date expenseDate;
+    @JsonView(Views.Basic.class)
     private LocalDateTime createdAt;
+    @JsonView(Views.Basic.class)
     private LocalDateTime updatedAt;
 
     public ExpenseItemResponse() {}

@@ -179,8 +179,8 @@ public class GroupController {
     })
     @DeleteMapping("/{group-id}/members/{user-id}")
     public ResponseEntity<GroupResponse> removeUserFromGroup(
-            @PathVariable UUID groupId,
-            @PathVariable UUID userId
+            @PathVariable("group-id") UUID groupId,
+            @PathVariable("user-id") UUID userId
     ) {
         Group updatedGroup = groupService.removeUserFromGroup(groupId, userId);
 
@@ -199,6 +199,7 @@ public class GroupController {
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/expenses")
+    @JsonView(Views.Basic.class)
     public ResponseEntity<List<ExpenseItemResponse>> getGroupExpenses(
         @PathVariable("group-id") UUID groupId
     ) {

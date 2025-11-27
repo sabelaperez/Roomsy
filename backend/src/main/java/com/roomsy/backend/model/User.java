@@ -48,7 +48,7 @@ public class User {
     @Size(min = 4, max = 50)
     @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Full name can only contain letters, numbers, and spaces")
     @Column(length = 50)
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     @Schema(description = "Full name of the user.", example = "John Doe", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 50)
     private String fullName;
 

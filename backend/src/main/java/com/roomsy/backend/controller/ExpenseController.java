@@ -1,7 +1,9 @@
 package com.roomsy.backend.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.ExpenseItemRequest;
 import com.roomsy.backend.dto.ExpenseItemResponse;
+import com.roomsy.backend.dto.Views;
 import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.ExpenseItem;
 import com.roomsy.backend.model.Group;
@@ -48,6 +50,7 @@ public class ExpenseController {
             @ApiResponse(responseCode = "404", description = "Group or some user not found"),
     })
     @PostMapping
+    @JsonView(Views.Basic.class)
     public ResponseEntity<ExpenseItemResponse> createExpenseItem(
         @PathVariable("group-id") UUID groupId,
         @Valid @RequestBody ExpenseItemRequest request

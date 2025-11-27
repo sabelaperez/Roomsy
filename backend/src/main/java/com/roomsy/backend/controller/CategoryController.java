@@ -45,7 +45,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Group not found"),
     })
     @PostMapping
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<Category> createCategory (
             @PathVariable("group-id") UUID groupId,
             @RequestBody CategoryRequest request
@@ -81,7 +81,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @PatchMapping("/{category-id}/name")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<Category> updateName(
         @PathVariable("category-id") UUID categoryId,
         @PathVariable("group-id") UUID groupId,
@@ -97,7 +97,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @PatchMapping("/{category-id}/color")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<Category> updateColor(
         @PathVariable("category-id") UUID categoryId,
         @PathVariable("group-id") UUID groupId,
