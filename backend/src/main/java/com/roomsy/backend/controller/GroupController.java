@@ -1,5 +1,6 @@
 package com.roomsy.backend.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.*;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;

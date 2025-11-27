@@ -115,8 +115,6 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response) {
 
-        // todo: cambiar que si ya estas logeado tengas que hacer logout y luego login
-
         // Authenticate user
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
