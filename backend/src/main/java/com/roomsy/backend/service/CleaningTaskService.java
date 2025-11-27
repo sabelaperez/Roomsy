@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.roomsy.backend.exception.ResourceNotFoundException;
@@ -90,4 +92,7 @@ public class CleaningTaskService {
         return cleaningTaskRepository.save(existingTask);
     }
 
+    public Page<CleaningTask> getGroupCleaningTasks(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
+        return cleaningTaskRepository.findByGroupId(groupId, pageable);
+    }
 }

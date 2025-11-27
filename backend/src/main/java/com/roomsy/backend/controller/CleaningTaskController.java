@@ -205,7 +205,7 @@ public class CleaningTaskController {
                 : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<CleaningTask> cleaningTasks = groupService.getGroupCleaningTasks(groupId, pageable);
+        Page<CleaningTask> cleaningTasks = cleaningTaskService.getGroupCleaningTasks(groupId, pageable);
         return ResponseEntity.ok(new PageResponse<>(cleaningTasks));
     }
 

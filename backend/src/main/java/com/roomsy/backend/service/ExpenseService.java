@@ -1,5 +1,6 @@
 package com.roomsy.backend.service;
 
+import com.roomsy.backend.dto.ExpenseItemResponse;
 import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.ExpenseItem;
 import com.roomsy.backend.model.Group;
@@ -13,6 +14,8 @@ import com.roomsy.backend.repository.SharedExpenseRepository;
 import jakarta.transaction.Transactional;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -200,5 +203,14 @@ public class ExpenseService {
         } else {
             return false;
         }
+    }
+
+    public Page<ExpenseItemResponse> getGroupExpenses(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
+        Page<ExpenseItem> expenses = expenseItemRepository.findByGroupId(groupId, pageable);
+        return expenses.map(ExpenseItemResponse::fromEntity);
+    }
+
+    public Page<SharedExpense> getGroupSharedExpenses(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
+        return sharedExpenseRepository.findByGroupId(groupId, pageable);
     }
 }

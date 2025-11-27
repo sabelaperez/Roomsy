@@ -8,6 +8,8 @@ import jakarta.transaction.Transactional;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -70,4 +72,7 @@ public class ShoppingItemService {
         return shoppingItemRepository.save(shoppingItem);
     }
 
+    public Page<ShoppingItem> getGroupShoppingItems(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
+        return shoppingItemRepository.findByGroupId(groupId, pageable);
+    }
 }
