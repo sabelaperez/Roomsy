@@ -48,6 +48,11 @@ public class GroupService {
         throw new IllegalStateException("Unable to generate unique invite code");
     }
 
+    public String getInviteCode(@NonNull UUID groupId) throws ResourceNotFoundException {
+        Group group = getGroupById(groupId);
+        return group.getInviteCode();
+    }
+
     @Transactional
     public String regenerateInviteCode(@NonNull UUID groupId) throws ResourceNotFoundException {
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
@@ -87,6 +92,35 @@ public class GroupService {
         // Si quieres impedir que un usuario esté en más de un grupo simultáneamente:
         if (user.getGroup() != null) {
             if (user.getGroup().getId().equals(groupId)) {
+                // ya es miembro -> nada que hacer
+                return group;
+            }
+            throw new InvalidOperationException("User already belongs to another group. Remove or move before adding.");
+        }
+
+        // Mantener ambos lados de la relación
+        group.addMember(user);
+        
+        // Xerar unha noticia de tipo MEMBER_ADDED
+        News addedNews = new News(group, user, NewsType.MEMBER_ADDED, 
+                "User " + user.getUsername() + " added to the group", null);
+
+        // Persistir cambios
+        newsRepository.save(addedNews);
+        userRepository.save(user);
+        return groupRepository.save(group);
+    }
+
+    @Transactional
+    public Group addUserToGroupWithInviteCode(@NonNull String inviteCode, @NonNull UUID userId) throws ResourceNotFoundException, InvalidOperationException {
+        Group group = groupRepository.getGroupByInviteCode(inviteCode)
+            .orElseThrow(() -> new ResourceNotFoundException("Group not found with invite code: " + inviteCode));
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // Si quieres impedir que un usuario esté en más de un grupo simultáneamente:
+        if (user.getGroup() != null) {
+            if (user.getGroup().getId().equals(group.getId())) {
                 // ya es miembro -> nada que hacer
                 return group;
             }

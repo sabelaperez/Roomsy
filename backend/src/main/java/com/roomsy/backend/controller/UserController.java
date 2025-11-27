@@ -1,9 +1,12 @@
 package com.roomsy.backend.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.roomsy.backend.dto.GroupResponse;
 import com.roomsy.backend.dto.Views;
+import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.security.CustomUserDetails;
+import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,10 +26,12 @@ import java.util.UUID;
 @Tag(name = "User", description = "Endpoints for user management")
 public class UserController {
     private final UserService userService;
+    private final GroupService groupService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, GroupService groupService) {
         this.userService = userService;
+        this.groupService = groupService;
     }
 
     @Operation(summary = "Get user by ID", description = "Retrieves detailed information about a specific user")
@@ -66,5 +71,20 @@ public class UserController {
     public ResponseEntity<Void> deleteUserById(@PathVariable("user-id") UUID userId) {
         userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Add user to a group by invite code", description = "Adds the authenticated user to a group using an invite code")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User added to group successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid operation - user already belongs to another group"),
+            @ApiResponse(responseCode = "404", description = "Group or user not found")
+    })
+    @PostMapping("/{user-id}/join")
+    public ResponseEntity<GroupResponse> joinGroupByInviteCode(
+            @PathVariable("user-id") UUID userId,
+            String inviteCode
+    ) {
+        Group updatedGroup = groupService.addUserToGroupWithInviteCode(inviteCode, userId);
+        return ResponseEntity.ok(GroupResponse.fromEntity(updatedGroup));
     }
 }
