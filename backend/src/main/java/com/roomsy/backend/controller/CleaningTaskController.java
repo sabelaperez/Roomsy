@@ -61,7 +61,7 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Group or user not found")
     })
     @PostMapping
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<CleaningTask> createTask(
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody CleaningTaskRequest request,
@@ -117,7 +117,7 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PatchMapping("/{task-id}/assign-to")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<CleaningTask> reassignTask(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,
@@ -137,7 +137,7 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @PatchMapping("/{task-id}/completed")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<CleaningTask> setCompleted(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,
@@ -154,7 +154,7 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PatchMapping("/{task-id}/date")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<CleaningTask> changeDate(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,
@@ -171,7 +171,7 @@ public class CleaningTaskController {
             @ApiResponse(responseCode = "400", description = "Invalid title")
     })
     @PatchMapping("/{task-id}/title")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<CleaningTask> changeTitle(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,

@@ -25,7 +25,7 @@ public class Group {
     // Attributes
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @JsonView(Views.Summary.class)
+    @JsonView(Views.Basic.class)
     @Schema(description = "Unique identifier of the group.", example = "3c9e27b0-d3b6-4b7e-a8c1-470f659cb8c9", accessMode = Schema.AccessMode.READ_ONLY)
     private UUID id;
 

@@ -139,15 +139,13 @@ public class GroupController {
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/members")
-    public ResponseEntity<List<UserResponse>> getGroupMembers(
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<List<User>> getGroupMembers(
         @PathVariable("group-id") UUID groupId
     ) {
         List<User> members = groupService.getGroupMembers(groupId);
-        List<UserResponse> response = members.stream()
-                .map(UserResponse::fromEntity)
-                .collect(Collectors.toList());
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(members);
     }
 
     @Operation(summary = "Add user to group", description = "Adds an existing user to a group. Users can only belong " +
@@ -176,8 +174,8 @@ public class GroupController {
     })
     @DeleteMapping("/{group-id}/members/{user-id}")
     public ResponseEntity<GroupResponse> removeUserFromGroup(
-            @PathVariable UUID groupId,
-            @PathVariable UUID userId
+            @PathVariable("group-id") UUID groupId,
+            @PathVariable("user-id") UUID userId
     ) {
         Group updatedGroup = groupService.removeUserFromGroup(groupId, userId);
 
@@ -189,7 +187,7 @@ public class GroupController {
         return ResponseEntity.ok(GroupResponse.fromEntity(updatedGroup));
     }
 
-    // Obter todas as News do grupo
+    // todo: Obter todas as News do grupo
 
     // Request DTOs
     @Schema(description = "Request object for updating a group's name")

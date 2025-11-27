@@ -57,7 +57,7 @@ public class ShoppingItemController {
             @ApiResponse(responseCode = "404", description = "Group or category not found")
     })
     @PostMapping
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<ShoppingItem> createShoppingItem(
             @PathVariable("group-id") UUID groupId,
             @Valid @RequestBody ShoppingItemRequest request
@@ -95,7 +95,7 @@ public class ShoppingItemController {
             @ApiResponse(responseCode = "404", description = "Shopping item or category not found")
     })
     @PatchMapping("/{item-id}/category")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<ShoppingItem> updateCategory(
             @PathVariable("item-id") UUID itemId,
             @PathVariable("group-id") UUID groupId,
@@ -113,7 +113,7 @@ public class ShoppingItemController {
             @ApiResponse(responseCode = "404", description = "Shopping item not found")
     })
     @PatchMapping("/{item-id}/name")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<ShoppingItem> updateName(
             @PathVariable("item-id") UUID itemId,
             @PathVariable("group-id") UUID groupId,
@@ -130,7 +130,7 @@ public class ShoppingItemController {
             @ApiResponse(responseCode = "404", description = "Shopping item not found")
     })
     @PatchMapping("/{item-id}/quantity")
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     public ResponseEntity<ShoppingItem> updateQuantity(
             @PathVariable("item-id") UUID itemId,
             @PathVariable("group-id") UUID groupId,

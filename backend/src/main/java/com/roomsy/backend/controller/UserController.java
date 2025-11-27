@@ -1,6 +1,7 @@
 package com.roomsy.backend.controller;
 
-import com.roomsy.backend.dto.UserResponse;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.roomsy.backend.dto.Views;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.security.CustomUserDetails;
 import com.roomsy.backend.service.UserService;
@@ -36,9 +37,10 @@ public class UserController {
     })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{user-id}")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable("user-id") UUID userId) {
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<User> getUserById(@PathVariable("user-id") UUID userId) {
         User user = userService.getUserById(userId);
-        return ResponseEntity.ok(UserResponse.fromEntity(user));
+        return ResponseEntity.ok(user);
     }
 
     @Operation(summary = "Delete current user", description = "Deletes the authenticated user's account")
@@ -51,7 +53,6 @@ public class UserController {
         userService.deleteUser(userDetails.getId());
         return ResponseEntity.noContent().build();
     }
-
 
     @Operation(summary = "Delete user by ID", description = "Deletes a user by their ID")
     @ApiResponses(value = {

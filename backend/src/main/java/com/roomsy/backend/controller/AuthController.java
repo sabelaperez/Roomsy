@@ -217,9 +217,15 @@ public class AuthController {
     })
     @GetMapping("/me")
     public ResponseEntity<AuthResponse> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        User user = userService.getUserById(userDetails.getId());
 
+        if(userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.getUserById(userDetails.getId());
+      
         UUID groupId = user.getGroup() != null ? user.getGroup().getId() : null;
+
 
         AuthResponse response = new AuthResponse(
                 user.getId(),

@@ -7,6 +7,7 @@ package com.roomsy.backend.dto;
 public final class Views {
     private Views() {} 
 
-    public interface Summary {}
+    public interface Basic {}
+    public interface Summary extends Basic {}
     public interface Detailed extends Summary {}
 }

@@ -1,33 +1,47 @@
 package com.roomsy.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.model.ExpenseItem;
 import com.roomsy.backend.model.ExpenseType;
+import com.roomsy.backend.model.User;
+
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class ExpenseItemResponse {
 
+    @JsonView(Views.Basic.class)
     private UUID id;
+    @JsonView(Views.Basic.class)
     private UUID groupId;
+    @JsonView(Views.Basic.class)
     private UUID ownerId;
+    @JsonView(Views.Basic.class)
     private String ownerUsername;
+    @JsonView(Views.Basic.class)
     private String name;
+    @JsonView(Views.Basic.class)
     private ExpenseType expenseType;
-    private List<UserInvolvedResponse> usersInvolved;
+    @JsonView(Views.Basic.class)
+    private List<User> usersInvolved;
+    @JsonView(Views.Basic.class)
     private Double price;
+    @JsonView(Views.Basic.class)
     private Double pricePerPerson;
+    @JsonView(Views.Basic.class)
     private Date expenseDate;
+    @JsonView(Views.Basic.class)
     private LocalDateTime createdAt;
+    @JsonView(Views.Basic.class)
     private LocalDateTime updatedAt;
 
     public ExpenseItemResponse() {}
 
     public ExpenseItemResponse(UUID id, UUID groupId, UUID ownerId, String ownerUsername,
                                String name, ExpenseType expenseType,
-                               List<UserInvolvedResponse> usersInvolved, Double price,
+                               List<User> usersInvolved, Double price,
                                Double pricePerPerson, Date expenseDate,
                                LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
@@ -45,13 +59,6 @@ public class ExpenseItemResponse {
     }
 
     public static ExpenseItemResponse fromEntity(ExpenseItem expense) {
-        List<UserInvolvedResponse> usersInvolved = expense.getUsersInvolved().stream()
-                .map(user -> new UserInvolvedResponse(
-                        user.getId(),
-                        user.getUsername()
-                ))
-                .collect(Collectors.toList());
-
         double pricePerPerson = expense.getUsersInvolved().isEmpty()
                 ? 0.0
                 : expense.getPrice() / expense.getUsersInvolved().size();
@@ -63,7 +70,7 @@ public class ExpenseItemResponse {
                 expense.getOwner().getUsername(),
                 expense.getName(),
                 expense.getExpenseType(),
-                usersInvolved,
+                expense.getUsersInvolved(),
                 expense.getPrice(),
                 Math.round(pricePerPerson * 100.0) / 100.0, // Round to 2 decimals
                 expense.getExpenseDate(),
@@ -121,11 +128,11 @@ public class ExpenseItemResponse {
         this.expenseType = expenseType;
     }
 
-    public List<UserInvolvedResponse> getUsersInvolved() {
+    public List<User> getUsersInvolved() {
         return usersInvolved;
     }
 
-    public void setUsersInvolved(List<UserInvolvedResponse> usersInvolved) {
+    public void setUsersInvolved(List<User> usersInvolved) {
         this.usersInvolved = usersInvolved;
     }
 

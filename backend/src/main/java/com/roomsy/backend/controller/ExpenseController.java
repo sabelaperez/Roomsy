@@ -57,6 +57,7 @@ public class ExpenseController {
             @ApiResponse(responseCode = "404", description = "Group or some user not found"),
     })
     @PostMapping
+    @JsonView(Views.Basic.class)
     public ResponseEntity<ExpenseItemResponse> createExpenseItem(
         @PathVariable("group-id") UUID groupId,
         @Valid @RequestBody ExpenseItemRequest request
