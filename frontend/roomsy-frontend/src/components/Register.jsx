@@ -1,8 +1,10 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function Register({ switchToLogin }) {
   const { register } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', username: '', fullName: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,6 +14,7 @@ export default function Register({ switchToLogin }) {
     setLoading(true);
     try {
       await register(form);
+      navigate('/dashboard', { replace: true }); // <-- navegar al dashboard tras registro
     } catch (e) {
       setError(e.message || 'Registration failed');
     } finally {
@@ -20,7 +23,7 @@ export default function Register({ switchToLogin }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-8">
+    <div className="bg-white rounded-lg shadow-md p-8 max-w-md mx-auto mt-10">
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Create Account</h2>
 
       <div className="space-y-4">

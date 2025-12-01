@@ -1,9 +1,10 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-
+import { useNavigate } from 'react-router-dom';
 
 export default function Login({ switchToRegister }) {
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,6 +14,7 @@ export default function Login({ switchToRegister }) {
     setLoading(true);
     try {
       await login(loginData);
+      navigate('/dashboard', { replace: true }); // <-- navegar al dashboard
     } catch (e) {
       setLoginError(e.message || 'Login failed');
     } finally {
@@ -21,7 +23,7 @@ export default function Login({ switchToRegister }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-8">
+    <div className="bg-white rounded-lg shadow-md p-8 max-w-md mx-auto mt-10">
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Login to Roomsy</h2>
 
       <div className="space-y-4">
