@@ -25,15 +25,33 @@ function App() {
   const [groupError, setGroupError] = useState('');
   const [groupSuccess, setGroupSuccess] = useState('');
 
+  // Join group
+  const [inviteCode, setInviteCode] = useState('');
+  const [joinError, setJoinError] = useState('');
+  const [joinSuccess, setJoinSuccess] = useState('');
+
+  // Group info
+  const [groupInfo, setGroupInfo] = useState(null);
+  const [loadingGroupInfo, setLoadingGroupInfo] = useState(false);
+  const [regenerateSuccess, setRegenerateSuccess] = useState('');
+  const [regenerateError, setRegenerateError] = useState('');
+
   // Check if user is authenticated on mount
   useEffect(() => {
     checkAuth();
   }, []);
 
+  // Load group info when user has a group
+  useEffect(() => {
+    if (user?.groupId) {
+      loadGroupInfo();
+    }
+  }, [user?.groupId]);
+
   const checkAuth = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
-        credentials: 'include' // Important: includes cookies
+        credentials: 'include'
       });
       
       if (response.ok) {
@@ -48,6 +66,26 @@ function App() {
     }
   };
 
+  const loadGroupInfo = async () => {
+    if (!user?.groupId) return;
+    
+    setLoadingGroupInfo(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/groups/${user.groupId}`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setGroupInfo(data);
+      }
+    } catch (error) {
+      console.error('Failed to load group info:', error);
+    } finally {
+      setLoadingGroupInfo(false);
+    }
+  };
+
   const handleLogin = async () => {
     setLoginError('');
     
@@ -55,7 +93,7 @@ function App() {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Important: includes cookies
+        credentials: 'include',
         body: JSON.stringify(loginData)
       });
       
@@ -122,14 +160,85 @@ function App() {
         const data = await response.json();
         setGroupSuccess(`Group "${data.name}" created successfully! Invite code: ${data.inviteCode}`);
         setGroupName('');
-        // Update user with new group info
         setUser({ ...user, groupId: data.id });
+        setGroupInfo(data);
       } else {
         const error = await response.json();
         setGroupError(error.message || 'Failed to create group');
       }
     } catch (error) {
       setGroupError('Network error. Please try again.');
+    }
+  };
+
+  const handleJoinGroup = async () => {
+    setJoinError('');
+    setJoinSuccess('');
+    
+    if (!user?.userId) {
+      setJoinError('User not authenticated');
+      return;
+    }
+
+    if (!inviteCode.trim()) {
+      setJoinError('Please enter an invite code');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${user.userId}/join?inviteCode=${inviteCode}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setJoinSuccess(`Successfully joined group "${data.name}"!`);
+        setInviteCode('');
+        setUser({ ...user, groupId: data.id });
+        setGroupInfo(data);
+      } else {
+        const error = await response.json();
+        setJoinError(error.message || 'Failed to join group');
+      }
+    } catch (error) {
+      setJoinError('Network error. Please try again.');
+    }
+  };
+
+  const handleRegenerateInviteCode = async () => {
+    setRegenerateError('');
+    setRegenerateSuccess('');
+    
+    if (!user?.groupId) {
+      setRegenerateError('No group found');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/groups/${user.groupId}/invite-code/regenerate`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRegenerateSuccess(`New invite code generated: ${data.inviteCode}`);
+        setGroupInfo({ ...groupInfo, inviteCode: data.inviteCode });
+      } else {
+        const error = await response.json();
+        setRegenerateError(error.message || 'Failed to regenerate invite code');
+      }
+    } catch (error) {
+      setRegenerateError('Network error. Please try again.');
+    }
+  };
+
+  const copyInviteCode = () => {
+    if (groupInfo?.inviteCode) {
+      navigator.clipboard.writeText(groupInfo.inviteCode);
+      setRegenerateSuccess('Invite code copied to clipboard!');
+      setTimeout(() => setRegenerateSuccess(''), 2000);
     }
   };
 
@@ -140,6 +249,7 @@ function App() {
         credentials: 'include'
       });
       setUser(null);
+      setGroupInfo(null);
       setView('login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -306,7 +416,7 @@ function App() {
               <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
               <button
                 onClick={handleLogout}
-                className="text-sm text-red-600 hover:text-red-700"
+                className="text-sm text-red-600 hover:text-red-700 font-medium"
               >
                 Logout
               </button>
@@ -319,52 +429,146 @@ function App() {
             </div>
 
             {user.groupId ? (
-              <div className="bg-green-50 border border-green-200 p-4 rounded-md">
-                <p className="text-green-800 font-medium">
-                  You're already in a group!
-                </p>
-                <p className="text-sm text-green-700 mt-1">Group ID: {user.groupId}</p>
-              </div>
-            ) : (
-              <div>
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">Create a Group</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Group Name
-                    </label>
-                    <input
-                      type="text"
-                      value={groupName}
-                      onChange={(e) => setGroupName(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleCreateGroup()}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="My Awesome Group"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Letters, numbers, and spaces only (3-50 characters)
+              <div className="space-y-4">
+                <div className="bg-green-50 border border-green-200 p-4 rounded-md">
+                  <p className="text-green-800 font-medium mb-2">
+                    You're in a group!
+                  </p>
+                  {loadingGroupInfo ? (
+                    <p className="text-sm text-green-700">Loading group info...</p>
+                  ) : groupInfo ? (
+                    <div>
+                      <p className="text-sm text-green-700">Group: <span className="font-semibold">{groupInfo.name}</span></p>
+                      <p className="text-sm text-green-700">Members: {groupInfo.memberCount}</p>
+                      <div className="mt-3 flex items-center space-x-2">
+                        <div className="bg-white border border-green-300 px-3 py-2 rounded text-sm font-mono flex-1">
+                          {groupInfo.inviteCode}
+                        </div>
+                        <button
+                          onClick={copyInviteCode}
+                          className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 transition-colors"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-green-700">Group ID: {user.groupId}</p>
+                  )}
+                </div>
+
+                {groupInfo && (
+                  <div className="border-t pt-4">
+                    <h3 className="text-lg font-semibold mb-3 text-gray-800">Manage Invite Code</h3>
+                    
+                    {regenerateSuccess && (
+                      <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-3">
+                        {regenerateSuccess}
+                      </div>
+                    )}
+                    
+                    {regenerateError && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-3">
+                        {regenerateError}
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={handleRegenerateInviteCode}
+                      className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 transition-colors font-medium"
+                    >
+                      Regenerate Invite Code
+                    </button>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      This will invalidate the current invite code
                     </p>
                   </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800">Create a Group</h3>
                   
-                  {groupError && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                      {groupError}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Group Name
+                      </label>
+                      <input
+                        type="text"
+                        value={groupName}
+                        onChange={(e) => setGroupName(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleCreateGroup()}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="My Awesome Group"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Letters, numbers, and spaces only (3-50 characters)
+                      </p>
                     </div>
-                  )}
+                    
+                    {groupError && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                        {groupError}
+                      </div>
+                    )}
+                    
+                    {groupSuccess && (
+                      <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                        {groupSuccess}
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={handleCreateGroup}
+                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      Create Group
+                    </button>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800">Join a Group</h3>
                   
-                  {groupSuccess && (
-                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-                      {groupSuccess}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Invite Code
+                      </label>
+                      <input
+                        type="text"
+                        value={inviteCode}
+                        onChange={(e) => setInviteCode(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleJoinGroup()}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="Enter invite code"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Ask your roommate for the group invite code
+                      </p>
                     </div>
-                  )}
-                  
-                  <button
-                    onClick={handleCreateGroup}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    Create Group
-                  </button>
+                    
+                    {joinError && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                        {joinError}
+                      </div>
+                    )}
+                    
+                    {joinSuccess && (
+                      <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                        {joinSuccess}
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={handleJoinGroup}
+                      className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors font-medium"
+                    >
+                      Join Group
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
