@@ -119,6 +119,19 @@ public class GroupController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get invite code", description = "Retrieves the unique invite code for the specified group")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Invite code retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    @GetMapping("/{group-id}/invite-code")
+    public ResponseEntity<InviteCodeResponse> getInviteCode(
+        @PathVariable("group-id") UUID groupId
+    ) {
+        String inviteCode = groupService.getInviteCode(groupId);
+        return ResponseEntity.ok(new InviteCodeResponse(inviteCode));
+    }
+
     @Operation(summary = "Regenerate invite code", description = "Generates a new unique invite code for the group, " +
             "invalidating the previous one")
     @ApiResponses(value = {
@@ -187,8 +200,6 @@ public class GroupController {
 
         return ResponseEntity.ok(GroupResponse.fromEntity(updatedGroup));
     }
-
-    // todo: Obter todas as News do grupo
 
     // Request DTOs
     @Schema(description = "Request object for updating a group's name")

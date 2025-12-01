@@ -163,7 +163,7 @@ public class ShoppingItemController {
                 : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<ShoppingItem> shoppingItems = groupService.getGroupShoppingItems(groupId, pageable);
+        Page<ShoppingItem> shoppingItems = shoppingItemService.getGroupShoppingItems(groupId, pageable);
         return ResponseEntity.ok(new PageResponse<>(shoppingItems));
     }
 

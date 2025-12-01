@@ -146,7 +146,7 @@ public class ExpenseController {
                 : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<ExpenseItemResponse> expenses = groupService.getGroupExpenses(groupId, pageable);
+        Page<ExpenseItemResponse> expenses = expenseService.getGroupExpenses(groupId, pageable);
         return ResponseEntity.ok(new PageResponse<>(expenses));
     }
 
@@ -174,7 +174,7 @@ public class ExpenseController {
                 : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<SharedExpense> sharedExpenses = groupService.getGroupSharedExpenses(groupId, pageable);
+        Page<SharedExpense> sharedExpenses = expenseService.getGroupSharedExpenses(groupId, pageable);
         return ResponseEntity.ok(new PageResponse<>(sharedExpenses));
     }
 }

@@ -73,7 +73,7 @@ public class CleaningTaskController {
                 .map(userService::getUserById)
                 .collect(Collectors.toList());
 
-        // comprobar que los users sean de ese grupo
+        // todo: comprobar que los users sean de ese grupo
 
         CleaningTask task = new CleaningTask(group, request.getTitle(), request.getDate(), assignees);
         CleaningTask saved = cleaningTaskService.createTask(task);
@@ -181,7 +181,7 @@ public class CleaningTaskController {
         return ResponseEntity.ok(updated);
     }
 
-    @Operation(summary = "Get group cleaning tasks", description = "Retrieves all cleaning tasks assigned " +
+    @Operation(summary = "Get the group cleaning tasks", description = "Retrieves all cleaning tasks assigned " +
             "within the group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cleaning tasks retrieved successfully"),
@@ -205,7 +205,7 @@ public class CleaningTaskController {
                 : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<CleaningTask> cleaningTasks = groupService.getGroupCleaningTasks(groupId, pageable);
+        Page<CleaningTask> cleaningTasks = cleaningTaskService.getGroupCleaningTasks(groupId, pageable);
         return ResponseEntity.ok(new PageResponse<>(cleaningTasks));
     }
 

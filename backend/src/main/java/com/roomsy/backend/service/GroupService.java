@@ -4,14 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.roomsy.backend.dto.ExpenseItemResponse;
 import com.roomsy.backend.model.*;
 import com.roomsy.backend.repository.*;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.roomsy.backend.exception.InvalidOperationException;
@@ -25,24 +22,15 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final NewsRepository newsRepository;
-    private final ExpenseItemRepository expenseItemRepository;
 
     private static final int CODE_LENGTH = 10;
     private static final int MAX_ATTEMPTS = 6;
-    private final SharedExpenseRepository sharedExpenseRepository;
-    private final ShoppingItemRepository shoppingItemRepository;
-    private final CleaningTaskRepository cleaningTaskRepository;
-
 
     @Autowired
-    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository, ExpenseItemRepository expenseItemRepository, SharedExpenseRepository sharedExpenseRepository, ShoppingItemRepository shoppingItemRepository, CleaningTaskRepository cleaningTaskRepository) {
+    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.newsRepository = newsRepository;
-        this.expenseItemRepository = expenseItemRepository;
-        this.sharedExpenseRepository = sharedExpenseRepository;
-        this.shoppingItemRepository = shoppingItemRepository;
-        this.cleaningTaskRepository = cleaningTaskRepository;
     }
 
     public Group getGroupById(@NonNull UUID groupId) throws ResourceNotFoundException {
@@ -58,6 +46,11 @@ public class GroupService {
             }
         }
         throw new IllegalStateException("Unable to generate unique invite code");
+    }
+
+    public String getInviteCode(@NonNull UUID groupId) throws ResourceNotFoundException {
+        Group group = getGroupById(groupId);
+        return group.getInviteCode();
     }
 
     @Transactional
@@ -99,6 +92,35 @@ public class GroupService {
         // Si quieres impedir que un usuario esté en más de un grupo simultáneamente:
         if (user.getGroup() != null) {
             if (user.getGroup().getId().equals(groupId)) {
+                // ya es miembro -> nada que hacer
+                return group;
+            }
+            throw new InvalidOperationException("User already belongs to another group. Remove or move before adding.");
+        }
+
+        // Mantener ambos lados de la relación
+        group.addMember(user);
+        
+        // Xerar unha noticia de tipo MEMBER_ADDED
+        News addedNews = new News(group, user, NewsType.MEMBER_ADDED, 
+                "User " + user.getUsername() + " added to the group", null);
+
+        // Persistir cambios
+        newsRepository.save(addedNews);
+        userRepository.save(user);
+        return groupRepository.save(group);
+    }
+
+    @Transactional
+    public Group addUserToGroupWithInviteCode(@NonNull String inviteCode, @NonNull UUID userId) throws ResourceNotFoundException, InvalidOperationException {
+        Group group = groupRepository.getGroupByInviteCode(inviteCode)
+            .orElseThrow(() -> new ResourceNotFoundException("Group not found with invite code: " + inviteCode));
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // Si quieres impedir que un usuario esté en más de un grupo simultáneamente:
+        if (user.getGroup() != null) {
+            if (user.getGroup().getId().equals(group.getId())) {
                 // ya es miembro -> nada que hacer
                 return group;
             }
@@ -172,26 +194,6 @@ public class GroupService {
     public ArrayList<User> getGroupMembers(@NonNull UUID groupId) throws ResourceNotFoundException {
         Group group = getGroupById(groupId);
         return new ArrayList<>(group.getMembers());
-    }
-
-    // todo: change those methods to his respectives services
-
-    public Page<ExpenseItemResponse> getGroupExpenses(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
-        Page<ExpenseItem> expenses = expenseItemRepository.findByGroupId(groupId, pageable);
-        return expenses.map(ExpenseItemResponse::fromEntity);
-    }
-
-    public Page<SharedExpense> getGroupSharedExpenses(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
-        return sharedExpenseRepository.findByGroupId(groupId, pageable);
-    }
-
-    public Page<ShoppingItem> getGroupShoppingItems(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
-        return shoppingItemRepository.findByGroupId(groupId, pageable);
-    }
-
-
-    public Page<CleaningTask> getGroupCleaningTasks(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
-        return cleaningTaskRepository.findByGroupId(groupId, pageable);
     }
 
     public List<Group> getGroups() throws ResourceNotFoundException {
