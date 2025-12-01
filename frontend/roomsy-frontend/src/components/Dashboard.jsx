@@ -3,6 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import { groupApi } from '../api';
 import GroupCreateJoin from './GroupCreateJoin';
 import GroupInfo from './GroupInfo';
+import GroupNews from './GroupNews';
 
 export default function Dashboard() {
   const { user, logout, setUser } = useContext(AuthContext);
@@ -55,11 +56,18 @@ export default function Dashboard() {
       </div>
 
       {user.groupId ? (
-        <GroupInfo
-          groupInfo={groupInfo}
-          loading={loadingGroup}
-          onUpdate={setGroupInfo}
-        />
+        <div className="flex items-start gap-6">
+          <div className="flex-1">
+            <GroupInfo
+              groupInfo={groupInfo}
+              loading={loadingGroup}
+              onUpdate={setGroupInfo}
+            />
+          </div>
+          <div className="w-80">
+            <GroupNews groupId={user.groupId} />
+          </div>
+        </div>
       ) : (
         <GroupCreateJoin user={user} onCreate={onCreate} onJoin={onJoin} />
       )}

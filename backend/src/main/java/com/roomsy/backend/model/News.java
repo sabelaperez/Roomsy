@@ -67,7 +67,7 @@ public class News {
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Basic.class)
     @Schema(description = "Timestamp when the news item was created.", example = "2024-06-15T14:30:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
 

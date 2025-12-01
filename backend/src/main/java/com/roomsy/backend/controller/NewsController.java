@@ -58,7 +58,7 @@ public class NewsController {
         @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping()
-    @JsonView(Views.Summary.class)
+    @JsonView(Views.Basic.class)
     public ResponseEntity<PageResponse<News>> getGroupNews (
         @PathVariable("group-id") UUID groupId,
         @Parameter(description = "Page number (0-indexed)", example = "0")
