@@ -87,4 +87,18 @@ public class UserController {
         Group updatedGroup = groupService.addUserToGroupWithInviteCode(inviteCode, userId);
         return ResponseEntity.ok(GroupResponse.fromEntity(updatedGroup));
     }
+
+    @Operation(summary = "Obtain info about the group the user belongs to", description = "Retrieves information about the group associated with the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Group information retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User or group not found")
+    })
+    @GetMapping("/{user-id}/group")
+    public ResponseEntity<GroupResponse> getUserGroupInfo(
+        @PathVariable("user-id") UUID userId
+    ) {
+        User user = userService.getUserById(userId);
+        Group group = user.getGroup();
+        return ResponseEntity.ok(GroupResponse.fromEntity(group));
+    }
 }

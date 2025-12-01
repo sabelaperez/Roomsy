@@ -24,7 +24,7 @@ export const authApi = {
 
 export const groupApi = {
   create: (payload) => request('/groups', { method: 'POST', body: JSON.stringify(payload) }),
-  get: (id) => request(`/groups/${id}`),
+  get: (id) => request(`/users/${id}/group`),
   regenerateInvite: (groupId) => request(`/groups/${groupId}/invite-code/regenerate`, { method: 'POST' }),
   joinByInvite: (userId, inviteCode) => request(`/users/${userId}/join?inviteCode=${encodeURIComponent(inviteCode)}`, { method: 'POST' }),
 };

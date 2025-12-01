@@ -39,7 +39,7 @@ export default function GroupInfo({ groupInfo, loading, onUpdate }) {
   return (
     <div className="space-y-4">
       <div className="bg-green-50 border border-green-200 p-4 rounded-md">
-        <p className="text-green-800 font-medium mb-2">You're in a group!</p>
+        <p className="text-green-800 font-medium mb-2">Your Group</p>
 
         <div>
           <p className="text-sm text-green-700">

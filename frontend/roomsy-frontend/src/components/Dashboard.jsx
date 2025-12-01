@@ -18,7 +18,7 @@ export default function Dashboard() {
     async function load() {
       setLoadingGroup(true);
       try {
-        const g = await groupApi.get(user.groupId);
+        const g = await groupApi.get(user.userId);
         setGroupInfo(g);
       } catch (_) {
         setGroupInfo(null);
