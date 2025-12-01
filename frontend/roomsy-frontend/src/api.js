@@ -30,4 +30,15 @@ export const groupApi = {
   getGroupNews: (groupId, { page = 0, size = 5, sortBy = 'createdAt', sortDirection = 'desc' } = {}) =>
     request(`/groups/${groupId}/news?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
   getNews: (newsId) => request(`/news/${newsId}`),
+  getMembers: (groupId) => request(`/groups/${groupId}/members`),
 };
+
+export const expenseApi = {
+  create: (groupId, payload) => request(`/groups/${groupId}/expenses`, { method: 'POST', body: JSON.stringify(payload) }),
+  getExpenseItems: (groupId, { page = 0, size = 50, sortBy = 'createdAt', sortDirection = 'desc' } = {}) =>
+    request(`/groups/${groupId}/expenses?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
+  getSharedExpenses: (groupId, { page = 0, size = 50, sortBy = 'createdAt', sortDirection = 'desc' } = {}) =>
+    request(`/groups/${groupId}/expenses/shared-expenses?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
+  delete: (groupId, expenseItemId) => request(`/groups/${groupId}/expenses/items/${expenseItemId}`, { method: 'DELETE' }),
+  pay: (groupId, sharedExpenseId) => request(`/groups/${groupId}/expenses/shared/${sharedExpenseId}`, { method: 'DELETE' }),
+}

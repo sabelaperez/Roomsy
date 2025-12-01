@@ -5,6 +5,7 @@ export default function GroupNews({ groupId }) {
   const [newsPage, setNewsPage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     if (!groupId) {
@@ -48,8 +49,6 @@ const formatLocalDateTime = (s) => {
     return dt.toLocaleString(); // cambia opciones si quieres otro formato
 };
 
-const [selected, setSelected] = useState(null);
-
 // cerrar modal con Escape
 useEffect(() => {
     if (!selected) return;
@@ -59,6 +58,37 @@ useEffect(() => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
 }, [selected]);
+
+const [selectedDetails, setSelectedDetails] = useState(null);
+const [detailsLoading, setDetailsLoading] = useState(false);
+const [detailsError, setDetailsError] = useState('');
+
+useEffect(() => {
+if (!selected?.id) {
+    setSelectedDetails(null);
+    setDetailsError('');
+    setDetailsLoading(false);
+    return;
+}
+let mounted = true;
+const loadDetails = async () => {
+    setDetailsLoading(true);
+    setDetailsError('');
+    try {
+    const data = await groupApi.getNews(selected.id);
+    if (!mounted) return;
+    setSelectedDetails(data);
+    } catch (e) {
+    if (!mounted) return;
+    setDetailsError(e.message || 'Failed to load news details');
+    setSelectedDetails(null);
+    } finally {
+    if (mounted) setDetailsLoading(false);
+    }
+};
+loadDetails();
+return () => { mounted = false; };
+}, [selected?.id]);
 
 return (
     <>
@@ -91,51 +121,64 @@ return (
             </ul>
         </div>
 
-        {/* Modal */}
-        {selected && (
-            <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
-                onClick={() => setSelected(null)}
-                aria-modal="true"
-                role="dialog"
-            >
-                <div
-                    className="bg-white rounded-lg max-w-md w-full shadow-lg p-6"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="flex justify-between items-start">
-                        <h4 className="text-lg font-semibold text-gray-800">{selected.name ?? 'Untitled'}</h4>
-                        <button
-                            onClick={() => setSelected(null)}
-                            className="text-gray-500 hover:text-gray-700 ml-4"
-                            aria-label="Close"
-                        >
-                            ✕
-                        </button>
-                    </div>
-
-                    <div className="mt-3 text-sm text-gray-600">
-                        <div className="text-xs text-gray-500">Created:</div>
-                        <div className="text-sm text-gray-700">{formatLocalDateTime(selected.createdAt)}</div>
-                    </div>
-
-                    {selected.content && (
-                        <div className="mt-4 text-sm text-gray-800">
-                            {selected.description}
-                        </div>
-                    )}
-
-                    <div className="mt-6 flex justify-end">
-                        <button
-                            onClick={() => setSelected(null)}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
+      {/* Modal */}
+      {selected && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+          onClick={() => { setSelected(null); setSelectedDetails(null); setDetailsError(''); }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div
+            className="bg-white rounded-lg max-w-md w-full shadow-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start">
+              <h4 className="text-lg font-semibold text-gray-800">{selectedDetails?.name ?? selected.name ?? 'Untitled'}</h4>
+              <button
+                onClick={() => { setSelected(null); setSelectedDetails(null); setDetailsError(''); }}
+                className="text-gray-500 hover:text-gray-700 ml-4"
+                aria-label="Close"
+              >
+                ✕
+              </button>
             </div>
-        )}
+
+            <div className="mt-3 text-sm text-gray-600">
+              <div className="text-xs text-gray-500">Created:</div>
+              <div className="text-sm text-gray-700">
+                {formatLocalDateTime(selectedDetails?.createdAt ?? selected.createdAt)}
+              </div>
+            </div>
+
+            {detailsLoading && (
+              <div className="mt-4 text-sm text-gray-600">Loading details...</div>
+            )}
+
+            {detailsError && (
+              <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+                {detailsError}
+              </div>
+            )}
+
+            {!detailsLoading && !detailsError && (
+              <div className="mt-4 text-sm text-gray-800">
+                {/* prefer detailed content if available, fallback to preview */}
+                {selectedDetails?.content ?? selectedDetails?.description ?? selected?.description ?? 'No content available.'}
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => { setSelected(null); setSelectedDetails(null); setDetailsError(''); }}
+                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
-);
+  );
 }
