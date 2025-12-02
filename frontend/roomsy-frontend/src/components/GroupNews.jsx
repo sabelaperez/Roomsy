@@ -6,6 +6,9 @@ export default function GroupNews({ groupId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
+  const [selectedDetails, setSelectedDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState('');
 
   useEffect(() => {
     if (!groupId) {
@@ -33,93 +36,90 @@ export default function GroupNews({ groupId }) {
 
   const items = newsPage?.content ?? newsPage?.items ?? [];
 
-// helper para parsear un LocalDateTime ISO sin zona como fecha en zona local
-const parseLocalDateTime = (s) => {
-    if (!s) return null;
-    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(\.\d+)?)?$/);
-    if (!m) return new Date(s); // fallback
-    const [, y, mo, d, h, mi, sec = '0', frac = ''] = m;
-    const ms = frac ? Math.round(Number(frac) * 1000) : 0;
-    return new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(sec), ms);
-};
+  // helper para parsear un LocalDateTime ISO sin zona como fecha en zona local
+  const parseLocalDateTime = (s) => {
+      if (!s) return null;
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(\.\d+)?)?$/);
+      if (!m) return new Date(s); // fallback
+      const [, y, mo, d, h, mi, sec = '0', frac = ''] = m;
+      const ms = frac ? Math.round(Number(frac) * 1000) : 0;
+      return new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(sec), ms);
+  };
 
-const formatLocalDateTime = (s) => {
-    const dt = parseLocalDateTime(s);
-    if (!dt || isNaN(dt)) return s ?? '';
-    return dt.toLocaleString(); // cambia opciones si quieres otro formato
-};
+  const formatLocalDateTime = (s) => {
+      const dt = parseLocalDateTime(s);
+      if (!dt || isNaN(dt)) return s ?? '';
+      return dt.toLocaleString(); // cambiar para otro formato
+  };
 
-// cerrar modal con Escape
-useEffect(() => {
-    if (!selected) return;
-    const onKey = (e) => {
-        if (e.key === 'Escape') setSelected(null);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-}, [selected]);
+  // cerrar modal con Escape
+  useEffect(() => {
+      if (!selected) return;
+      const onKey = (e) => {
+          if (e.key === 'Escape') setSelected(null);
+      };
+      window.addEventListener('keydown', onKey);
+      return () => window.removeEventListener('keydown', onKey);
+  }, [selected]);
 
-const [selectedDetails, setSelectedDetails] = useState(null);
-const [detailsLoading, setDetailsLoading] = useState(false);
-const [detailsError, setDetailsError] = useState('');
-
-useEffect(() => {
-if (!selected?.id) {
-    setSelectedDetails(null);
-    setDetailsError('');
-    setDetailsLoading(false);
-    return;
-}
-let mounted = true;
-const loadDetails = async () => {
-    setDetailsLoading(true);
-    setDetailsError('');
-    try {
-    const data = await groupApi.getNews(selected.id);
-    if (!mounted) return;
-    setSelectedDetails(data);
-    } catch (e) {
-    if (!mounted) return;
-    setDetailsError(e.message || 'Failed to load news details');
-    setSelectedDetails(null);
-    } finally {
-    if (mounted) setDetailsLoading(false);
+  // cargar detalles de noticia seleccionada
+  useEffect(() => {
+    if (!selected?.id) {
+        setSelectedDetails(null);
+        setDetailsError('');
+        setDetailsLoading(false);
+        return;
     }
-};
-loadDetails();
-return () => { mounted = false; };
-}, [selected?.id]);
+    let mounted = true;
+    const loadDetails = async () => {
+        setDetailsLoading(true);
+        setDetailsError('');
+        try {
+        const data = await groupApi.getNews(groupId, selected.id);
+        if (!mounted) return;
+        setSelectedDetails(data);
+        } catch (e) {
+        if (!mounted) return;
+        setDetailsError(e.message || 'Failed to load news details');
+        setSelectedDetails(null);
+        } finally {
+        if (mounted) setDetailsLoading(false);
+        }
+    };
+    loadDetails();
+    return () => { mounted = false; };
+  }, [selected?.id]);
 
-return (
+  return (
     <>
-        <div className="bg-white rounded-lg shadow-md p-4 w-80">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Group News</h3>
+      <div className="bg-white rounded-lg shadow-md p-4 w-80">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">Group News</h3>
 
-            {loading && <div className="text-sm text-gray-600">Loading news...</div>}
-            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">{error}</div>}
+        {loading && <div className="text-sm text-gray-600">Loading news...</div>}
+        {error && <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">{error}</div>}
 
-            {!loading && !error && items.length === 0 && (
-                <div className="text-sm text-gray-600">No recent news</div>
-            )}
+        {!loading && !error && items.length === 0 && (
+          <div className="text-sm text-gray-600">No recent news</div>
+        )}
 
-            <ul className="space-y-3 mt-2">
-                {items.map((n) => (
-                    <li
-                        key={n.id}
-                        className="border rounded p-3 bg-gray-50 cursor-pointer hover:bg-gray-100 focus:ring-2 focus:ring-indigo-300"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setSelected(n)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') setSelected(n);
-                        }}
-                    >
-                        <div className="text-sm font-medium text-gray-800">{n.name ?? 'Untitled'}</div>
-                        <div className="text-xs text-gray-500 mt-2">{formatLocalDateTime(n.createdAt)}</div>
-                    </li>
-                ))}
-            </ul>
-        </div>
+          <ul className="space-y-3 mt-2">
+            {items.map((n) => (
+              <li
+                key={n.id}
+                className="border rounded p-3 bg-gray-50 cursor-pointer hover:bg-gray-100 focus:ring-2 focus:ring-indigo-300"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelected(n)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') setSelected(n);
+                }}
+              >
+                <div className="text-sm font-medium text-gray-800">{n.name ?? 'Untitled'}</div>
+                <div className="text-xs text-gray-500 mt-2">{formatLocalDateTime(n.createdAt)}</div>
+              </li>
+            ))}
+          </ul>
+      </div>
 
       {/* Modal */}
       {selected && (

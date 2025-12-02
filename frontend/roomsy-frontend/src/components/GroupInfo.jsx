@@ -58,6 +58,19 @@ export default function GroupInfo({ groupInfo, loading, onUpdate }) {
               Copy
             </button>
           </div>
+
+            {regenerateSuccess && (
+              <div className="mt-3 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-3">
+                {regenerateSuccess}
+              </div>
+            )}
+
+            {regenerateError && (
+              <div className="mt-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-3">
+                {regenerateError}
+              </div>
+            )}
+            
         </div>
       </div>
 

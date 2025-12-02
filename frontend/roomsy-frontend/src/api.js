@@ -29,7 +29,7 @@ export const groupApi = {
   joinByInvite: (userId, inviteCode) => request(`/users/${userId}/join?inviteCode=${encodeURIComponent(inviteCode)}`, { method: 'POST' }),
   getGroupNews: (groupId, { page = 0, size = 5, sortBy = 'createdAt', sortDirection = 'desc' } = {}) =>
     request(`/groups/${groupId}/news?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
-  getNews: (newsId) => request(`/news/${newsId}`),
+  getNews: (groupId, newsId) => request(`/groups/${groupId}/news/${newsId}`),
   getMembers: (groupId) => request(`/groups/${groupId}/members`),
 };
 

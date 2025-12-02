@@ -37,9 +37,17 @@ public class ExpenseService {
     @Transactional
     public ExpenseItem createExpenseItem(@NonNull ExpenseItem expenseItem) {
         // Xerar unha noticia do tipo EXPENSE_ADDED
+        StringBuilder usersInvolvedNames = new StringBuilder();
+        for (User user : expenseItem.getUsersInvolved()) {
+            usersInvolvedNames.append(user.getUsername()).append(", ");
+        }
+        if (usersInvolvedNames.length() > 2) {
+            usersInvolvedNames.setLength(usersInvolvedNames.length() - 2); // Remove last comma and space
+        }   
         News addedExpenseNews = new News(expenseItem.getGroup(), expenseItem.getOwner(), NewsType.EXPENSE_ADDED,
                 "Expense Added by " + expenseItem.getOwner().getUsername(), 
-                "An expense item named '" + expenseItem.getName() + "' has been added with amount " + expenseItem.getPrice() + ".");
+                expenseItem.getOwner().getUsername() + " added an expense item named '" + expenseItem.getName() + "' with amount " + 
+                expenseItem.getPrice() + " shared with " + usersInvolvedNames.toString() + ".");
         newsRepository.save(addedExpenseNews);
 
         return expenseItemRepository.save(expenseItem);
@@ -82,7 +90,6 @@ public class ExpenseService {
     @Transactional
     public List<SharedExpense> generateSplitExpenses(Group group, ExpenseItem expenseItem) {
         List<SharedExpense> sharedExpenses = sharedExpenseRepository.findByGroup(group);
-
         Map<UUID, Double> balances = calculateNetBalances(expenseItem);
 
         // Add existing shared expenses to the balance
@@ -119,6 +126,11 @@ public class ExpenseService {
         }
 
         List<SharedExpense> settlements = minimizeTransactions(group, creditorsMap, debtorsMap);
+
+        // Clear existing shared expenses for the group
+        for(SharedExpense se : sharedExpenses) {
+            sharedExpenseRepository.deleteById(se.getId());
+        }
 
         return sharedExpenseRepository.saveAll(settlements);
     }
@@ -157,11 +169,11 @@ public class ExpenseService {
         List<SharedExpense> settlements = new ArrayList<>();
 
         List<Map.Entry<User, Double>> creditors = new ArrayList<>(creditorsMap.entrySet());
-        List<Map.Entry<User, Double>> debtors = new ArrayList<>(creditorsMap.entrySet());
+        List<Map.Entry<User, Double>> debtors = new ArrayList<>(debtorsMap.entrySet());
 
         // Sorts in descending order
         creditors.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
-        creditors.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
+        debtors.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
 
         int i = 0, j = 0;
 
@@ -173,7 +185,7 @@ public class ExpenseService {
             settlementAmount = roundToTwoDecimals(settlementAmount);
 
             if (settlementAmount >= 0.01) {
-                SharedExpense settlement = new SharedExpense(group, debtor.getKey(), creditor.getKey(), settlementAmount);
+                SharedExpense settlement = new SharedExpense(group, creditor.getKey(), debtor.getKey(), settlementAmount);
                 settlements.add(settlement);
             }
 
