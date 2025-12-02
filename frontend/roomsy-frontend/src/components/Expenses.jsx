@@ -279,7 +279,7 @@ export default function Expenses() {
               {shared.map(s => (
                 <li key={s.id} className="border rounded p-3 bg-gray-50">
                   <div className="text-sm font-medium text-gray-800">
-                    {s.payer?.username ?? s.payer?.fullName} → {s.notPaid?.username ?? s.notPaid?.fullName}
+                    {s.notPaid?.username ?? s.notPaid?.fullName} → {s.payer?.username ?? s.payer?.fullName}
                   </div>
                   <div className="text-sm text-gray-700 mt-1">Amount: <span className="font-semibold">{s.quantity?.toFixed(2)} €</span></div>
                   <div className="text-xs text-gray-500 mt-2">{new Date(s.createdAt).toLocaleString()}</div>
