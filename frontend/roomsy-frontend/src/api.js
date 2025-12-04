@@ -42,3 +42,19 @@ export const expenseApi = {
   delete: (groupId, expenseItemId) => request(`/groups/${groupId}/expenses/items/${expenseItemId}`, { method: 'DELETE' }),
   pay: (groupId, sharedExpenseId) => request(`/groups/${groupId}/expenses/shared/${sharedExpenseId}`, { method: 'DELETE' }),
 }
+
+export const tasksApi = {
+  createTask: (groupId, payload) => request(`/groups/${groupId}/cleaning-tasks`, { method: 'POST', body: JSON.stringify(payload) }),
+  getTask: (groupId, taskId) => request(`/groups/${groupId}/cleaning-tasks/${taskId}`),
+  deleteTask: (groupId, taskId) => request(`/groups/${groupId}/cleaning-tasks/${taskId}`, { method: 'DELETE' }),
+  reassignTask: (groupId, taskId, assignedToIds) =>
+    request(`/groups/${groupId}/cleaning-tasks/${taskId}/assign-to`, { method: 'PATCH', body: JSON.stringify({ assignedToIds }),}),
+  setCompleted: (groupId, taskId, completed) =>
+    request(`/groups/${groupId}/cleaning-tasks/${taskId}/completed`, { method: 'PATCH', body: JSON.stringify({ completed }),}),
+  changeDate: (groupId, taskId, newDate) =>
+    request(`/groups/${groupId}/cleaning-tasks/${taskId}/date`, { method: 'PATCH', body: JSON.stringify({ newDate }),}),
+  changeTitle: (groupId, taskId, title) =>
+    request(`/groups/${groupId}/cleaning-tasks/${taskId}/title`, { method: 'PATCH', body: JSON.stringify({ title }),}),
+  getGroupTasks: (groupId, { page = 0, size = 10, sortBy = 'createdAt', sortDirection = 'desc' } = {}) =>
+    request(`/groups/${groupId}/cleaning-tasks?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
+};
