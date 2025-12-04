@@ -67,6 +67,7 @@ public class ShoppingItemService {
     }
 
     public ShoppingItem updateQuantity(@NonNull UUID id, @NonNull UUID groupId, @NonNull Integer quantity) throws ResourceNotFoundException {
+        if(quantity <= 0) quantity = 1;
         ShoppingItem shoppingItem = getShoppingItem(id, groupId);
         shoppingItem.setQuantity(quantity);
         return shoppingItemRepository.save(shoppingItem);

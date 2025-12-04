@@ -135,6 +135,7 @@ export default function Expenses() {
       setForm({ name: '', expenseType: EXPENSE_TYPES[0], price: '', expenseDate: '', usersInvolvedIds: [] });
       await loadExpenses();
       await loadShared();
+      setShowCreateModal(false);
     } catch (e) {
       setFormError(e.message || 'Failed to create expense');
     } finally {
@@ -201,7 +202,7 @@ export default function Expenses() {
           {shared.map(s => (
             <div key={s.id} className="min-w-[200px] flex-shrink-0 border rounded p-4 bg-gray-50">
               <div className="text-sm text-gray-800">
-                <span className="font-medium">{s.payer?.fullName ?? s.payer?.username}</span> owes to <span className="font-medium">{s.notPaid?.fullName ?? s.notPaid?.username}</span>
+                <span className="font-medium">{s.notPaid?.fullName}</span> owes to <span className="font-medium">{s.payer?.fullName}</span>
               </div>
               <div className="text-m text-gray-700 mt-1 font-semibold">{s.quantity?.toFixed(2)} €</div>
 
@@ -262,7 +263,7 @@ export default function Expenses() {
           role="dialog"
         >
           <div
-            className="bg-white rounded-lg w-full max-w-2xl shadow-lg p-6"
+            className="bg-white rounded-lg w-full max-w-lg shadow-lg p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
