@@ -16,10 +16,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -124,15 +120,38 @@ public class CategoryController {
     }
 
     @Operation(summary = "Update category", description = "Updates the category using JSON Patch operations. " +
-            "Supports updating 'name' and 'color' fields. " +
-            "Example: [{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"New Name\"}]")
+            "Supports updating 'name' and 'color' fields.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Category updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid patch operation"),
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
-    @PatchMapping(
-            path = "/{category-id}")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "JSON Patch operations to apply",
+            required = true,
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = JsonPatchOperation.class),
+                    examples = {
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Update name",
+                                    summary = "Change category name",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"Updated Category\"}]"
+                            ),
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Update color",
+                                    summary = "Change category color",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/color\", \"value\": \"red\"}]"
+                            ),
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Multiple operations",
+                                    summary = "Update both name and color",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"Groceries\"}, {\"op\": \"replace\", \"path\": \"/color\", \"value\": \"green\"}]"
+                            )
+                    }
+            )
+    )
+    @PatchMapping("/{category-id}")
     @JsonView(Views.Summary.class)
     public ResponseEntity<Category> updateCategory(
             @PathVariable("category-id") UUID categoryId,

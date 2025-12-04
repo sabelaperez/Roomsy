@@ -60,6 +60,7 @@ public class GroupController {
                 .body(GroupResponse.fromEntity(savedGroup));
     }
 
+    // TODO: add api responses to documentation
     @Operation(summary = "Get all groups", description = "Retrieves a list of all existing groups in the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Groups retrieved successfully")
