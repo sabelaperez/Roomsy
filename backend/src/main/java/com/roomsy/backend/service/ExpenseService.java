@@ -98,7 +98,7 @@ public class ExpenseService {
             UUID notPaidId = sharedExpense.getNotPaid().getId();
             Double quantity = sharedExpense.getQuantity();
 
-            balances.put(payerId, balances.getOrDefault(payerId, 0.0) + quantity);
+            balances.put(payerId, balances.getOrDefault(payerId, 0.0) + quantity); // ó reves?????
             balances.put(notPaidId, balances.getOrDefault(notPaidId, 0.0) - quantity);
         }
 
@@ -106,7 +106,7 @@ public class ExpenseService {
         Map<User, Double> debtorsMap = new HashMap<>();
 
         Map<UUID, User> userMap = new HashMap<>();
-        for (User member : group.getMembers()) {
+        for (User member : group.getMembers()) { // innecesario recuperar todos los miembros del grupo
             userMap.put(member.getId(), member);
         }
 

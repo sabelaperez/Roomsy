@@ -58,3 +58,33 @@ export const tasksApi = {
   getGroupTasks: (groupId, { page = 0, size = 10, sortBy = 'createdAt', sortDirection = 'desc' } = {}) =>
     request(`/groups/${groupId}/cleaning-tasks?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
 };
+
+export const shoppingApi = {
+  getGroupShoppingItems: (groupId, { page = 0, size = 10, sortBy = 'name', sortDirection = 'asc' } = {}) =>
+    request(`/groups/${groupId}/shopping-items?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
+  create: (groupId, payload) =>
+    request(`/groups/${groupId}/shopping-items`, { method: 'POST', body: JSON.stringify(payload) }),
+  updateQuantity: (groupId, itemId, payload) =>
+    request(`/groups/${groupId}/shopping-items/${itemId}/quantity`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  updateName: (groupId, itemId, payload) =>
+    request(`/groups/${groupId}/shopping-items/${itemId}/name`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  updateCategory: (groupId, itemId, payload) =>
+    request(`/groups/${groupId}/shopping-items/${itemId}/category`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  delete: (groupId, itemId) =>
+    request(`/groups/${groupId}/shopping-items/${itemId}`, { method: 'DELETE' }),
+};
+
+export const categoryApi = {
+  getGroupCategories: (groupId, { page = 0, size = 10, sortBy = 'name', sortDirection = 'asc' } = {}) =>
+    request(`/groups/${groupId}/categories?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
+  create: (groupId, payload) =>
+    request(`/groups/${groupId}/categories`, { method: 'POST', body: JSON.stringify(payload) }),
+  getCategoryById: (groupId, categoryId) =>
+    request(`/groups/${groupId}/categories/${categoryId}`),
+  updateName: (groupId, categoryId, payload) =>
+    request(`/groups/${groupId}/categories/${categoryId}/name`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  updateColor: (groupId, categoryId, payload) =>
+    request(`/groups/${groupId}/categories/${categoryId}/color`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  delete: (groupId, categoryId) =>
+    request(`/groups/${groupId}/categories/${categoryId}`, { method: 'DELETE' }),
+};
