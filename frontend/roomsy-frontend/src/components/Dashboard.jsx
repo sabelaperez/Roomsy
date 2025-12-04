@@ -38,7 +38,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-8 max-w-5xl mx-auto mt-10">
+    <div className="bg-white rounded-lg shadow-md p-8 max-w-5xl mx-auto mt-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
       </div>
@@ -58,7 +58,7 @@ export default function Dashboard() {
               onUpdate={setGroupInfo}
             />
           </div>
-          <div className="w-80">
+          <div className="w-100">
             <GroupNews groupId={user.groupId} />
           </div>
         </div>

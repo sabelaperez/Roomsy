@@ -19,12 +19,16 @@ export default function DashboardLayout() {
         </div>
 
         <nav className="bg-white rounded-lg shadow-sm p-3 mb-6">
-          <div className="flex gap-2">
-            <NavLink to="/dashboard" className={linkClass} end>Dashboard</NavLink>
-            <NavLink to="/dashboard/expenses" className={linkClass}>Expenses</NavLink>
-            <NavLink to="/dashboard/calendar" className={linkClass}>Calendar</NavLink>
-            <NavLink to="/dashboard/shopping" className={linkClass}>Shopping</NavLink>
-            <NavLink to="/dashboard/settings" className={linkClass}>Settings</NavLink>
+          <div className="flex items-center w-full">
+            <div className="flex gap-2">
+              <NavLink to="/dashboard" className={linkClass} end>Dashboard</NavLink>
+              <NavLink to="/dashboard/expenses" className={linkClass}>Expenses</NavLink>
+              <NavLink to="/dashboard/calendar" className={linkClass}>Calendar</NavLink>
+              <NavLink to="/dashboard/shopping" className={linkClass}>Shopping</NavLink>
+            </div>
+            <div className="ml-auto">
+              <NavLink to="/dashboard/settings" className={linkClass}>Settings</NavLink>
+            </div>
           </div>
         </nav>
 

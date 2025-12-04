@@ -47,7 +47,7 @@ public class ExpenseService {
         News addedExpenseNews = new News(expenseItem.getGroup(), expenseItem.getOwner(), NewsType.EXPENSE_ADDED,
                 "Expense Added by " + expenseItem.getOwner().getUsername(), 
                 expenseItem.getOwner().getUsername() + " added an expense item named '" + expenseItem.getName() + "' with amount " + 
-                expenseItem.getPrice() + " shared with " + usersInvolvedNames.toString() + ".");
+                expenseItem.getPrice() + " € shared with " + usersInvolvedNames.toString() + ".");
         newsRepository.save(addedExpenseNews);
 
         return expenseItemRepository.save(expenseItem);
@@ -209,7 +209,7 @@ public class ExpenseService {
         if (result) {
             // Xerar unha noticia do tipo EXPENSE_PAID
             News paidExpNews = new News(payedExpense.getGroup(), payedExpense.getNotPaid(), NewsType.EXPENSE_PAID,
-                    "An expense has been paid", "The user " + payedExpense.getNotPaid().getUsername() + " has paid an expense of amount " + payedExpense.getQuantity() + " to " + payedExpense.getPayer().getFullName() + ".");
+                    "An expense has been paid", "The user " + payedExpense.getNotPaid().getUsername() + " has paid an expense of amount " + payedExpense.getQuantity() + " € to " + payedExpense.getPayer().getFullName() + ".");
             newsRepository.save(paidExpNews);
             return true;
         } else {
