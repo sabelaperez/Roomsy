@@ -9,6 +9,7 @@ import com.roomsy.backend.model.Group;
 import com.roomsy.backend.service.CategoryService;
 import com.roomsy.backend.service.GroupService;
 
+import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -121,58 +123,23 @@ public class CategoryController {
         return ResponseEntity.ok(category);
     }
 
-
-    @Operation(summary = "Update category name", description = "Updates the name of the specified category" +
-            " name must be 4-50 characters long and can only contain letters, numbers, and spaces")
+    @Operation(summary = "Update category", description = "Updates the category using JSON Patch operations. " +
+            "Supports updating 'name' and 'color' fields. " +
+            "Example: [{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"New Name\"}]")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category name updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid name format"),
+            @ApiResponse(responseCode = "200", description = "Category updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid patch operation"),
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
-    @PatchMapping("/{category-id}/name")
+    @PatchMapping(
+            path = "/{category-id}")
     @JsonView(Views.Summary.class)
-    public ResponseEntity<Category> updateName(
-        @PathVariable("category-id") UUID categoryId,
-        @PathVariable("group-id") UUID groupId,
-        @Valid @RequestBody UpdateNameRequest request
+    public ResponseEntity<Category> updateCategory(
+            @PathVariable("category-id") UUID categoryId,
+            @PathVariable("group-id") UUID groupId,
+            @RequestBody List<JsonPatchOperation> changes
     ) {
-        Category updatedCategory = categoryService.updateName(categoryId, groupId, request.getName());
+        Category updatedCategory = categoryService.updateCategory(categoryId, groupId, changes);
         return ResponseEntity.ok(updatedCategory);
-    }
-
-    @Operation(summary = "Update category color", description = "Updates the color of the specified category")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category color updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Category not found"),
-    })
-    @PatchMapping("/{category-id}/color")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<Category> updateColor(
-        @PathVariable("category-id") UUID categoryId,
-        @PathVariable("group-id") UUID groupId,
-        @RequestBody String newColor
-    ) {
-        Category updatedCategory = categoryService.updateColor(categoryId, groupId, newColor);
-        return ResponseEntity.ok(updatedCategory);
-    }
-
-    // Request DTOs
-    @Schema(description = "Request object for updating a category's name")
-    public static class UpdateNameRequest {
-        @NotNull
-        @Size(min = 4, max = 50)
-        @Pattern(regexp = "^[a-zA-Z0-9 ]+$",
-                message = "Name can only contain letters, numbers, and spaces")
-        @Schema(description = "New name for the category",
-                example = "Groceries")
-        private String name;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
     }
 }
