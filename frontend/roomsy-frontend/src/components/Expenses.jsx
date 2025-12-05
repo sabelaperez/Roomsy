@@ -304,22 +304,22 @@ export default function Expenses() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Users involved</label>
-                  <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
                     {loadingMembers && <div className="text-sm text-gray-600">Loading members...</div>}
                     {!loadingMembers && groupMembers.map(m => {
-                      const id = m.id;
+                      const id = String(m.id);
+                      const included = Array.isArray(form.usersInvolvedIds) && form.usersInvolvedIds.some(x => String(x) === id);
                       return (
-                        <label key={id} className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            value={id}
-                            checked={form.usersInvolvedIds.includes(String(id))}
-                            onChange={() => toggleUserInvolved(id)}
-                          />
-                          <span>{m.fullName ?? m.username}</span>
-                        </label>
+                        <button
+                          key={id}
+                          onClick={() => toggleUserInvolved(id)}
+                          className={`text-sm px-2 py-1 rounded border ${included ? 'bg-white text-gray-800' : 'bg-gray-200 text-white'}`}
+                        >
+                          {m.fullName ?? m.username}
+                        </button>
                       );
                     })}
+                    {(groupMembers.length === 0) && <div className="text-xs text-gray-600">No members</div>}
                   </div>
                 </div>
 

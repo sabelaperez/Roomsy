@@ -23,7 +23,7 @@ export default function DashboardLayout() {
             <div className="flex gap-2">
               <NavLink to="/dashboard" className={linkClass} end>Dashboard</NavLink>
               <NavLink to="/dashboard/expenses" className={linkClass}>Expenses</NavLink>
-              <NavLink to="/dashboard/calendar" className={linkClass}>Calendar</NavLink>
+              <NavLink to="/dashboard/calendar" className={linkClass}>Tasks</NavLink>
               <NavLink to="/dashboard/shopping" className={linkClass}>Shopping</NavLink>
             </div>
             <div className="ml-auto">

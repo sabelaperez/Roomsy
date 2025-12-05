@@ -106,7 +106,7 @@ export default function GroupNews({ groupId }) {
             {items.map((n) => (
               <li
                 key={n.id}
-                className="border rounded p-3 bg-gray-50 cursor-pointer hover:bg-gray-100 focus:ring-2 focus:ring-indigo-300"
+                className="border rounded p-3 bg-gray-50 cursor-pointer hover:bg-gray-100 focus:ring-2 focus:ring-gray-200"
                 role="button"
                 tabIndex={0}
                 onClick={() => setSelected(n)}
@@ -171,7 +171,7 @@ export default function GroupNews({ groupId }) {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => { setSelected(null); setSelectedDetails(null); setDetailsError(''); }}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 Close
               </button>
