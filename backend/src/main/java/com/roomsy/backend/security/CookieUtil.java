@@ -10,7 +10,6 @@ import java.util.Optional;
 
 @Component
 public class CookieUtil {
-
     @Value("${cookie.access-token-name}")
     private String accessTokenName;
 

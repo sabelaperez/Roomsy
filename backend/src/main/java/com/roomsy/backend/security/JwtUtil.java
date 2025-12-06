@@ -25,6 +25,9 @@ public class JwtUtil {
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
 
+    @Value("${jwt.token-renewal-threshold:300000}")
+    private long tokenRenewalThreshold;
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
@@ -93,6 +96,17 @@ public class JwtUtil {
         }
     }
 
+    public boolean shouldRenewToken(String token) {
+        try {
+            Claims claims = extractClaims(token);
+            Date expiration = claims.getExpiration();
+            long timeUntilExpiration = expiration.getTime() - System.currentTimeMillis();
+            return timeUntilExpiration <= tokenRenewalThreshold && timeUntilExpiration > 0;
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+
     public String getTokenType(String token) {
         return extractClaims(token).get("type", String.class);
     }
@@ -103,5 +117,9 @@ public class JwtUtil {
 
     public long getRefreshTokenExpiration() {
         return refreshTokenExpiration;
+    }
+
+    public long getTokenRenewalThreshold() {
+        return tokenRenewalThreshold;
     }
 }

@@ -74,7 +74,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // Extract user information
-            // UUID userId = jwtUtil.extractUserId(token);
             String email = jwtUtil.extractEmail(token);
 
             // If user is not already authenticated
@@ -90,12 +89,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                if (jwtUtil.shouldRenewToken(token)) {
+                    renewAccessToken(token, response, (CustomUserDetails) userDetails);
+                }
             }
         } catch (Exception e) {
-            // Log the exception but don't block the request
             logger.error("Cannot set user authentication", e);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void renewAccessToken(String oldToken, HttpServletResponse response, CustomUserDetails userDetails) {
+        try {
+            String newAccessToken = jwtUtil.generateAccessToken(
+                    userDetails.getId(),
+                    userDetails.getEmail(),
+                    userDetails.getRole()
+            );
+
+            tokenService.storeAccessToken(userDetails.getId(), newAccessToken);
+
+            tokenService.revokeAccessToken(oldToken);
+
+            response.addCookie(cookieUtil.createAccessTokenCookie(
+                    newAccessToken,
+                    jwtUtil.getAccessTokenExpiration()
+            ));
+
+            logger.debug("Access token renewed for user: " + userDetails.getEmail());
+        } catch (Exception e) {
+            logger.error("Failed to renew access token for user: " + userDetails.getEmail(), e);
+        }
     }
 }
