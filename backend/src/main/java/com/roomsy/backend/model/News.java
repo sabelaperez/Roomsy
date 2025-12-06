@@ -35,10 +35,9 @@ public class News {
     @Schema(description = "The group to which the news item belongs.")
     private Group group;
 
-    @NotNull
     //@ManyToOne(fetch = FetchType.LAZY)
-    @ManyToOne()
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "user_id", nullable = true)
     @JsonView(Views.Summary.class)
     @Schema(description = "The user who performed the action leading to the news item.")
     private User actor;

@@ -22,4 +22,6 @@ public interface SharedExpenseRepository extends JpaRepository<SharedExpense, UU
             return false;
         }
     }
+    List<SharedExpense> findByPayerId(UUID payerId);
+    List<SharedExpense> findByNotPaidId(UUID notPaidId);
 }

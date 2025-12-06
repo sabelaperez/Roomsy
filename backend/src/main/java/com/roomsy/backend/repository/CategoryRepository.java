@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
     boolean existsByGroupAndName(Group group, String name);
     Page<Category> findByGroupId(UUID groupId, Pageable pageable);
+    void deleteByGroupId(UUID groupId);
 }

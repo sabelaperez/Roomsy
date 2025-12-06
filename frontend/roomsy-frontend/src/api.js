@@ -26,12 +26,19 @@ export const groupApi = {
   create: (payload) => request('/groups', { method: 'POST', body: JSON.stringify(payload) }),
   get: (id) => request(`/users/${id}/group`),
   regenerateInvite: (groupId) => request(`/groups/${groupId}/invite-code/regenerate`, { method: 'POST' }),
-  joinByInvite: (userId, inviteCode) => request(`/users/${userId}/join?inviteCode=${encodeURIComponent(inviteCode)}`, { method: 'POST' }),
   getGroupNews: (groupId, { page = 0, size = 5, sortBy = 'createdAt', sortDirection = 'desc' } = {}) =>
     request(`/groups/${groupId}/news?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
   getNews: (groupId, newsId) => request(`/groups/${groupId}/news/${newsId}`),
   getMembers: (groupId) => request(`/groups/${groupId}/members`),
+  removeMember: (groupId, memberId) => request(`/groups/${groupId}/members/${memberId}`, { method: 'DELETE' }),
+  delete: (groupId) => request(`/groups/${groupId}`, { method: 'DELETE' }),
+  updateName: (groupId, groupName) => request(`/groups/${groupId}/name`, { method: 'PATCH', body: JSON.stringify({ name: groupName }) }),
 };
+
+export const userApi = {
+  deleteMe: () => request('/users/me', { method: 'DELETE' }),
+  joinByInvite: (userId, inviteCode) => request(`/users/${userId}/join?inviteCode=${encodeURIComponent(inviteCode)}`, { method: 'POST' }),
+}
 
 export const expenseApi = {
   create: (groupId, payload) => request(`/groups/${groupId}/expenses`, { method: 'POST', body: JSON.stringify(payload) }),

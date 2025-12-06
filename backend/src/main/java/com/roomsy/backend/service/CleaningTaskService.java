@@ -18,6 +18,7 @@ import com.roomsy.backend.repository.CleaningTaskRepository;
 import com.roomsy.backend.repository.NewsRepository;
 
 import jakarta.annotation.Nonnull;
+import jakarta.transaction.Transactional;
 
 @Service
 public class CleaningTaskService {
@@ -47,6 +48,7 @@ public class CleaningTaskService {
         return true;
     }
 
+    @Transactional
     public CleaningTask createTask(CleaningTask task) {
         // Xerar unha noticia de tipo CLEANING_TASK_ADDED
         String description = "";
@@ -62,6 +64,7 @@ public class CleaningTaskService {
         return cleaningTaskRepository.save(task);
     }
 
+    @Transactional
     public void deleteTask(@NonNull UUID taskId, @NonNull UUID groupId) throws ResourceNotFoundException {
         if(existTask(taskId, groupId)) {
             cleaningTaskRepository.deleteById(taskId);
@@ -94,5 +97,13 @@ public class CleaningTaskService {
 
     public Page<CleaningTask> getGroupCleaningTasks(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
         return cleaningTaskRepository.findByGroupId(groupId, pageable);
+    }
+
+    @Transactional
+    public void deleteUser (@NonNull UUID userId) {
+        cleaningTaskRepository.findByAssignedToId(userId).forEach(task -> {
+            task.getAssignedTo().removeIf(user -> user.getId().equals(userId));
+            cleaningTaskRepository.save(task);
+        });
     }
 }

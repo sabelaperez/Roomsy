@@ -5,8 +5,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ExpenseItemRepository extends JpaRepository<ExpenseItem, UUID> {
     Page<ExpenseItem> findByGroupId(UUID groupId, Pageable pageable);
+    List<ExpenseItem> findByOwnerId(UUID ownerId);
+    List<ExpenseItem> findByUsersInvolvedId(UUID userId);
 }

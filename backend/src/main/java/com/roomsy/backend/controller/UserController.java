@@ -6,8 +6,7 @@ import com.roomsy.backend.dto.Views;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.security.CustomUserDetails;
-import com.roomsy.backend.service.GroupService;
-import com.roomsy.backend.service.UserService;
+import com.roomsy.backend.service.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,11 +26,18 @@ import java.util.UUID;
 public class UserController {
     private final UserService userService;
     private final GroupService groupService;
+    private final CleaningTaskService cleaningTaskService;
+    private final NewsService newsService;
+    private final ExpenseService expenseService;
 
     @Autowired
-    public UserController(UserService userService, GroupService groupService) {
+    public UserController(UserService userService, GroupService groupService, CleaningTaskService cleaningTaskService,
+                          NewsService newsService, ExpenseService expenseService) {
         this.userService = userService;
         this.groupService = groupService;
+        this.cleaningTaskService = cleaningTaskService;
+        this.newsService = newsService;
+        this.expenseService = expenseService;
     }
 
     @Operation(summary = "Get user by ID", description = "Retrieves detailed information about a specific user")
@@ -55,7 +61,13 @@ public class UserController {
     })
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        userService.deleteUser(userDetails.getId());
+        User user = userService.getUserById(userDetails.getId());
+        expenseService.deleteUser(userDetails.getId());
+        cleaningTaskService.deleteUser(userDetails.getId());
+        System.out.println("Deleting news");
+        newsService.deleteUser(userDetails.getId());
+        groupService.removeUserFromGroup(user.getGroup().getId(), user.getId());
+        userService.deleteUser(user.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -69,6 +81,11 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{user-id}")
     public ResponseEntity<Void> deleteUserById(@PathVariable("user-id") UUID userId) {
+        User user = userService.getUserById(userId);
+        expenseService.deleteUser(userId);
+        cleaningTaskService.deleteUser(userId);
+        newsService.deleteUser(userId);
+        groupService.removeUserFromGroup(user.getGroup().getId(), user.getId());
         userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }

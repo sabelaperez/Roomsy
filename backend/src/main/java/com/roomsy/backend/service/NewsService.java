@@ -11,6 +11,8 @@ import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.News;
 import com.roomsy.backend.repository.NewsRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class NewsService {
     private final NewsRepository newsRepository;
@@ -30,6 +32,13 @@ public class NewsService {
 
     public Page<News> getGroupNews(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
         return newsRepository.findByGroupId(groupId, pageable);
+    }
+
+    @Transactional
+    public void deleteUser(@NonNull UUID userId) {
+        newsRepository.findByActorId(userId).forEach(news -> {
+            newsRepository.delete(news);
+        });
     }
     
 }

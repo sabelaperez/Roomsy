@@ -114,6 +114,10 @@ public class User {
     }
 
     // Getters and Setters
+    public Group getGroup() {
+        return group;
+    }
+
     public void setGroup(Group group) {
         this.group = group;
     }
@@ -198,7 +202,4 @@ public class User {
         this.joinedAt = joinedAt;
     }
 
-    public Group getGroup() {
-        return group;
-    }
 }
