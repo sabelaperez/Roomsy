@@ -37,7 +37,8 @@ public class UserController {
     @Operation(summary = "Get user by ID", description = "Retrieves detailed information about a specific user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User found successfully"),
-            @ApiResponse(responseCode = "401", description = "Not authenticated"),
+            @ApiResponse(responseCode = "401", description = "Authentication required"),
+            @ApiResponse(responseCode = "403", description = "Access denied - ADMIN role required"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @PreAuthorize("hasRole('ADMIN')")
@@ -62,8 +63,8 @@ public class UserController {
     @Operation(summary = "Delete user by ID", description = "Deletes a user by their ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "User deleted successfully"),
-            @ApiResponse(responseCode = "401", description = "Not authenticated"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - insufficient permissions"),
+            @ApiResponse(responseCode = "401", description = "Authentication required"),
+            @ApiResponse(responseCode = "403", description = "Access denied - ADMIN role required"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @PreAuthorize("hasRole('ADMIN')")

@@ -83,6 +83,8 @@ public class GroupController {
             "by its unique identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Group found successfully"),
+            @ApiResponse(responseCode = "401", description = "Authentication required"),
+            @ApiResponse(responseCode = "403", description = "Access denied - ADMIN role required"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @PreAuthorize("hasRole('ADMIN')")
