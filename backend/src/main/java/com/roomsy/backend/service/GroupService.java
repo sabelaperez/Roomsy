@@ -192,7 +192,24 @@ public class GroupService {
 
     @Transactional
     public Group updateGroup(@NonNull UUID groupId, @NonNull List<JsonPatchOperation> changes)
-            throws IllegalArgumentException {
+            throws IllegalArgumentException, InvalidOperationException {
+
+        // Validate: disallow any patch that targets inviteCode
+        for (JsonPatchOperation op : changes) {
+            String path = String.valueOf(op.path());
+            if (path == null) continue;
+
+            // Normalize pointer and get its first segment
+            String normalized = path.startsWith("/") ? path.substring(1) : path;
+            String[] segments = normalized.split("/", 2);
+            String first = segments.length > 0 ? segments[0] : "";
+
+            if ("inviteCode".equalsIgnoreCase(first)) {
+                throw new InvalidOperationException(
+                        "Patching 'inviteCode' is not allowed. Use the /invite-code/regenerate endpoint instead."
+                );
+            }
+        }
 
         Group group = getGroupById(groupId);
 
