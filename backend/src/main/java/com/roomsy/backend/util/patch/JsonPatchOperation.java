@@ -10,7 +10,7 @@ import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "JSON Patch operation following RFC 6902",
-        example = "{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"New Category Name\"}")
+        example = "{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"New Name\"}")
 public record JsonPatchOperation(
         @JsonAlias("op")
         @Schema(description = "The operation to perform",

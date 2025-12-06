@@ -95,6 +95,10 @@ public class CleaningTask {
         return id;
     }
 
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
     public Group getGroup() {
         return group;
     }
