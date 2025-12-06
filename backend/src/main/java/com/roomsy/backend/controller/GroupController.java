@@ -62,10 +62,11 @@ public class GroupController {
                 .body(GroupResponse.fromEntity(savedGroup));
     }
 
-    // TODO: add api responses to documentation
     @Operation(summary = "Get all groups", description = "Retrieves a list of all existing groups in the system")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Groups retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "Groups retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Authentication required"),
+            @ApiResponse(responseCode = "403", description = "Access denied - ADMIN role required")
     })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
