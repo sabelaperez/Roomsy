@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { groupApi } from '../api';
 import GroupCreateJoin from './GroupCreateJoin';
-import GroupInfo from './GroupInfo';
 import GroupNews from './GroupNews';
 
 export default function Dashboard() {
@@ -44,32 +43,49 @@ export default function Dashboard() {
       </div>
 
       {user.groupId ? (
-        <div className="flex items-start gap-6">
-          <div className="flex-1">
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-md mb-6">
-              <p className="text-sm text-gray-600">Welcome back!</p>
-              <p className="font-semibold text-gray-800">{user.fullName}</p>
-              <p className="text-sm text-gray-600">{user.email}</p>
-            </div>
+        <div className="flex w-full items-start gap-6">
+          <div className="flex-1 w-1/2 space-y-6">
+            {loadingGroup && (
+                <div className="text-sm text-green-700">Loading group info...</div>
+              )}
 
-            <GroupInfo
-              groupInfo={groupInfo}
-              loading={loadingGroup}
-              onUpdate={setGroupInfo}
-            />
+              {!groupInfo ? (
+                <div className="text-sm text-green-700">No group info</div>
+              ) : (
+                <div className="flex flex-col md:flex-row items-start gap-6">
+                  <div className="bg-white rounded-lg shadow-md p-4 w-full md:w-80">
+                    <p className="text-sm text-gray-600">Welcome back!</p>
+                    <p className="font-semibold text-gray-800">{user.fullName}</p>
+                    <p className="text-sm text-gray-600">{user.email}</p>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-md p-4 w-full md:w-80">
+                    <p className="font-semibold text-gray-800 mb-2">Your Group</p>
+                    <div>
+                      <p className="text-sm text-gray-600">
+                        Group: <span className="font-semibold text-gray-800">{groupInfo.name}</span>
+                      </p>
+                      <p className="text-sm text-gray-600">Members: {groupInfo.memberCount ?? '-'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
           </div>
-          <div className="w-100">
+
+          <div className="w-full md:w-1/3">
             <GroupNews groupId={user.groupId} />
           </div>
         </div>
       ) : (
-        <div>
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-md mb-6">
+        <div className="w-full space-y-6">
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded-md mb-6 w-full">
             <p className="text-sm text-gray-600">Welcome back!</p>
             <p className="font-semibold text-gray-800">{user.fullName}</p>
             <p className="text-sm text-gray-600">{user.email}</p>
           </div>
-          <GroupCreateJoin user={user} onCreate={onCreate} onJoin={onJoin} />
+          <div className="w-full">
+            <GroupCreateJoin user={user} onCreate={onCreate} onJoin={onJoin} />
+          </div>
         </div>
       )}
     </div>
