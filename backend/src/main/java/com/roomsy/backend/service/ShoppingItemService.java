@@ -9,6 +9,7 @@ import com.roomsy.backend.model.ShoppingItem;
 import com.roomsy.backend.repository.ShoppingItemRepository;
 import com.roomsy.backend.util.patch.JsonPatch;
 import com.roomsy.backend.util.patch.JsonPatchOperation;
+import com.roomsy.backend.util.patch.JsonPatchOperationType;
 import jakarta.transaction.Transactional;
 
 import org.jspecify.annotations.NonNull;
@@ -64,19 +65,63 @@ public class ShoppingItemService {
         }
     }
 
-  // todo: comprobar quantity > 0
     @Transactional
     public ShoppingItem updateShoppingItem(@NonNull UUID shoppingItemId, @NonNull UUID groupId, @NonNull List<JsonPatchOperation> changes)
             throws IllegalArgumentException, InvalidOperationException {
 
+        // Validate: quantity must be >= 1 for operations that set it
+        for (JsonPatchOperation op : changes) {
+            if (op == null) continue;
+            if (op.path() == null) continue;
+
+            // Normalize pointer and get its first segment
+            String path = op.path().toString(); // e.g. "/quantity"
+            String normalized = path.startsWith("/") ? path.substring(1) : path;
+            String[] segments = normalized.split("/", 2);
+            String first = segments.length > 0 ? segments[0] : "";
+
+            // Only validate when patch targets the "quantity" field and operation sets a value
+            if ("quantity".equalsIgnoreCase(first)) {
+                // Only apply this validation for operations that provide a value
+                JsonPatchOperationType type = op.operation();
+                if (type == JsonPatchOperationType.ADD || type == JsonPatchOperationType.REPLACE) {
+                    JsonNode val = op.value();
+                    if (val == null) {
+                        throw new InvalidOperationException("Patching 'quantity' requires a value.");
+                    }
+
+                    Integer numeric = null;
+
+                    // If it's a number node
+                    if (val.isNumber()) {
+                        numeric = val.asInt();
+                    } else if (val.isTextual()) {
+                        // try to parse numeric string
+                        try {
+                            numeric = Integer.parseInt(val.asText().trim());
+                        } catch (NumberFormatException ignored) {
+                            // will throw below as invalid
+                        }
+                    }
+
+                    if (numeric == null) {
+                        throw new InvalidOperationException("Patching 'quantity' must provide a numeric value.");
+                    }
+
+                    if (numeric < 1) {
+                        throw new InvalidOperationException(
+                                "Patching 'quantity' is not allowed with values less than 1."
+                        );
+                    }
+                }
+            }
+        }
+
+
         ShoppingItem shoppingItem = getShoppingItem(shoppingItemId, groupId);
-
         JsonNode shoppingItemNode = jsonMapper.convertValue(shoppingItem, JsonNode.class);
-
         JsonNode patchedNode = JsonPatch.apply(changes, shoppingItemNode);
-
         ShoppingItem updatedShoppingItem = jsonMapper.convertValue(patchedNode, ShoppingItem.class);
-
         updatedShoppingItem.setGroup(shoppingItem.getGroup());
 
         return shoppingItemRepository.save(updatedShoppingItem);

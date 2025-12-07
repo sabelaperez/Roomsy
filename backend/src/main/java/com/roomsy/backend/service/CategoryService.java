@@ -73,11 +73,8 @@ public class CategoryService {
         Category category = getCategory(id, groupId);
 
         JsonNode categoryNode = jsonMapper.convertValue(category, JsonNode.class);
-
         JsonNode patchedNode = JsonPatch.apply(changes, categoryNode);
-
         Category updatedCategory = jsonMapper.convertValue(patchedNode, Category.class);
-
         updatedCategory.setGroup(category.getGroup());
 
         return categoryRepository.save(updatedCategory);
