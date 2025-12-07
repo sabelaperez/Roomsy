@@ -5,7 +5,6 @@ import tools.jackson.core.JsonPointer;
 import tools.jackson.databind.JsonNode;
 
 import java.util.List;
-import java.util.Optional;
 
 public class JsonPatch {
     public static JsonNode apply(List<JsonPatchOperation> patchOperations, JsonNode rootDocument) throws JsonPatchFailedException {

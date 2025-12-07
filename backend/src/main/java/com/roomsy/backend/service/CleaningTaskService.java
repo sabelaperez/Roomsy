@@ -20,7 +20,6 @@ import com.roomsy.backend.repository.CleaningTaskRepository;
 import com.roomsy.backend.repository.NewsRepository;
 
 import jakarta.annotation.Nonnull;
-import jakarta.transaction.Transactional;
 
 @Service
 public class CleaningTaskService {
@@ -109,6 +108,7 @@ public class CleaningTaskService {
             task.getAssignedTo().removeIf(user -> user.getId().equals(userId));
             cleaningTaskRepository.save(task);
         });
+    }
       
     @Transactional
     public CleaningTask updateCleaningTask(@NonNull UUID taskId, @NonNull UUID groupId, List<JsonPatchOperation> changes)

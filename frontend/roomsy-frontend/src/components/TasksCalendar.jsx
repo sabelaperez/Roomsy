@@ -70,7 +70,6 @@ export default function TasksCalendar() {
     setLoadingTasks(true); setError('');
     try {
       const data = await tasksApi.getGroupTasks(group.id, { page: 0, size: 500, sortBy: 'date', sortDirection: 'asc' });
-      // backend returns a page object with content
       setTasksPage(data);
     } catch (e) {
       setError(e.message || 'Failed to load tasks');
@@ -188,7 +187,7 @@ export default function TasksCalendar() {
     setSelectedTask(prev => ({ ...prev, date: payloadDate }));
     setEditingDate(false);
     try {
-      await tasksApi.changeDate(group.id, selectedTask.id, payloadDate);
+      await tasksApi.changeDate(group.id, selectedTask.id, dateDraft);
       await loadTasks();
     } catch (e) {
       setSelectedTask(prev);
@@ -273,50 +272,6 @@ export default function TasksCalendar() {
     }
   };
 
-  const doReassign = async (taskId) => {
-    if (!group?.id) return;
-    const members = group?.members ?? [];
-    const ids = prompt('Enter assigned user ids (comma separated). Available: ' + members.map(m => `${m.fullName ?? m.username}:${m.id}`).join(', '));
-    if (ids == null) return;
-    const arr = ids.split(',').map(s => s.trim()).filter(Boolean);
-    try {
-      await tasksApi.reassignTask(group.id, taskId, arr);
-      await loadTasks();
-      if (selectedTask?.id === taskId) {
-        const d = await tasksApi.getTask(group.id, taskId);
-        setSelectedTask(d);
-      }
-    } catch (e) { alert(e.message || 'Reassign failed'); }
-  };
-
-  const doChangeTitle = async (taskId) => {
-    if (!group?.id) return;
-    const title = prompt('New title', selectedTask?.title ?? '');
-    if (!title) return;
-    try {
-      await tasksApi.changeTitle(group.id, taskId, title);
-      await loadTasks();
-      if (selectedTask?.id === taskId) {
-        const d = await tasksApi.getTask(group.id, taskId);
-        setSelectedTask(d);
-      }
-    } catch (e) { alert(e.message || 'Update failed'); }
-  };
-
-  const doChangeDate = async (taskId) => {
-    if (!group?.id) return;
-    const nd = prompt('New date (ISO e.g. 2025-12-31T10:00:00)', selectedTask?.date ?? '');
-    if (!nd) return;
-    try {
-      await tasksApi.changeDate(group.id, taskId, nd);
-      await loadTasks();
-      if (selectedTask?.id === taskId) {
-        const d = await tasksApi.getTask(group.id, taskId);
-        setSelectedTask(d);
-      }
-    } catch (e) { alert(e.message || 'Update failed'); }
-  };
-
   const toggleSelectedTaskCompleted = async (checked) => {
     if(!group?.id || !selectedTask?.id) return;
     try {
@@ -328,15 +283,6 @@ export default function TasksCalendar() {
       alert(e.message || 'Operation failed');
     }
   };
-
-  const tasksForSelectedDay = useMemo(() => {
-    if (!selectedDay) return [];
-    return tasks.filter(t => {
-      const d = (t.date);
-      const key = toYMD(d);
-      return key === selectedDay;
-    });
-  }, [selectedDay, tasks]);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-8 max-w-5xl mx-auto mt-4">
