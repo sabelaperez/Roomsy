@@ -1,5 +1,6 @@
 package com.roomsy.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -87,6 +88,7 @@ public class User {
     private LocalDateTime joinedAt;
 
     @ManyToOne()
+    @JsonBackReference
     //@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id") // Pode non pertencer a ningún grupo
     @JsonView(Views.Summary.class)

@@ -1,11 +1,27 @@
 const API_BASE_URL = 'http://localhost:8080/api/v1';
 
+const tokenExpiredListeners = new Set();
+
+export function onTokenExpired(callback) {
+  tokenExpiredListeners.add(callback);
+  return () => tokenExpiredListeners.delete(callback);
+}
+
+function notifyTokenExpired() {
+  tokenExpiredListeners.forEach(callback => callback());
+}
+
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options,
   });
+
+  if (res.status === 403) {
+    notifyTokenExpired();
+  }
+  
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
   if (!res.ok) {
@@ -20,6 +36,7 @@ export const authApi = {
   login: (payload) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
   register: (payload) => request('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
+  refresh: () => request('/auth/refresh', { method: 'POST' }),
 };
 
 export const groupApi = {

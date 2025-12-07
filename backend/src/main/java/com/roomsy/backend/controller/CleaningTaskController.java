@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.roomsy.backend.dto.PageResponse;
 import com.roomsy.backend.security.CustomUserDetails;
+import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -131,56 +132,6 @@ public class CleaningTaskController {
         return ResponseEntity.ok(updated);
     }
 
-    @Operation(summary = "Set task completed state", description = "Mark task as completed or not completed")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Task updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Task not found")
-    })
-    @PatchMapping("/{task-id}/completed")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<CleaningTask> setCompleted(
-            @PathVariable("task-id") UUID taskId,
-            @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody CompletedRequest request
-    ) {
-        CleaningTask updated = cleaningTaskService.setTaskCompleted(taskId, groupId, request.isCompleted());
-        return ResponseEntity.ok(updated);
-    }
-
-    @Operation(summary = "Change task date", description = "Update the date/time of the task")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Task date updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Task not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
-    })
-    @PatchMapping("/{task-id}/date")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<CleaningTask> changeDate(
-            @PathVariable("task-id") UUID taskId,
-            @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody DateRequest request
-    ) {
-        CleaningTask updated = cleaningTaskService.changeTaskDate(taskId, groupId, request.getNewDate());
-        return ResponseEntity.ok(updated);
-    }
-
-    @Operation(summary = "Change task title", description = "Update the title of the task")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Title updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Task not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid title")
-    })
-    @PatchMapping("/{task-id}/title")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<CleaningTask> changeTitle(
-            @PathVariable("task-id") UUID taskId,
-            @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody TitleRequest request
-    ) {
-        CleaningTask updated = cleaningTaskService.changeTaskTitle(taskId, groupId,request.getTitle());
-        return ResponseEntity.ok(updated);
-    }
-
     @Operation(summary = "Get the group cleaning tasks", description = "Retrieves all cleaning tasks assigned " +
             "within the group")
     @ApiResponses(value = {
@@ -209,6 +160,55 @@ public class CleaningTaskController {
         return ResponseEntity.ok(new PageResponse<>(cleaningTasks));
     }
 
+    @Operation(summary = "Update cleaning task", description = "Updates the cleaning task using JSON Patch operations. " +
+            "Supports updating 'title', 'date', and 'completed' fields. " +
+            "For reassigning users, use the dedicated /assign-to endpoint instead.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cleaning task updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid patch operation"),
+            @ApiResponse(responseCode = "404", description = "Cleaning task not found"),
+    })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "JSON Patch operations to apply",
+            required = true,
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = JsonPatchOperation.class),
+                    examples = {
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Update title",
+                                    summary = "Change task title",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/title\", \"value\": \"Clean the bathroom\"}]"
+                            ),
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Update date",
+                                    summary = "Change task date",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/date\", \"value\": \"2024-12-15T10:00:00\"}]"
+                            ),
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Update completed status",
+                                    summary = "Mark task as completed",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/completed\", \"value\": true}]"
+                            ),
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Multiple operations",
+                                    summary = "Update title and mark as completed",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/title\", \"value\": \"Clean the kitchen\"}, {\"op\": \"replace\", \"path\": \"/completed\", \"value\": true}]"
+                            )
+                    }
+            )
+    )
+    @PatchMapping("/{task-id}")
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<CleaningTask> updateCleaningTask (
+            @PathVariable("task-id") UUID taskId,
+            @PathVariable("group-id") UUID groupId,
+            @RequestBody List<JsonPatchOperation> changes
+    ) {
+        CleaningTask updatedTask = cleaningTaskService.updateCleaningTask(taskId, groupId, changes);
+        return ResponseEntity.ok(updatedTask);
+    }
+
     // Request DTOs
     @Schema(description = "Request object for updating the assigned users of the cleaning task")
     public static class ReassignRequest {
@@ -219,67 +219,11 @@ public class CleaningTaskController {
 
         public ReassignRequest() {}
 
-        public List<UUID> getAssignedToIds() { 
-            return assignedToIds; 
+        public List<UUID> getAssignedToIds() {
+            return assignedToIds;
         }
-        public void setAssignedToIds(List<UUID> assignedToIds) { 
-            this.assignedToIds = assignedToIds; 
-        }
-    }
-
-    @Schema(description = "Request object for updating the completed boolean of the cleaning task")
-    public static class CompletedRequest {
-        @NotNull
-        @Schema(description = "Indicates whether the task is completed",
-                example = "true")
-        private Boolean completed;
-
-        public CompletedRequest() {}
-
-        public Boolean isCompleted() {
-            return completed; 
-        }
-        public void setCompleted(Boolean completed) { 
-            this.completed = completed; 
-        }
-    }
-
-    @Schema(description = "Request object for updating a cleaning task's date")
-    public static class DateRequest {
-        @NotNull
-        @Schema(description = "New date and time for the task",
-                example = "2024-12-01T14:30:00")
-        private LocalDateTime newDate;
-
-        public DateRequest() {}
-
-        public LocalDateTime getNewDate() {
-            return newDate;
-        }
-        public void setNewDate(LocalDateTime newDate) {
-            this.newDate = newDate;
-        }
-    }
-
-    @Schema(description = "Request object for updating a cleaning task's title")
-    public static class TitleRequest {
-        @NotNull
-        @Size(min = 3, max = 100)
-        @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Title can only contain letters, numbers, and spaces")
-        @Schema(description = "New title for the task",
-                example = "Clean the kitchen",
-                minLength = 3,
-                maxLength = 100,
-                pattern = "^[a-zA-Z0-9 ]+$")
-        private String title;
-
-        public TitleRequest() {}
-
-        public String getTitle() { 
-            return title; 
-        }
-        public void setTitle(String title) {
-            this.title = title;
+        public void setAssignedToIds(List<UUID> assignedToIds) {
+            this.assignedToIds = assignedToIds;
         }
     }
 }

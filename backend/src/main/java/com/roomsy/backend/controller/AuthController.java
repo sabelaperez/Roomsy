@@ -205,7 +205,7 @@ public class AuthController {
         // Set new access token cookie
         response.addCookie(cookieUtil.createAccessTokenCookie(newAccessToken, jwtUtil.getAccessTokenExpiration()));
 
-        return ResponseEntity.ok("Token refreshed successfully");
+        return ResponseEntity.ok("");
     }
 
     @Operation(summary = "Get current user", description = "Returns information about the authenticated user")
