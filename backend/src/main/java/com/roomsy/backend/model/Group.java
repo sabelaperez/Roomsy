@@ -149,6 +149,22 @@ public class Group {
         return updatedAt;
     }
 
+    public void setCleaningTasks(List<CleaningTask> cleaningTasks) {
+        this.cleaningTasks = cleaningTasks;
+    }
+
+    public void setSharedExpenses(List<SharedExpense> sharedExpenses) {
+        this.sharedExpenses = sharedExpenses;
+    }
+
+    public void setExpenseItems(List<ExpenseItem> expenseItems) {
+        this.expenseItems = expenseItems;
+    }
+
+    public void setShoppingItems(List<ShoppingItem> shoppingItems) {
+        this.shoppingItems = shoppingItems;
+    }
+
     // Functions
     public void addMember(User user) {
         if (user == null) return;

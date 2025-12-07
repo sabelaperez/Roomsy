@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { expenseApi, groupApi } from '../api';
+import ConfirmModal from './ConfirmModal';
 
-// Debería ser igual que en backend/enums/ExpenseType.js
 const EXPENSE_TYPES = ['GROCERIES', 'RENT', 'SUPPLIES', 'ENTERTAINMENT', 'OTHER'];
 
 export default function Expenses() {
@@ -29,6 +29,15 @@ export default function Expenses() {
     usersInvolvedIds: []
   });
   const [formError, setFormError] = useState('');
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: 'Confirm',
+    variant: 'danger'
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -143,30 +152,49 @@ export default function Expenses() {
     }
   };
 
-  const handleDeleteExpense = async (expenseId) => {
-    if (!confirm('Delete this expense?')) return;
-    try {
-      await expenseApi.delete(group.id, expenseId);
-      await loadExpenses();
-      await loadShared();
-    } catch (e) {
-      console.error('Delete failed', e);
-      alert(e.message || 'Delete failed');
-    }
+  const handleDeleteExpense = (expenseId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Expense',
+      message: 'Are you sure you want to delete this expense? This action cannot be undone.',
+      confirmText: 'Delete',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await expenseApi.delete(group.id, expenseId);
+          await loadExpenses();
+          await loadShared();
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (e) {
+          console.error('Delete failed', e);
+          setFormError(e.message || 'Delete failed');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      }
+    });
   };
 
-  const handlePayShared = async (sharedId) => {
-    if (!confirm('Mark this shared expense as paid?')) return;
-    try {
-      await expenseApi.pay(group.id, sharedId);
-      await loadShared();
-    } catch (e) {
-      console.error('Pay failed', e);
-      alert(e.message || 'Operation failed');
-    }
+  const handlePayShared = (sharedId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Mark as Paid',
+      message: 'Are you sure you want to mark this shared expense as paid?',
+      confirmText: 'Mark Paid',
+      variant: 'success',
+      onConfirm: async () => {
+        try {
+          await expenseApi.pay(group.id, sharedId);
+          await loadShared();
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (e) {
+          console.error('Pay failed', e);
+          setFormError(e.message || 'Operation failed');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      }
+    });
   };
 
-  // close modal helper
   const closeCreateModal = () => {
     setShowCreateModal(false);
     setForm({ name: '', expenseType: EXPENSE_TYPES[0], price: '', expenseDate: '', usersInvolvedIds: [] });
@@ -178,6 +206,16 @@ export default function Expenses() {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-8 max-w-5xl mx-auto mt-4">
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        confirmVariant={confirmModal.variant}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
+
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Group Expenses</h2>
         <button
@@ -313,7 +351,7 @@ export default function Expenses() {
                         <button
                           key={id}
                           onClick={() => toggleUserInvolved(id)}
-                          className={`text-sm px-2 py-1 rounded border ${included ? 'bg-white text-gray-800' : 'bg-gray-200 text-white'}`}
+                          className={`text-sm px-2 py-1 rounded border ${included ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-200 text-gray-800 border-gray-300'}`}
                         >
                           {m.fullName ?? m.username}
                         </button>

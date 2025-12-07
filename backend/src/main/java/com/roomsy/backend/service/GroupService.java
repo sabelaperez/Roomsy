@@ -220,12 +220,14 @@ public class GroupService {
         Group group = getGroupById(groupId);
 
         JsonNode groupNode = jsonMapper.convertValue(group, JsonNode.class);
-
         JsonNode patchedNode = JsonPatch.apply(changes, groupNode);
-
         Group updatedGroup = jsonMapper.convertValue(patchedNode, Group.class);
 
         updatedGroup.setMembers(group.getMembers());
+        updatedGroup.setCleaningTasks(group.getCleaningTasks());
+        updatedGroup.setExpenseItems(group.getExpenseItems());
+        updatedGroup.setSharedExpenses(group.getSharedExpenses());
+        updatedGroup.setShoppingItems(group.getShoppingItems());
 
         return groupRepository.save(updatedGroup);
     }

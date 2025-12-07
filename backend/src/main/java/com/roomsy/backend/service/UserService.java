@@ -59,20 +59,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-    // Crear método de patchUser con un PatchUserDTO con username y fullname
-    /*    @Transactional
-    public User patchUser(UUID id, PatchUserDto dto) throws Exception {
-        User user = userRepository.findById(id)
-                     .orElseThrow(() -> new Exception("User not found"));
-        if (dto.getUsername() != null) {
-            user.setUsername(dto.getUsername());
-        }
-        if (dto.getFullName() != null) {
-            user.setFullName(dto.getFullName());
-        }
-        return userRepository.save(user);
-    }*/
-
     public void deactivateUser(@NonNull UUID id) throws ResourceNotFoundException {
         User user = getUserById(id);
         user.setActive(false);

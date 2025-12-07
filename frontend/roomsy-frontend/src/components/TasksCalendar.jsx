@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import Calendar from './Calendar';
 import { AuthContext } from '../context/AuthContext';
 import { groupApi, tasksApi } from '../api';
+import ConfirmModal from './ConfirmModal';
 
 export default function TasksCalendar() {
   const { user } = useContext(AuthContext);
@@ -15,16 +16,26 @@ export default function TasksCalendar() {
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [error, setError] = useState('');
 
-  const [selectedDay, setSelectedDay] = useState(null); // 'YYYY-MM-DD'
+  const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState('');
 
-  // inline edit states for task detail modal
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
   const [editingDate, setEditingDate] = useState(false);
   const [dateDraft, setDateDraft] = useState('');
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: 'Confirm',
+    variant: 'danger'
+  });
+
+  const [errorMessage, setErrorMessage] = useState('');
 
   const toInputDateTime = (iso) => {
     if (!iso) return '';
@@ -52,7 +63,6 @@ export default function TasksCalendar() {
     return isNaN(d) ? null : d;
   };
 
-  // load group
   useEffect(() => {
     if (!user) return;
     let mounted = true;
@@ -64,7 +74,6 @@ export default function TasksCalendar() {
     return () => { mounted = false; };
   }, [user]);
 
-  // load tasks
   const loadTasks = async () => {
     if (!group?.id) return;
     setLoadingTasks(true); setError('');
@@ -79,7 +88,6 @@ export default function TasksCalendar() {
 
   useEffect(() => { loadTasks(); loadMembers(); }, [group?.id]);
 
-  // tasks array from paginated response
   const tasks = tasksPage?.content ?? [];
 
   const loadMembers = async () => {
@@ -114,7 +122,6 @@ export default function TasksCalendar() {
     });
   };
 
-  // convert tasks to calendar events (Calendar expects {id,title,description,date,assignedTo,completed,color})
   const events = useMemo(() => tasks.map(t => {
     const dateIso = t.date ?? t.taskDate ?? t.dueDate ?? t.createdAt;
     return {
@@ -126,14 +133,11 @@ export default function TasksCalendar() {
     };
   }), [tasks]);
 
-  // when calendar opens a day
   const handleDayOpen = (ymd) => {
     setSelectedDay(ymd);
   };
 
-  // when user clicks an event in calendar open detailed panel and fetch full task from backend
   const handleEventClick = (ev) => {
-    // try to find in current tasks first
     const found = ev?.id ? tasks.find(t => String(t.id) === String(ev.id)) : null;
     setSelectedTask(found ?? null);
 
@@ -141,7 +145,6 @@ export default function TasksCalendar() {
       setDetailsLoading(true); setDetailsError('');
       tasksApi.getTask(group.id, ev.id)
         .then(d => {
-          // getTask returns full task object (title, date, assignedTo array, completed, etc.)
           setSelectedTask(d);
         })
         .catch(e => setDetailsError(e.message || 'Failed to load task'))
@@ -149,7 +152,6 @@ export default function TasksCalendar() {
     }
   };
 
-  // inline edit helpers for selected task
   const startEditTitle = () => {
     setTitleDraft(selectedTask?.title ?? selectedTask?.name ?? '');
     setEditingTitle(true);
@@ -159,7 +161,6 @@ export default function TasksCalendar() {
     if (!group?.id || !selectedTask?.id) { setEditingTitle(false); return; }
     const newTitle = (titleDraft || '').trim();
     if (!newTitle) { setEditingTitle(false); return; }
-    // optimistic UI
     const prev = selectedTask;
     setSelectedTask(prev => ({ ...prev, title: newTitle }));
     setEditingTitle(false);
@@ -167,9 +168,8 @@ export default function TasksCalendar() {
       await tasksApi.changeTitle(group.id, selectedTask.id, newTitle);
       await loadTasks();
     } catch (e) {
-      // rollback
       setSelectedTask(prev);
-      alert(e.message || 'Failed to update title');
+      setErrorMessage(e.message || 'Failed to update title');
     }
   };
 
@@ -182,7 +182,6 @@ export default function TasksCalendar() {
     if (!group?.id || !selectedTask?.id) { setEditingDate(false); return; }
     if (!dateDraft) { setEditingDate(false); return; }
     const prev = selectedTask;
-    // format for backend: keep as full ISO if seconds missing
     const payloadDate = dateDraft.length === 16 ? `${dateDraft}:00` : dateDraft;
     setSelectedTask(prev => ({ ...prev, date: payloadDate }));
     setEditingDate(false);
@@ -191,7 +190,7 @@ export default function TasksCalendar() {
       await loadTasks();
     } catch (e) {
       setSelectedTask(prev);
-      alert(e.message || 'Failed to update date');
+      setErrorMessage(e.message || 'Failed to update date');
     }
   };
 
@@ -203,9 +202,8 @@ export default function TasksCalendar() {
     const idStr = String(userId);
     const next = currentIds.includes(idStr) ? currentIds.filter(x => x !== idStr) : [...currentIds, idStr];
 
-    // Prevent having zero assigned users
     if (next.length === 0) {
-      alert('At least 1 one assignee is required');
+      setErrorMessage('At least 1 assignee is required');
       return;
     }
 
@@ -216,11 +214,10 @@ export default function TasksCalendar() {
       await loadTasks();
     } catch (e) {
       setSelectedTask(prev);
-      alert(e.message || 'Failed to update assignees');
+      setErrorMessage(e.message || 'Failed to update assignees');
     }
   };
 
-  // create task UI
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTask, setNewTask] = useState({ 
     title: '',
@@ -232,6 +229,16 @@ export default function TasksCalendar() {
 
   const submitCreate = async () => {
     if (!group?.id) return;
+    
+    if(newTask.date === '') {
+      setErrorMessage('Date is required');
+      return;
+    }
+    if(newTask.assignedToIds.length === 0) {
+      setErrorMessage('At least 1 assignee is required');
+      return;
+    }
+
     setCreating(true);
     try {
       const payload = {
@@ -240,36 +247,35 @@ export default function TasksCalendar() {
         assignedToIds: newTask.assignedToIds,
         completed: false,
       };
-      if(newTask.date === '') {
-        alert('Date is required');
-        setCreating(false);
-        return;
-      }
-      if(newTask.assignedToIds.length === 0) {
-        alert('At least 1 assignee is required');
-        setCreating(false);
-        return;
-      }
       await tasksApi.createTask(group.id, payload);
       setShowCreateModal(false);
       setNewTask({ title: '', date: '', assignedToIds: [], completed: false });
       await loadTasks();
     } catch (e) {
-      alert(e.message || 'Create failed');
+      setErrorMessage(e.message || 'Create failed');
     } finally { setCreating(false); }
   };
 
-  // actions
-  const doDelete = async (taskId) => {
-    if (!group?.id) return;
-    if (!confirm('Delete this task?')) return;
-    try {
-      await tasksApi.deleteTask(group.id, taskId);
-      await loadTasks();
-      setSelectedTask(null);
-    } catch (e) {
-      alert(e.message || 'Delete failed');
-    }
+  const doDelete = (taskId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Task',
+      message: 'Are you sure you want to delete this task? This action cannot be undone.',
+      confirmText: 'Delete',
+      variant: 'danger',
+      onConfirm: async () => {
+        if (!group?.id) return;
+        try {
+          await tasksApi.deleteTask(group.id, taskId);
+          await loadTasks();
+          setSelectedTask(null);
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (e) {
+          setErrorMessage(e.message || 'Delete failed');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      }
+    });
   };
 
   const toggleSelectedTaskCompleted = async (checked) => {
@@ -280,22 +286,38 @@ export default function TasksCalendar() {
       await loadTasks();
     } catch (e) {
       setSelectedTask(prev => ({ ...prev, completed: !checked }));
-      alert(e.message || 'Operation failed');
+      setErrorMessage(e.message || 'Operation failed');
     }
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-8 max-w-5xl mx-auto mt-4">
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        confirmVariant={confirmModal.variant}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
+
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Tasks Calendar</h2>
 
         {loadingTasks && <div className="text-sm text-gray-600">Loading tasks...</div>}
 
-
         <div className="flex gap-2">
           <button onClick={() => setShowCreateModal(true)} className="bg-blue-600 text-white py-2 px-3 rounded-md hover:bg-blue-700 text-sm">+ Create Task</button>
         </div>
       </div>
+
+      {errorMessage && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {errorMessage}
+          <button onClick={() => setErrorMessage('')} className="ml-4 text-red-900 hover:text-red-700">✕</button>
+        </div>
+      )}
 
       <Calendar
         events={events}
@@ -359,7 +381,7 @@ export default function TasksCalendar() {
                         <button
                           key={id}
                           onClick={() => toggleAssignedForSelectedTask(id)}
-                          className={`text-sm px-2 py-1 rounded border ${included ? 'bg-white text-gray-800' : 'bg-gray-200 text-white'}`}
+                          className={`text-sm px-2 py-1 rounded border ${included ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-200 text-gray-800 border-gray-300'}`}
                         >
                           {m.fullName ?? m.username}
                         </button>
@@ -409,25 +431,25 @@ export default function TasksCalendar() {
                 <input type="datetime-local" value={newTask.date} onChange={e => setNewTask({...newTask, date: e.target.value})} className="w-full px-3 py-2 border rounded" />
               </div>
               <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Users involved</label>
-                  <div className="flex flex-wrap gap-2">
-                    {loadingMembers && <div className="text-sm text-gray-600">Loading members...</div>}
-                    {!loadingMembers && groupMembers.map(m => {
-                      const id = String(m.id);
-                      const included = Array.isArray(newTask.assignedToIds) && newTask.assignedToIds.some(x => String(x) === id);
-                      return (
-                        <button
-                          key={id}
-                          onClick={() => toggleUserInvolved(id)}
-                         className={`text-sm px-2 py-1 rounded border ${included ? 'bg-white text-gray-800' : 'bg-gray-200 text-white'}`}
-                        >
-                          {m.fullName ?? m.username}
-                        </button>
-                      );
-                    })}
-                    {(groupMembers.length === 0) && <div className="text-xs text-gray-600">No members</div>}
-                  </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Users involved</label>
+                <div className="flex flex-wrap gap-2">
+                  {loadingMembers && <div className="text-sm text-gray-600">Loading members...</div>}
+                  {!loadingMembers && groupMembers.map(m => {
+                    const id = String(m.id);
+                    const included = Array.isArray(newTask.assignedToIds) && newTask.assignedToIds.some(x => String(x) === id);
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => toggleUserInvolved(id)}
+                        className={`text-sm px-2 py-1 rounded border ${included ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-200 text-gray-800 border-gray-300'}`}
+                      >
+                        {m.fullName ?? m.username}
+                      </button>
+                    );
+                  })}
+                  {(groupMembers.length === 0) && <div className="text-xs text-gray-600">No members</div>}
                 </div>
+              </div>
 
               <div className="flex gap-2">
                 <button onClick={submitCreate} disabled={creating} className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-md hover:bg-blue-700 text-sm">

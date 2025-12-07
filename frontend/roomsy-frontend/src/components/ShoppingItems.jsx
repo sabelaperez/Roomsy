@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { shoppingApi, categoryApi, groupApi } from '../api';
+import ConfirmModal from './ConfirmModal';
 
 export default function ShoppingItems() {
   const { user } = useContext(AuthContext);
@@ -33,6 +34,19 @@ export default function ShoppingItems() {
 
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
+
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: 'Confirm',
+    variant: 'danger'
+  });
+
+  // Error message state
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -133,31 +147,52 @@ export default function ShoppingItems() {
     }
   };
 
-  const handleDeleteItem = async (itemId) => {
-    try {
-      await shoppingApi.delete(group.id, itemId);
-      await loadItems();
-    } catch (e) {
-      console.error('Delete failed', e);
-      alert(e.message || 'Delete failed');
-    }
+  const handleDeleteItem = (itemId, itemName) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Item',
+      message: `Are you sure you want to delete "${itemName}"?`,
+      confirmText: 'Delete',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await shoppingApi.delete(group.id, itemId);
+          await loadItems();
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (e) {
+          console.error('Delete failed', e);
+          setErrorMessage(e.message || 'Delete failed');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      }
+    });
   };
 
-  const handleDeleteCategory = async (categoryId) => {
-    if (!confirm('Delete this category? Items with this category will be uncategorized.')) return;
-    try {
-      await categoryApi.delete(group.id, categoryId);
-      await loadCategories();
-      await loadItems();
-    } catch (e) {
-      console.error('Delete failed', e);
-      alert(e.message || 'Delete failed');
-    }
+  const handleDeleteCategory = (categoryId, categoryName) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Category',
+      message: `Are you sure you want to delete the category "${categoryName}"? Items with this category will be uncategorized.`,
+      confirmText: 'Delete Category',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await categoryApi.delete(group.id, categoryId);
+          await loadCategories();
+          await loadItems();
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (e) {
+          console.error('Delete failed', e);
+          setErrorMessage(e.message || 'Delete failed');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      }
+    });
   };
 
   const handleUpdateItemQuantity = async (itemId, newQuantity) => {
     if (!newQuantity || Number(newQuantity) <= 0) {
-      alert('Quantity must be positive');
+      setErrorMessage('Quantity must be positive');
       return;
     }
 
@@ -167,7 +202,7 @@ export default function ShoppingItems() {
       setEditingItem(null);
     } catch (e) {
       console.error('Update failed', e);
-      alert(e.message || 'Update failed');
+      setErrorMessage(e.message || 'Update failed');
     }
   };
 
@@ -179,7 +214,7 @@ export default function ShoppingItems() {
       setEditingItem(null);
     } catch (e) {
       console.error('Update failed', e);
-      alert(e.message || 'Update failed');
+      setErrorMessage(e.message || 'Update failed');
     }
   };
 
@@ -189,7 +224,7 @@ export default function ShoppingItems() {
       await loadItems();
     } catch (e) {
       console.error('Update failed', e);
-      alert(e.message || 'Update failed');
+      setErrorMessage(e.message || 'Update failed');
     }
   };
 
@@ -201,7 +236,7 @@ export default function ShoppingItems() {
       setEditingCategory(null);
     } catch (e) {
       console.error('Update failed', e);
-      alert(e.message || 'Update failed');
+      setErrorMessage(e.message || 'Update failed');
     }
   };
 
@@ -211,7 +246,7 @@ export default function ShoppingItems() {
       await loadCategories();
     } catch (e) {
       console.error('Update failed', e);
-      alert(e.message || 'Update failed');
+      setErrorMessage(e.message || 'Update failed');
     }
   };
 
@@ -229,6 +264,16 @@ export default function ShoppingItems() {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-8 max-w-5xl mx-auto mt-4">
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        confirmVariant={confirmModal.variant}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
+
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Shopping List</h2>
         <div className="flex gap-2">
@@ -246,6 +291,13 @@ export default function ShoppingItems() {
           </button>
         </div>
       </div>
+
+      {errorMessage && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {errorMessage}
+          <button onClick={() => setErrorMessage('')} className="ml-4 text-red-900 hover:text-red-700">✕</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -304,7 +356,7 @@ export default function ShoppingItems() {
                               </div>
                             </div>
                           </div>
-                          <button onClick={() => handleDeleteItem(item.id)}
+                          <button onClick={() => handleDeleteItem(item.id, item.name)}
                             className="text-sm text-red-600 hover:text-red-700 ml-4">Delete</button>
                         </div>
                       </li>
@@ -349,7 +401,7 @@ export default function ShoppingItems() {
                         </div>
                       )}
                     </div>
-                    <button onClick={() => handleDeleteCategory(cat.id)}
+                    <button onClick={() => handleDeleteCategory(cat.id, cat.name)}
                       className="text-sm text-red-600 hover:text-red-700 ml-2">Delete</button>
                   </div>
                 </li>
