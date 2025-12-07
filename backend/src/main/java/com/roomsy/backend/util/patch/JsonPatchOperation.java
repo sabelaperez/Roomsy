@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import tools.jackson.core.JsonPointer;
 import tools.jackson.databind.JsonNode;
 
-import java.util.Objects;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "JSON Patch operation following RFC 6902",
         example = "{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"New Name\"}")

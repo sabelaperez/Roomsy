@@ -20,7 +20,6 @@ import com.roomsy.backend.repository.CleaningTaskRepository;
 import com.roomsy.backend.repository.NewsRepository;
 
 import jakarta.annotation.Nonnull;
-import jakarta.transaction.Transactional;
 
 @Service
 public class CleaningTaskService {

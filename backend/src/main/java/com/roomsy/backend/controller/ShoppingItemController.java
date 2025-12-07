@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.roomsy.backend.dto.PageResponse;
-import com.roomsy.backend.model.CleaningTask;
 import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;

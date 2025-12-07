@@ -49,7 +49,11 @@ export const groupApi = {
   getMembers: (groupId) => request(`/groups/${groupId}/members`),
   removeMember: (groupId, memberId) => request(`/groups/${groupId}/members/${memberId}`, { method: 'DELETE' }),
   delete: (groupId) => request(`/groups/${groupId}`, { method: 'DELETE' }),
-  updateName: (groupId, groupName) => request(`/groups/${groupId}/name`, { method: 'PATCH', body: JSON.stringify({ name: groupName }) }),
+  updateName: (groupId, groupName) => 
+    request(`/groups/${groupId}`, { 
+      method: 'PATCH', 
+      body: JSON.stringify([{ op: 'replace', path: '/name', value: groupName }]), 
+    }),
 };
 
 export const userApi = {
@@ -74,11 +78,20 @@ export const tasksApi = {
   reassignTask: (groupId, taskId, assignedToIds) =>
     request(`/groups/${groupId}/cleaning-tasks/${taskId}/assign-to`, { method: 'PATCH', body: JSON.stringify({ assignedToIds }),}),
   setCompleted: (groupId, taskId, completed) =>
-    request(`/groups/${groupId}/cleaning-tasks/${taskId}/completed`, { method: 'PATCH', body: JSON.stringify({ completed }),}),
+    request(`/groups/${groupId}/cleaning-tasks/${taskId}`, { 
+      method: 'PATCH', 
+      body: JSON.stringify([{ op: 'replace', path: '/completed', value: completed }]),
+    }),
   changeDate: (groupId, taskId, newDate) =>
-    request(`/groups/${groupId}/cleaning-tasks/${taskId}/date`, { method: 'PATCH', body: JSON.stringify({ newDate }),}),
+    request(`/groups/${groupId}/cleaning-tasks/${taskId}`, { 
+      method: 'PATCH', 
+      body: JSON.stringify([{ op: 'replace', path: '/date', value: newDate }]),
+    }),
   changeTitle: (groupId, taskId, title) =>
-    request(`/groups/${groupId}/cleaning-tasks/${taskId}/title`, { method: 'PATCH', body: JSON.stringify({ title }),}),
+    request(`/groups/${groupId}/cleaning-tasks/${taskId}`, { 
+      method: 'PATCH', 
+      body: JSON.stringify([{ op: 'replace', path: '/title', value: title }]),
+    }),
   getGroupTasks: (groupId, { page = 0, size = 10, sortBy = 'createdAt', sortDirection = 'desc' } = {}) =>
     request(`/groups/${groupId}/cleaning-tasks?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
 };
@@ -88,12 +101,21 @@ export const shoppingApi = {
     request(`/groups/${groupId}/shopping-items?page=${page}&size=${size}&sortBy=${encodeURIComponent(sortBy)}&sortDirection=${encodeURIComponent(sortDirection)}`),
   create: (groupId, payload) =>
     request(`/groups/${groupId}/shopping-items`, { method: 'POST', body: JSON.stringify(payload) }),
-  updateQuantity: (groupId, itemId, payload) =>
-    request(`/groups/${groupId}/shopping-items/${itemId}/quantity`, { method: 'PATCH', body: JSON.stringify(payload) }),
-  updateName: (groupId, itemId, payload) =>
-    request(`/groups/${groupId}/shopping-items/${itemId}/name`, { method: 'PATCH', body: JSON.stringify(payload) }),
-  updateCategory: (groupId, itemId, payload) =>
-    request(`/groups/${groupId}/shopping-items/${itemId}/category`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  updateQuantity: (groupId, itemId, newQuantity) =>
+    request(`/groups/${groupId}/shopping-items/${itemId}`, {
+      method: 'PATCH',
+      body: JSON.stringify([{ op: 'replace', path: '/quantity', value: newQuantity }]),
+    }),
+  updateName: (groupId, itemId, newName) =>
+    request(`/groups/${groupId}/shopping-items/${itemId}`, { 
+      method: 'PATCH', 
+      body: JSON.stringify([{ op: 'replace', path: '/name', value: newName }]) 
+    }),
+  updateCategory: (groupId, itemId, newCategory) =>
+    request(`/groups/${groupId}/shopping-items/${itemId}`, {
+      method: 'PATCH', 
+      body: JSON.stringify([{ op: 'replace', path: '/category', value: { id: newCategory }}]) 
+    }),
   delete: (groupId, itemId) =>
     request(`/groups/${groupId}/shopping-items/${itemId}`, { method: 'DELETE' }),
 };
@@ -105,10 +127,16 @@ export const categoryApi = {
     request(`/groups/${groupId}/categories`, { method: 'POST', body: JSON.stringify(payload) }),
   getCategoryById: (groupId, categoryId) =>
     request(`/groups/${groupId}/categories/${categoryId}`),
-  updateName: (groupId, categoryId, payload) =>
-    request(`/groups/${groupId}/categories/${categoryId}/name`, { method: 'PATCH', body: JSON.stringify(payload) }),
-  updateColor: (groupId, categoryId, payload) =>
-    request(`/groups/${groupId}/categories/${categoryId}/color`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  updateName: (groupId, categoryId, newName) =>
+    request(`/groups/${groupId}/categories/${categoryId}`, {
+      method: 'PATCH',
+      body: JSON.stringify([{ op: 'replace', path: '/name', value: newName }]),
+    }),
+  updateColor: (groupId, categoryId, newColor) =>
+    request(`/groups/${groupId}/categories/${categoryId}`, {
+      method: 'PATCH',
+      body: JSON.stringify([{ op: 'replace', path: '/color', value: newColor }]),
+    }),
   delete: (groupId, categoryId) =>
     request(`/groups/${groupId}/categories/${categoryId}`, { method: 'DELETE' }),
 };

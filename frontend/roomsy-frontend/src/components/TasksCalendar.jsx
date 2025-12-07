@@ -186,7 +186,7 @@ export default function TasksCalendar() {
     setSelectedTask(prev => ({ ...prev, date: payloadDate }));
     setEditingDate(false);
     try {
-      await tasksApi.changeDate(group.id, selectedTask.id, payloadDate);
+      await tasksApi.changeDate(group.id, selectedTask.id, dateDraft);
       await loadTasks();
     } catch (e) {
       setSelectedTask(prev);
@@ -289,15 +289,6 @@ export default function TasksCalendar() {
       setErrorMessage(e.message || 'Operation failed');
     }
   };
-
-  const tasksForSelectedDay = useMemo(() => {
-    if (!selectedDay) return [];
-    return tasks.filter(t => {
-      const d = (t.date);
-      const key = toYMD(d);
-      return key === selectedDay;
-    });
-  }, [selectedDay, tasks]);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-8 max-w-5xl mx-auto mt-4">

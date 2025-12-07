@@ -2,9 +2,6 @@ package com.roomsy.backend.service;
 
 import com.roomsy.backend.exception.InvalidOperationException;
 import com.roomsy.backend.exception.ResourceNotFoundException;
-import com.roomsy.backend.model.Category;
-import com.roomsy.backend.model.CleaningTask;
-import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.ShoppingItem;
 import com.roomsy.backend.repository.ShoppingItemRepository;
 import com.roomsy.backend.util.patch.JsonPatch;

@@ -197,7 +197,7 @@ export default function ShoppingItems() {
     }
 
     try {
-      await shoppingApi.updateQuantity(group.id, itemId, { quantity: Number(newQuantity) });
+      await shoppingApi.updateQuantity(group.id, itemId, Number(newQuantity));
       await loadItems();
       setEditingItem(null);
     } catch (e) {
@@ -209,7 +209,7 @@ export default function ShoppingItems() {
   const handleUpdateItemName = async (itemId, newName) => {
     if (!newName.trim()) return;
     try {
-      await shoppingApi.updateName(group.id, itemId, { name: newName.trim() });
+      await shoppingApi.updateName(group.id, itemId, newName.trim());
       await loadItems();
       setEditingItem(null);
     } catch (e) {
@@ -220,7 +220,7 @@ export default function ShoppingItems() {
 
   const handleUpdateItemCategory = async (itemId, categoryId) => {
     try {
-      await shoppingApi.updateCategory(group.id, itemId, { categoryId: categoryId || null });
+      await shoppingApi.updateCategory(group.id, itemId, categoryId || null);
       await loadItems();
     } catch (e) {
       console.error('Update failed', e);
@@ -231,7 +231,7 @@ export default function ShoppingItems() {
   const handleUpdateCategoryName = async (categoryId, newName) => {
     if (!newName.trim()) return;
     try {
-      await categoryApi.updateName(group.id, categoryId, { name: newName.trim() });
+      await categoryApi.updateName(group.id, categoryId, newName.trim() );
       await loadCategories();
       setEditingCategory(null);
     } catch (e) {
@@ -242,7 +242,7 @@ export default function ShoppingItems() {
 
   const handleUpdateCategoryColor = async (categoryId, newColor) => {
     try {
-      await categoryApi.updateColor(group.id, categoryId, { color: newColor });
+      await categoryApi.updateColor(group.id, categoryId, newColor);
       await loadCategories();
     } catch (e) {
       console.error('Update failed', e);
