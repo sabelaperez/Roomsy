@@ -37,10 +37,9 @@ public class News {
     @Schema(description = "The group to which the news item belongs.")
     private Group group;
 
-    @NotNull
     //@ManyToOne(fetch = FetchType.LAZY)
-    @ManyToOne()
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "user_id", nullable = true)
     @JsonView(Views.Summary.class)
     @Schema(description = "The user who performed the action leading to the news item.")
     private User actor;
@@ -62,7 +61,7 @@ public class News {
 
     @Size(max = 500)
     @Column(length = 500)
-    @Pattern(regexp = "^[a-zA-Z0-9 ,.?!':()-_]*$")
+    @Pattern(regexp = "^[a-zA-Z0-9 ,.?!':()-_€]*$")
     @JsonView(Views.Summary.class)
     @Schema(description = "Detailed description of the news item.", example = "User John Doe has been added to the group.", pattern = "^[a-zA-Z0-9 ,.?!':()-_]*$", maxLength = 500)
     private String description;

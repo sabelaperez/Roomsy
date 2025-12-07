@@ -31,6 +31,9 @@ export default function ShoppingItems() {
   const [editingItem, setEditingItem] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
 
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     let mounted = true;
@@ -101,6 +104,7 @@ export default function ShoppingItems() {
       await shoppingApi.create(group.id, payload);
       setItemForm({ name: '', quantity: '', categoryId: '' });
       await loadItems();
+      setShowAddItemModal(false);
     } catch (e) {
       setItemFormError(e.message || 'Failed to create item');
     } finally {
@@ -121,6 +125,7 @@ export default function ShoppingItems() {
       await categoryApi.create(group.id, payload);
       setCategoryForm({ name: '', color: '#3B82F6' });
       await loadCategories();
+      setShowCreateCategoryModal(false);
     } catch (e) {
       setCategoryFormError(e.message || 'Failed to create category');
     } finally {
@@ -129,7 +134,6 @@ export default function ShoppingItems() {
   };
 
   const handleDeleteItem = async (itemId) => {
-    if (!confirm('Delete this item?')) return;
     try {
       await shoppingApi.delete(group.id, itemId);
       await loadItems();
@@ -152,6 +156,11 @@ export default function ShoppingItems() {
   };
 
   const handleUpdateItemQuantity = async (itemId, newQuantity) => {
+    if (!newQuantity || Number(newQuantity) <= 0) {
+      alert('Quantity must be positive');
+      return;
+    }
+
     try {
       await shoppingApi.updateQuantity(group.id, itemId, { quantity: Number(newQuantity) });
       await loadItems();
@@ -222,57 +231,31 @@ export default function ShoppingItems() {
     <div className="bg-white rounded-lg shadow-md p-8 max-w-5xl mx-auto mt-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Shopping List</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowAddItemModal(true)}
+            className="bg-blue-600 text-white py-2 px-3 rounded-md hover:bg-blue-700 text-sm"
+          >
+            + Add Item
+          </button>
+          <button
+            onClick={() => setShowCreateCategoryModal(true)}
+            className="bg-blue-600 text-white py-2 px-3 rounded-md hover:bg-blue-700 text-sm"
+          >
+            + Create Category
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white border rounded-md p-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-800">Add Item</h3>
-
-            {!group && loadingGroup && <div className="text-sm text-gray-600">Loading group...</div>}
-            {!group && !loadingGroup && <div className="text-sm text-red-600">You are not in a group</div>}
-
-            {group && (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input type="text" value={itemForm.name} onChange={e => setItemForm({...itemForm, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                  <input type="number" step="1" min="1" value={itemForm.quantity} onChange={e => setItemForm({...itemForm, quantity: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select value={itemForm.categoryId} onChange={e => setItemForm({...itemForm, categoryId: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">None</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </div>
-
-                {itemFormError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{itemFormError}</div>}
-
-                <button onClick={submitItem} disabled={submittingItem}
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium">
-                  {submittingItem ? 'Adding...' : 'Add Item'}
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white border rounded-md p-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-800">Shopping Items</h3>
+          <div className="bg-white rounded-lg shadow-md p-4">
             {loadingItems && <div className="text-sm text-gray-600">Loading...</div>}
             {!loadingItems && items.length === 0 && <div className="text-sm text-gray-600">No items yet</div>}
 
             <div className="space-y-4">
               {Object.entries(groupedItems).map(([categoryName, { category, items: categoryItems }]) => (
-                <div key={categoryName} className="border rounded-md p-3">
+                <div key={categoryName} className="rounded-md p-3">
                   <div className="flex items-center gap-2 mb-3">
                     {category && (
                       <div className="w-4 h-4 rounded" style={{ backgroundColor: category.color }}></div>
@@ -334,38 +317,7 @@ export default function ShoppingItems() {
         </div>
 
         <aside className="space-y-6">
-          <div className="bg-white border rounded-md p-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-800">Create Category</h3>
-
-            {group && (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input type="text" value={categoryForm.name} onChange={e => setCategoryForm({...categoryForm, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
-                  <div className="flex items-center gap-2">
-                    <input type="color" value={categoryForm.color} onChange={e => setCategoryForm({...categoryForm, color: e.target.value})}
-                      className="w-12 h-10 border border-gray-300 rounded cursor-pointer" />
-                    <input type="text" value={categoryForm.color} onChange={e => setCategoryForm({...categoryForm, color: e.target.value})}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  </div>
-                </div>
-
-                {categoryFormError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">{categoryFormError}</div>}
-
-                <button onClick={submitCategory} disabled={submittingCategory}
-                  className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors font-medium">
-                  {submittingCategory ? 'Creating...' : 'Create Category'}
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white border rounded-md p-4">
+          <div className="bg-white rounded-lg shadow-md p-4">
             <h3 className="text-lg font-semibold mb-3 text-gray-800">Categories</h3>
 
             {loadingCategories && <div className="text-sm text-gray-600">Loading...</div>}
@@ -388,7 +340,7 @@ export default function ShoppingItems() {
                           defaultValue={cat.name}
                           onBlur={(e) => handleUpdateCategoryName(cat.id, e.target.value)}
                           onKeyPress={(e) => e.key === 'Enter' && handleUpdateCategoryName(cat.id, e.target.value)}
-                          className="flex-1 text-sm font-medium px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="flex-1 text-sm font-medium px-1 py-1 max-w-[150px] border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                           autoFocus
                         />
                       ) : (
@@ -406,6 +358,111 @@ export default function ShoppingItems() {
           </div>
         </aside>
       </div>
+
+      {/* Add Item Modal */}
+      {showAddItemModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+          onClick={() => setShowAddItemModal(false)}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div
+            className="bg-white rounded-lg w-full max-w-md shadow-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Add Item</h3>
+              <button onClick={() => setShowAddItemModal(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+
+            {!group && loadingGroup && <div className="text-sm text-gray-600">Loading group...</div>}
+            {!group && !loadingGroup && <div className="text-sm text-red-600">You are not in a group</div>}
+
+            {group && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input type="text" value={itemForm.name} onChange={e => setItemForm({...itemForm, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                  <input type="number" step="1" min="1" value={itemForm.quantity} onChange={e => setItemForm({...itemForm, quantity: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select value={itemForm.categoryId} onChange={e => setItemForm({...itemForm, categoryId: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">None</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                {itemFormError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{itemFormError}</div>}
+
+                <div className="flex gap-2">
+                  <button onClick={submitItem} disabled={submittingItem}
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium">
+                    {submittingItem ? 'Adding...' : 'Add Item'}
+                  </button>
+                  <button onClick={() => setShowAddItemModal(false)} className="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Create Category Modal */}
+      {showCreateCategoryModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+          onClick={() => setShowCreateCategoryModal(false)}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div
+            className="bg-white rounded-lg w-full max-w-md shadow-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Create Category</h3>
+              <button onClick={() => setShowCreateCategoryModal(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+
+            {group && (
+              <div className="space-y-3">
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <input type="text" value={categoryForm.name} onChange={e => setCategoryForm({...categoryForm, name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="w-20">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                    <input type="color" value={categoryForm.color} onChange={e => setCategoryForm({...categoryForm, color: e.target.value})}
+                        className="w-full h-10 border border-gray-300 rounded cursor-pointer" />
+                  </div>
+                </div>
+
+                {categoryFormError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">{categoryFormError}</div>}
+
+                <div className="flex gap-2">
+                  <button onClick={submitCategory} disabled={submittingCategory}
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium">
+                    {submittingCategory ? 'Creating...' : 'Create Category'}
+                  </button>
+                  <button onClick={() => setShowCreateCategoryModal(false)} className="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

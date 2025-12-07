@@ -199,6 +199,7 @@ public class ExpenseService {
         return settlements;
     }
 
+    @Transactional
     public boolean paySharedExpense(@NonNull UUID id, @NonNull UUID groupId) {
         SharedExpense payedExpense = sharedExpenseRepository
             .findById(id).orElseThrow(() -> new ResourceNotFoundException("SharedExpense not found"));
@@ -224,5 +225,28 @@ public class ExpenseService {
 
     public Page<SharedExpense> getGroupSharedExpenses(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {
         return sharedExpenseRepository.findByGroupId(groupId, pageable);
+    }
+
+    @Transactional
+    public void deleteUser(@NonNull UUID userId) {
+        List<ExpenseItem> ownedExpenses = expenseItemRepository.findByOwnerId(userId);
+        List<ExpenseItem> involvedExpenses = expenseItemRepository.findByUsersInvolvedId(userId);
+
+        for(ExpenseItem expense : ownedExpenses) {
+            expenseItemRepository.deleteById(expense.getId());
+        }
+        for(ExpenseItem expense : involvedExpenses) {
+            expenseItemRepository.deleteById(expense.getId());
+        }
+
+        List<SharedExpense> asPayer = sharedExpenseRepository.findByPayerId(userId);
+        List<SharedExpense> asNotPaid = sharedExpenseRepository.findByNotPaidId(userId);
+
+        for(SharedExpense se : asPayer) {
+            sharedExpenseRepository.deleteById(se.getId());
+        }
+        for(SharedExpense se : asNotPaid) {
+            sharedExpenseRepository.deleteById(se.getId());
+        }
     }
 }

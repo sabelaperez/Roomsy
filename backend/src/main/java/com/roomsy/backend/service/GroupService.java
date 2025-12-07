@@ -26,16 +26,18 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final NewsRepository newsRepository;
+    private final CategoryRepository categoryRepository;
 
     private static final int CODE_LENGTH = 10;
     private static final int MAX_ATTEMPTS = 6;
     private final JsonMapper jsonMapper;
 
     @Autowired
-    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository, JsonMapper jsonMapper) {
+    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository, CategoryRepository categoryRepository, JsonMapper jsonMapper) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.newsRepository = newsRepository;
+        this.categoryRepository = categoryRepository;
         this.jsonMapper = jsonMapper;
     }
 
@@ -163,11 +165,13 @@ public class GroupService {
 
         // Si no quedan miembros, eliminar el grupo entero
         if (group.getMembers() == null || group.getMembers().isEmpty()) {
+            newsRepository.deleteByGroupId(group.getId());
+            categoryRepository.deleteByGroupId(group.getId());
             groupRepository.delete(group);
             return null; // el grupo ya no existe
         } else {
             // Xerar unha noticia de tipo MEMBER_REMOVED
-            News removedNews = new News(group, user, NewsType.MEMBER_REMOVED, 
+            News removedNews = new News(group, null, NewsType.MEMBER_REMOVED, 
                 "User " + user.getUsername() + " removed from the group", null); 
 
             // Persistir cambios
@@ -187,6 +191,8 @@ public class GroupService {
         }
 
         group.getMembers().clear();
+        newsRepository.deleteByGroupId(group.getId());
+        categoryRepository.deleteByGroupId(group.getId());
         groupRepository.delete(group);
     }
 

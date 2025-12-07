@@ -135,6 +135,7 @@ export default function Expenses() {
       setForm({ name: '', expenseType: EXPENSE_TYPES[0], price: '', expenseDate: '', usersInvolvedIds: [] });
       await loadExpenses();
       await loadShared();
+      setShowCreateModal(false);
     } catch (e) {
       setFormError(e.message || 'Failed to create expense');
     } finally {
@@ -201,7 +202,7 @@ export default function Expenses() {
           {shared.map(s => (
             <div key={s.id} className="min-w-[200px] flex-shrink-0 border rounded p-4 bg-gray-50">
               <div className="text-sm text-gray-800">
-                <span className="font-medium">{s.payer?.fullName ?? s.payer?.username}</span> owes to <span className="font-medium">{s.notPaid?.fullName ?? s.notPaid?.username}</span>
+                <span className="font-medium">{s.notPaid?.fullName}</span> owes to <span className="font-medium">{s.payer?.fullName}</span>
               </div>
               <div className="text-m text-gray-700 mt-1 font-semibold">{s.quantity?.toFixed(2)} €</div>
 
@@ -262,7 +263,7 @@ export default function Expenses() {
           role="dialog"
         >
           <div
-            className="bg-white rounded-lg w-full max-w-2xl shadow-lg p-6"
+            className="bg-white rounded-lg w-full max-w-lg shadow-lg p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
@@ -303,22 +304,22 @@ export default function Expenses() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Users involved</label>
-                  <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
                     {loadingMembers && <div className="text-sm text-gray-600">Loading members...</div>}
                     {!loadingMembers && groupMembers.map(m => {
-                      const id = m.id;
+                      const id = String(m.id);
+                      const included = Array.isArray(form.usersInvolvedIds) && form.usersInvolvedIds.some(x => String(x) === id);
                       return (
-                        <label key={id} className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            value={id}
-                            checked={form.usersInvolvedIds.includes(String(id))}
-                            onChange={() => toggleUserInvolved(id)}
-                          />
-                          <span>{m.fullName ?? m.username}</span>
-                        </label>
+                        <button
+                          key={id}
+                          onClick={() => toggleUserInvolved(id)}
+                          className={`text-sm px-2 py-1 rounded border ${included ? 'bg-white text-gray-800' : 'bg-gray-200 text-white'}`}
+                        >
+                          {m.fullName ?? m.username}
+                        </button>
                       );
                     })}
+                    {(groupMembers.length === 0) && <div className="text-xs text-gray-600">No members</div>}
                   </div>
                 </div>
 

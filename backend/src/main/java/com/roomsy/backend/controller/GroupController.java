@@ -5,8 +5,7 @@ import com.roomsy.backend.dto.*;
 import com.roomsy.backend.model.CleaningTask;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
-import com.roomsy.backend.service.GroupService;
-import com.roomsy.backend.service.UserService;
+import com.roomsy.backend.service.*;
 import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,11 +34,18 @@ public class GroupController {
 
     private final GroupService groupService;
     private final UserService userService;
+    private final CleaningTaskService cleaningTaskService;
+    private final NewsService newsService;
+    private final ExpenseService expenseService;
 
     @Autowired
-    public GroupController(GroupService groupService, UserService userService) {
+    public GroupController(GroupService groupService, UserService userService, CleaningTaskService cleaningTaskService,
+                           NewsService newsService, ExpenseService expenseService) {
         this.groupService = groupService;
         this.userService = userService;
+        this.cleaningTaskService = cleaningTaskService;
+        this.newsService = newsService;
+        this.expenseService = expenseService;
     }
 
     @Operation(summary = "Create a new group", description = "Creates a new group with the provided name and" +
@@ -218,6 +224,9 @@ public class GroupController {
             @PathVariable("group-id") UUID groupId,
             @PathVariable("user-id") UUID userId
     ) {
+        cleaningTaskService.deleteUser(userId);
+        newsService.deleteUser(userId);
+        expenseService.deleteUser(userId);
         Group updatedGroup = groupService.removeUserFromGroup(groupId, userId);
 
         // If group was deleted (no members left), return 204 No Content

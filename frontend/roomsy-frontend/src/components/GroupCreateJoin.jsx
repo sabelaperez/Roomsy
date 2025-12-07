@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { groupApi } from '../api';
+import { groupApi, userApi } from '../api';
 
 export default function GroupCreateJoin({ user, onCreate, onJoin }) {
   const [groupName, setGroupName] = useState('');
@@ -49,7 +49,7 @@ export default function GroupCreateJoin({ user, onCreate, onJoin }) {
     }
     setJoining(true);
     try {
-      const data = await groupApi.joinByInvite(user.userId, inviteCode.trim());
+      const data = await userApi.joinByInvite(user.userId, inviteCode.trim());
       setJoinSuccess(`Successfully joined group "${data.name}"!`);
       setInviteCode('');
       onJoin(data);

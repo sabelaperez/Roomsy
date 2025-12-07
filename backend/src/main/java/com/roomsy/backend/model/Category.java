@@ -45,7 +45,6 @@ public class Category {
     @Schema(description = "Name of the category.", example = "Groceries", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 50)
     private String name;
 
-    // Facer un enum con colores predefinidos
     @JsonView(Views.Summary.class)
     @Schema(description = "Color associated with the category.", example = "blue")
     private String color;

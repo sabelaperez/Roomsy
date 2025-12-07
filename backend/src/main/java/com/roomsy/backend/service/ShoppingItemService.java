@@ -64,6 +64,7 @@ public class ShoppingItemService {
         }
     }
 
+  // todo: comprobar quantity > 0
     @Transactional
     public ShoppingItem updateShoppingItem(@NonNull UUID shoppingItemId, @NonNull UUID groupId, @NonNull List<JsonPatchOperation> changes)
             throws IllegalArgumentException, InvalidOperationException {
