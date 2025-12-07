@@ -1,8 +1,11 @@
 package com.roomsy.backend.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.roomsy.backend.dto.PageResponse;
+import com.roomsy.backend.model.CleaningTask;
+import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -89,55 +92,53 @@ public class ShoppingItemController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update shopping item category", description = "Updates the category of the specified shopping item")
+    @Operation(summary = "Update shopping item",
+            description = "Updates the shopping item using JSON Patch operations. " +
+                    "Supports updating 'category', 'name' and 'quantity'.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category updated successfully"),
+            @ApiResponse(responseCode = "200", description = "Shopping item updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid patch operation or invalid values"),
             @ApiResponse(responseCode = "404", description = "Shopping item or category not found")
     })
-    @PatchMapping("/{item-id}/category")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "JSON Patch operations to apply to the shopping item",
+            required = true,
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = JsonPatchOperation.class),
+                    examples = {
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Replace category",
+                                    summary = "Change item category by providing category object with id",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/category\", \"value\": { \"id\": \"062ff0be-21b1-4651-ae24-9c6274f31e9c\" }}]"
+                            ),
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Replace name",
+                                    summary = "Change item name",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"Whole Grain Bread\"}]"
+                            ),
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Replace quantity",
+                                    summary = "Change item quantity",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/quantity\", \"value\": 3}]"
+                            ),
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Multiple operations",
+                                    summary = "Update name and quantity",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"Eggs\"}, {\"op\": \"replace\", \"path\": \"/quantity\", \"value\": 12}]"
+                            )
+                    }
+            )
+    )
+    @PatchMapping("/{item-id}")
     @JsonView(Views.Summary.class)
-    public ResponseEntity<ShoppingItem> updateCategory(
+    public ResponseEntity<ShoppingItem> updateShoppingItem (
             @PathVariable("item-id") UUID itemId,
             @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody UpdateCategoryRequest request
+            @RequestBody List<JsonPatchOperation> changes
     ) {
-        Category category = categoryService.getCategory(request.getCategoryId(), groupId);
-        ShoppingItem updated = shoppingItemService.updateCategory(itemId, groupId, category);
-        return ResponseEntity.ok(updated);
-    }
-
-    @Operation(summary = "Update shopping item name", description = "Updates the name of the specified shopping item")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Name updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid name format"),
-            @ApiResponse(responseCode = "404", description = "Shopping item not found")
-    })
-    @PatchMapping("/{item-id}/name")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<ShoppingItem> updateName(
-            @PathVariable("item-id") UUID itemId,
-            @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody UpdateNameRequest request
-    ) {
-        ShoppingItem updated = shoppingItemService.updateName(itemId, groupId, request.getName());
-        return ResponseEntity.ok(updated);
-    }
-
-    @Operation(summary = "Update shopping item quantity", description = "Updates the quantity of the specified shopping item")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Quantity updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid quantity"),
-            @ApiResponse(responseCode = "404", description = "Shopping item not found")
-    })
-    @PatchMapping("/{item-id}/quantity")
-    @JsonView(Views.Summary.class)
-    public ResponseEntity<ShoppingItem> updateQuantity(
-            @PathVariable("item-id") UUID itemId,
-            @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody UpdateQuantityRequest request
-    ) {
-        ShoppingItem updated = shoppingItemService.updateQuantity(itemId, groupId, request.getQuantity());
-        return ResponseEntity.ok(updated);
+        ShoppingItem updatedItem = shoppingItemService.updateShoppingItem(itemId, groupId, changes);
+        return ResponseEntity.ok(updatedItem);
     }
 
     @Operation(summary = "Get group shopping items", description = "Retrieves all shopping list items for the group")

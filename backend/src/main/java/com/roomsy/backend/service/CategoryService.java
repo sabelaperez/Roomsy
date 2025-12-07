@@ -3,6 +3,8 @@ package com.roomsy.backend.service;
 import com.roomsy.backend.model.Category;
 import com.roomsy.backend.repository.CategoryRepository;
 
+import com.roomsy.backend.util.patch.JsonPatch;
+import com.roomsy.backend.util.patch.JsonPatchOperation;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 
@@ -11,16 +13,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final JsonMapper jsonMapper;
 
     @Autowired
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository,  JsonMapper jsonMapper) {
         this.categoryRepository = categoryRepository;
+        this.jsonMapper = jsonMapper;
     }
 
     public Category getCategory(@NonNull UUID id, @NotNull UUID groupId) throws IllegalArgumentException {
@@ -61,16 +68,18 @@ public class CategoryService {
     }
 
     @Transactional
-    public Category updateName(@NonNull UUID id, @NonNull UUID groupId, String newName) throws IllegalArgumentException {
+    public Category updateCategory(@NonNull UUID id, @NonNull UUID groupId, List<JsonPatchOperation> changes)
+            throws IllegalArgumentException {
         Category category = getCategory(id, groupId);
-        category.setName(newName);
-        return categoryRepository.save(category);
-    }
 
-    @Transactional
-    public Category updateColor(@NonNull UUID id, @NonNull UUID groupId, String newColor) throws IllegalArgumentException {
-        Category category = getCategory(id, groupId);
-        category.setColor(newColor);
-        return categoryRepository.save(category);
+        JsonNode categoryNode = jsonMapper.convertValue(category, JsonNode.class);
+
+        JsonNode patchedNode = JsonPatch.apply(changes, categoryNode);
+
+        Category updatedCategory = jsonMapper.convertValue(patchedNode, Category.class);
+
+        updatedCategory.setGroup(category.getGroup());
+
+        return categoryRepository.save(updatedCategory);
     }
 }

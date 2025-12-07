@@ -1,9 +1,14 @@
 package com.roomsy.backend.service;
 
+import com.roomsy.backend.exception.InvalidOperationException;
 import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.model.Category;
+import com.roomsy.backend.model.CleaningTask;
+import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.ShoppingItem;
 import com.roomsy.backend.repository.ShoppingItemRepository;
+import com.roomsy.backend.util.patch.JsonPatch;
+import com.roomsy.backend.util.patch.JsonPatchOperation;
 import jakarta.transaction.Transactional;
 
 import org.jspecify.annotations.NonNull;
@@ -11,17 +16,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class ShoppingItemService {
 
     private final ShoppingItemRepository shoppingItemRepository;
+    private final JsonMapper jsonMapper;
 
     @Autowired
-    public ShoppingItemService(ShoppingItemRepository shoppingItemRepository) {
+    public ShoppingItemService(ShoppingItemRepository shoppingItemRepository, JsonMapper jsonMapper) {
         this.shoppingItemRepository = shoppingItemRepository;
+        this.jsonMapper = jsonMapper;
     }
 
     public ShoppingItem getShoppingItem(@NonNull UUID id, @NonNull UUID groupId) {
@@ -54,22 +64,22 @@ public class ShoppingItemService {
         }
     }
 
-    public ShoppingItem updateCategory(@NonNull UUID id, @NonNull UUID groupId, @NonNull Category category) throws ResourceNotFoundException {
-        ShoppingItem shoppingItem = getShoppingItem(id, groupId);
-        shoppingItem.setCategory(category);
-        return shoppingItemRepository.save(shoppingItem);
-    }
+    @Transactional
+    public ShoppingItem updateShoppingItem(@NonNull UUID shoppingItemId, @NonNull UUID groupId, @NonNull List<JsonPatchOperation> changes)
+            throws IllegalArgumentException, InvalidOperationException {
 
-    public ShoppingItem updateName(@NonNull UUID id, @NonNull UUID groupId, @NonNull String name) throws ResourceNotFoundException {
-        ShoppingItem shoppingItem = getShoppingItem(id, groupId);
-        shoppingItem.setName(name);
-        return shoppingItemRepository.save(shoppingItem);
-    }
+        ShoppingItem shoppingItem = getShoppingItem(shoppingItemId, groupId);
 
-    public ShoppingItem updateQuantity(@NonNull UUID id, @NonNull UUID groupId, @NonNull Integer quantity) throws ResourceNotFoundException {
-        ShoppingItem shoppingItem = getShoppingItem(id, groupId);
-        shoppingItem.setQuantity(quantity);
-        return shoppingItemRepository.save(shoppingItem);
+        JsonNode shoppingItemNode = jsonMapper.convertValue(shoppingItem, JsonNode.class);
+
+        JsonNode patchedNode = JsonPatch.apply(changes, shoppingItemNode);
+
+        ShoppingItem updatedShoppingItem = jsonMapper.convertValue(patchedNode, ShoppingItem.class);
+
+        updatedShoppingItem.setGroup(shoppingItem.getGroup());
+
+        return shoppingItemRepository.save(updatedShoppingItem);
+
     }
 
     public Page<ShoppingItem> getGroupShoppingItems(@NonNull UUID groupId, @NonNull Pageable pageable) throws ResourceNotFoundException {

@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -31,6 +32,7 @@ public class CleaningTask {
     private UUID id;
 
     @NotNull
+    @JsonBackReference
     //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
@@ -91,6 +93,10 @@ public class CleaningTask {
     // Getters and Setters
     public UUID getId() {
         return id;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
 
     public Group getGroup() {

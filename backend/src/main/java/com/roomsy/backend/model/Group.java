@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -55,6 +56,7 @@ public class Group {
     private String inviteCode;
 
     //@OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JsonManagedReference
     @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonView(Views.Detailed.class)
     @Schema(description = "List of users who are members of the group.")
@@ -67,18 +69,21 @@ public class Group {
     private List<ShoppingItem> shoppingItems = new ArrayList<>();
 
     //@OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonManagedReference
     @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, orphanRemoval = true)
     @JsonView(Views.Detailed.class)
     @Schema(description = "List of expense items associated with the group.")
     private List<ExpenseItem> expenseItems = new ArrayList<>();
 
     //@OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonManagedReference
     @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, orphanRemoval = true)
     @JsonView(Views.Detailed.class)
     @Schema(description = "List of shared expenses associated with the group.")
     private List<SharedExpense> sharedExpenses = new ArrayList<>();
 
     //@OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonManagedReference
     @OneToMany(mappedBy = "group", cascade = {CascadeType.ALL}, orphanRemoval = true)
     @JsonView(Views.Detailed.class)
     @Schema(description = "List of cleaning tasks associated with the group.")

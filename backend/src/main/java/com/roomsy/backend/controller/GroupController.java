@@ -2,10 +2,12 @@ package com.roomsy.backend.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.*;
+import com.roomsy.backend.model.CleaningTask;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
+import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -62,7 +64,9 @@ public class GroupController {
 
     @Operation(summary = "Get all groups", description = "Retrieves a list of all existing groups in the system")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Groups retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "Groups retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Authentication required"),
+            @ApiResponse(responseCode = "403", description = "Access denied - ADMIN role required")
     })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
@@ -79,6 +83,8 @@ public class GroupController {
             "by its unique identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Group found successfully"),
+            @ApiResponse(responseCode = "401", description = "Authentication required"),
+            @ApiResponse(responseCode = "403", description = "Access denied - ADMIN role required"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @PreAuthorize("hasRole('ADMIN')")
@@ -90,20 +96,41 @@ public class GroupController {
         return ResponseEntity.ok(GroupResponse.fromEntity(group));
     }
 
-    @Operation(summary = "Update group name", description = "Changes the name of an existing group. Name must contain " +
-            "only letters, numbers, and spaces")
+    @Operation(
+            summary = "Update group",
+            description = "Updates the group using JSON Patch operations. Supports updating the group's 'name'. "
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Group name updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid group name format"),
+            @ApiResponse(responseCode = "200", description = "Group updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid patch operation"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    @PatchMapping("/{group-id}/name")
-    public ResponseEntity<GroupResponse> updateGroupName(
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "JSON Patch operations to apply to the group",
+            required = true,
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = JsonPatchOperation.class),
+                    examples = {
+                            @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                    name = "Update name",
+                                    summary = "Change group's name",
+                                    value = "[{\"op\": \"replace\", \"path\": \"/name\", \"value\": \"New Roomsy Group\"}]"
+                            )
+                    }
+            )
+    )
+    @PatchMapping("/{group-id}")
+    @JsonView(Views.Summary.class)
+    public ResponseEntity<GroupResponse> updateCleaningTask (
             @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody GroupNameRequest request) {
+            @RequestBody List<JsonPatchOperation> changes
+    ) {
+        Group updatedGroup = groupService.updateGroup(groupId, changes);
 
-        Group updatedGroup = groupService.changeGroupName(groupId, request.getName());
-        return ResponseEntity.ok(GroupResponse.fromEntity(updatedGroup));
+        GroupResponse groupResponse = GroupResponse.fromEntity(updatedGroup);
+
+        return ResponseEntity.ok(groupResponse);
     }
 
     @Operation(summary = "Delete a group", description = "Permanently deletes a group and all its associated data")

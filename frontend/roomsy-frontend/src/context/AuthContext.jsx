@@ -38,13 +38,22 @@ export function AuthProvider({ children }) {
     } catch (e) {
       console.warn('Logout failed:', e);
     } finally {
-      // aseguramos que el user se limpie aunque falle la petición
       setUser(null);
     }
   };
 
+   const refreshToken = async () => {
+    try {
+      await authApi.refresh();
+      await checkAuth();
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout, refreshToken }}>
       {children}
     </AuthContext.Provider>
   );

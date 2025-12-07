@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import com.roomsy.backend.model.*;
 import com.roomsy.backend.repository.*;
+import com.roomsy.backend.util.patch.JsonPatch;
+import com.roomsy.backend.util.patch.JsonPatchOperation;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,6 +18,8 @@ import com.roomsy.backend.exception.ResourceNotFoundException;
 import com.roomsy.backend.util.InviteCodeGenerator;
 
 import jakarta.transaction.Transactional;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 public class GroupService {
@@ -25,12 +29,14 @@ public class GroupService {
 
     private static final int CODE_LENGTH = 10;
     private static final int MAX_ATTEMPTS = 6;
+    private final JsonMapper jsonMapper;
 
     @Autowired
-    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository) {
+    public GroupService(GroupRepository groupRepository, UserRepository userRepository, NewsRepository newsRepository, JsonMapper jsonMapper) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.newsRepository = newsRepository;
+        this.jsonMapper = jsonMapper;
     }
 
     public Group getGroupById(@NonNull UUID groupId) throws ResourceNotFoundException {
@@ -185,10 +191,37 @@ public class GroupService {
     }
 
     @Transactional
-    public Group changeGroupName(@NonNull UUID groupId, @NonNull String newName) throws ResourceNotFoundException {
+    public Group updateGroup(@NonNull UUID groupId, @NonNull List<JsonPatchOperation> changes)
+            throws IllegalArgumentException, InvalidOperationException {
+
+        // Validate: disallow any patch that targets inviteCode
+        for (JsonPatchOperation op : changes) {
+            String path = String.valueOf(op.path());
+            if (path == null) continue;
+
+            // Normalize pointer and get its first segment
+            String normalized = path.startsWith("/") ? path.substring(1) : path;
+            String[] segments = normalized.split("/", 2);
+            String first = segments.length > 0 ? segments[0] : "";
+
+            if ("inviteCode".equalsIgnoreCase(first)) {
+                throw new InvalidOperationException(
+                        "Patching 'inviteCode' is not allowed. Use the /invite-code/regenerate endpoint instead."
+                );
+            }
+        }
+
         Group group = getGroupById(groupId);
-        group.setName(newName);
-        return groupRepository.save(group);
+
+        JsonNode groupNode = jsonMapper.convertValue(group, JsonNode.class);
+
+        JsonNode patchedNode = JsonPatch.apply(changes, groupNode);
+
+        Group updatedGroup = jsonMapper.convertValue(patchedNode, Group.class);
+
+        updatedGroup.setMembers(group.getMembers());
+
+        return groupRepository.save(updatedGroup);
     }
 
     public ArrayList<User> getGroupMembers(@NonNull UUID groupId) throws ResourceNotFoundException {
