@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { authApi, groupApi, userApi } from '../api';
+import ConfirmModal from './ConfirmModal';
 
 export default function Settings() {
   const [me, setMe] = useState(null);
@@ -24,6 +25,15 @@ export default function Settings() {
   const [opSuccess, setOpSuccess] = useState('');
   const [removeMemberLoadingId, setRemoveMemberLoadingId] = useState(null);
 
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: 'Confirm',
+    variant: 'danger'
+  });
+
   useEffect(() => {
     let mounted = true;
     setLoadingMe(true);
@@ -42,7 +52,6 @@ export default function Settings() {
       .then(g => {
         if (!mounted) return;
         setGroup(g);
-        // load members if group present
         if (g?.id) {
           setLoadingMembers(true);
           groupApi.getMembers(g.id)
@@ -86,56 +95,102 @@ export default function Settings() {
     }
   };
 
-  const handleDeleteMe = async () => {
-    if (!confirm('Delete your account? This action cannot be undone.')) return;
-    try {
-      setLoadingMe(true);
-      await userApi.deleteMe();
-      window.location.href = '/';
-    } catch (e) {
-      alert(e.message || 'Failed to delete account');
-    } finally {
-      setLoadingMe(false);
-    }
+  const handleDeleteMe = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Account',
+      message: 'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.',
+      confirmText: 'Delete Account',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          setLoadingMe(true);
+          await userApi.deleteMe();
+          window.location.href = '/';
+        } catch (e) {
+          setOpError(e.message || 'Failed to delete account');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } finally {
+          setLoadingMe(false);
+        }
+      }
+    });
   };
 
-  const leaveGroup = async () => {
-    if (!confirm('Leave group?')) return;
-    if (!group?.id) return;
-    setOpLoading(true); setOpError(''); setOpSuccess('');
-    try {
-      await groupApi.removeMember(group.id, me.userId);
-      setOpSuccess('You left the group');
-      window.location.href = '/'; // simple UX: go to home
-    } catch (e) {
-      setOpError(e.message || 'Failed to leave group');
-    } finally { setOpLoading(false); }
+  const leaveGroup = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Leave Group',
+      message: 'Are you sure you want to leave this group? You will lose access to all shared expenses and data.',
+      confirmText: 'Leave Group',
+      variant: 'danger',
+      onConfirm: async () => {
+        if (!group?.id) return;
+        setOpLoading(true); setOpError(''); setOpSuccess('');
+        try {
+          await groupApi.removeMember(group.id, me.userId);
+          setOpSuccess('You left the group');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        } catch (e) {
+          setOpError(e.message || 'Failed to leave group');
+        } finally { 
+          setOpLoading(false); 
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      }
+    });
   };
 
-  const removeMember = async (memberId) => {
-    if (!confirm('Remove this member from the group?')) return;
-    if (!group?.id) return;
-    setRemoveMemberLoadingId(memberId); setOpError(''); setOpSuccess('');
-    try {
-      await groupApi.removeMember(group.id, memberId);
-      setMembers(m => m.filter(mb => mb.id !== memberId));
-      setOpSuccess('Member removed');
-    } catch (e) {
-      setOpError(e.message || 'Failed to remove member');
-    } finally { setRemoveMemberLoadingId(null); }
+  const removeMember = (memberId, memberName) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Remove Member',
+      message: `Are you sure you want to remove ${memberName} from the group?`,
+      confirmText: 'Remove Member',
+      variant: 'danger',
+      onConfirm: async () => {
+        if (!group?.id) return;
+        setRemoveMemberLoadingId(memberId); setOpError(''); setOpSuccess('');
+        try {
+          await groupApi.removeMember(group.id, memberId);
+          setMembers(m => m.filter(mb => mb.id !== memberId));
+          setOpSuccess('Member removed');
+        } catch (e) {
+          setOpError(e.message || 'Failed to remove member');
+        } finally { 
+          setRemoveMemberLoadingId(null);
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      }
+    });
   };
 
-  const deleteGroup = async () => {
-    if (!confirm('Delete group? This action is irreversible.')) return;
-    if (!group?.id) return;
-    setOpLoading(true); setOpError(''); setOpSuccess('');
-    try {
-      await groupApi.delete(group.id);
-      setOpSuccess('Group deleted');
-      window.location.href = '/';
-    } catch (e) {
-      setOpError(e.message || 'Failed to delete group');
-    } finally { setOpLoading(false); }
+  const deleteGroup = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Group',
+      message: 'Are you sure you want to delete this group? This action is irreversible and will delete all expenses, balances, and member data.',
+      confirmText: 'Delete Group',
+      variant: 'danger',
+      onConfirm: async () => {
+        if (!group?.id) return;
+        setOpLoading(true); setOpError(''); setOpSuccess('');
+        try {
+          await groupApi.delete(group.id);
+          setOpSuccess('Group deleted');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        } catch (e) {
+          setOpError(e.message || 'Failed to delete group');
+        } finally { 
+          setOpLoading(false);
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      }
+    });
   };
 
   const saveName = async () => {
@@ -157,7 +212,28 @@ export default function Settings() {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-8 max-w-5xl mx-auto mt-4">
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        confirmVariant={confirmModal.variant}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
+
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Settings</h2>
+
+      {opSuccess && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
+          {opSuccess}
+        </div>
+      )}
+      {opError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {opError}
+        </div>
+      )}
 
       <section className="bg-white shadow-md rounded-md p-6 mb-6">
         {loadingMe && <div className="text-sm text-gray-600">Loading user...</div>}
@@ -173,7 +249,7 @@ export default function Settings() {
               <button
                 onClick={handleDeleteMe}
                 className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
-               title="Delete account"
+                title="Delete account"
               >
                 Delete account
               </button>
@@ -224,6 +300,7 @@ export default function Settings() {
                   )}
                 </div>
               </div>
+
               <div className='flex item-start justify-between mb-4'>
                 <div>
                   <div className="text-xs text-gray-500 py-1">Invite Code</div>
@@ -252,6 +329,13 @@ export default function Settings() {
                   </div>
                 </div>
               </div>
+
+              {(regenerateSuccess || regenerateError) && (
+                <div className={`text-xs p-2 rounded ${regenerateSuccess ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {regenerateSuccess || regenerateError}
+                </div>
+              )}
+
               <div>
                 <div className='flex flex-col gap-2'>
                   <div className="text-xs text-gray-500">Warning Zone</div>
@@ -293,7 +377,7 @@ export default function Settings() {
                       {m.id !== me.userId ? (
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => removeMember(m.id)}
+                            onClick={() => removeMember(m.id, m.fullName ?? m.username)}
                             disabled={removeMemberLoadingId === m.id}
                             className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs"
                             title="Remove member"

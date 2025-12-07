@@ -109,6 +109,7 @@ public class CleaningTaskService {
             task.getAssignedTo().removeIf(user -> user.getId().equals(userId));
             cleaningTaskRepository.save(task);
         });
+    }
       
     @Transactional
     public CleaningTask updateCleaningTask(@NonNull UUID taskId, @NonNull UUID groupId, List<JsonPatchOperation> changes)
