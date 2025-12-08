@@ -19,14 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.PageResponse;
 import com.roomsy.backend.dto.Views;
-import com.roomsy.backend.exception.ForbiddenException;
 import com.roomsy.backend.model.News;
-import com.roomsy.backend.model.Group;
-import com.roomsy.backend.model.User;
 import com.roomsy.backend.security.CustomUserDetails;
-import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.NewsService;
-import com.roomsy.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

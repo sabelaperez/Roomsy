@@ -2,7 +2,6 @@ package com.roomsy.backend.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.*;
-import com.roomsy.backend.exception.ForbiddenException;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
 import com.roomsy.backend.security.CustomUserDetails;
@@ -15,9 +14,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

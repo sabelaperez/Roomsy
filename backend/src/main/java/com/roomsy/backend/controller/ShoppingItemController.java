@@ -4,10 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.roomsy.backend.dto.PageResponse;
-import com.roomsy.backend.exception.ForbiddenException;
-import com.roomsy.backend.model.User;
 import com.roomsy.backend.security.CustomUserDetails;
-import com.roomsy.backend.service.UserService;
 import com.roomsy.backend.util.GroupMembershipValidator;
 import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,11 +34,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-
 
 @RestController
 @RequestMapping("/groups/{group-id}/shopping-items")
