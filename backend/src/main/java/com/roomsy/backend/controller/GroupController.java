@@ -127,7 +127,7 @@ public class GroupController {
     )
     @PatchMapping("/{group-id}")
     @JsonView(Views.Summary.class)
-    public ResponseEntity<GroupResponse> updateCleaningTask (
+    public ResponseEntity<GroupResponse> updateGroup (
             @PathVariable("group-id") UUID groupId,
             @RequestBody List<JsonPatchOperation> changes
     ) {
