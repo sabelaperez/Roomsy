@@ -45,7 +45,6 @@ function AppContent() {
       setShowRefreshModal(false);
     } catch (error) {
       console.error('Failed to refresh token:', error);
-      // If refresh fails, log out
       await logout();
       setShowRefreshModal(false);
     }

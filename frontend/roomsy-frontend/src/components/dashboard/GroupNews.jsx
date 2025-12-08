@@ -36,7 +36,7 @@ export default function GroupNews({ groupId }) {
 
   const items = newsPage?.content ?? newsPage?.items ?? [];
 
-  // helper para parsear un LocalDateTime ISO sin zona como fecha en zona local
+  // helper parsear LocalDateTime
   const parseLocalDateTime = (s) => {
       if (!s) return null;
       const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(\.\d+)?)?$/);
@@ -49,10 +49,9 @@ export default function GroupNews({ groupId }) {
   const formatLocalDateTime = (s) => {
       const dt = parseLocalDateTime(s);
       if (!dt || isNaN(dt)) return s ?? '';
-      return dt.toLocaleString(); // cambiar para otro formato
+      return dt.toLocaleString(); // change options as needed
   };
 
-  // cerrar modal con Escape
   useEffect(() => {
       if (!selected) return;
       const onKey = (e) => {
@@ -62,7 +61,6 @@ export default function GroupNews({ groupId }) {
       return () => window.removeEventListener('keydown', onKey);
   }, [selected]);
 
-  // cargar detalles de noticia seleccionada
   useEffect(() => {
     if (!selected?.id) {
         setSelectedDetails(null);

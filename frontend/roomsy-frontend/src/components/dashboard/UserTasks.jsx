@@ -34,7 +34,6 @@ export default function UserTasks({ maxItems = 6 }) {
         const myPending = (Array.isArray(list) ? list : [])
           .filter(t => !t.completed)
           .filter(t => {
-            // assignedTo may be array of objects or ids
             const assigned = Array.isArray(t.assignedTo) ? t.assignedTo : [];
             return assigned.some(a => String(a?.id ?? a?.userId ?? a) === String(user?.userId));
           })

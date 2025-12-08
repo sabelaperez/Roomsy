@@ -54,7 +54,6 @@ export default function UserExpenses() {
     return () => { mounted = false; };
   }, [group?.id]);
 
-  // filter and totals for current user
   const owesToUser = shared.filter(s => String(s.payer?.id) === String(user?.userId));
   const userOwes = shared.filter(s => String(s.notPaid?.id) === String(user?.userId));
 
@@ -70,7 +69,7 @@ export default function UserExpenses() {
 
       {!loading && !error && (
         <div className="flex gap-4 flex-col">
-          {/* Le deben (others owe me) */}
+          {/* Are own */}
           <div className="flex-1 min-w-[240px] bg-gray-50 border rounded p-4">
             <div className="flex items-baseline justify-between mb-3">
               <div>
@@ -93,7 +92,7 @@ export default function UserExpenses() {
             )}
           </div>
 
-          {/* Yo debo (I owe others) */}
+          {/* You owe */}
           <div className="flex-1 min-w-[240px] bg-gray-50 border rounded p-4">
             <div className="flex items-baseline justify-between mb-3">
               <div>

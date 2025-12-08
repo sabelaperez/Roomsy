@@ -72,7 +72,7 @@ export default function GroupCreateJoin({ user, onCreate, onJoin }) {
               type="text"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleCreate()}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="My Awesome Group"
             />
@@ -111,7 +111,7 @@ export default function GroupCreateJoin({ user, onCreate, onJoin }) {
               type="text"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleJoin()}
+              onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Enter invite code"
             />

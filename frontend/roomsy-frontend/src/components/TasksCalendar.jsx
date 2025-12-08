@@ -332,6 +332,7 @@ export default function TasksCalendar() {
                 {detailModalAlert}
               </div>
             )}
+            {error && <div className="mt-4 text-sm text-red-600">{error}</div>}    
 
             <div className="flex justify-between items-start">
               <div>
