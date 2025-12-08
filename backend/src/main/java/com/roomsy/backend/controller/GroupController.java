@@ -2,9 +2,12 @@ package com.roomsy.backend.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.roomsy.backend.dto.*;
+import com.roomsy.backend.exception.ForbiddenException;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.User;
+import com.roomsy.backend.security.CustomUserDetails;
 import com.roomsy.backend.service.*;
+import com.roomsy.backend.util.GroupMembershipValidator;
 import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,15 +40,17 @@ public class GroupController {
     private final CleaningTaskService cleaningTaskService;
     private final NewsService newsService;
     private final ExpenseService expenseService;
+    private final GroupMembershipValidator groupMembershipValidator;
 
     @Autowired
     public GroupController(GroupService groupService, UserService userService, CleaningTaskService cleaningTaskService,
-                           NewsService newsService, ExpenseService expenseService) {
+                           NewsService newsService, ExpenseService expenseService, GroupMembershipValidator groupMembershipValidator) {
         this.groupService = groupService;
         this.userService = userService;
         this.cleaningTaskService = cleaningTaskService;
         this.newsService = newsService;
         this.expenseService = expenseService;
+        this.groupMembershipValidator = groupMembershipValidator;
     }
 
     @Operation(summary = "Create a new group", description = "Creates a new group with the provided name and" +
@@ -56,7 +62,7 @@ public class GroupController {
     })
     @PostMapping
     public ResponseEntity<GroupResponse> createGroup(
-        @Valid @RequestBody GroupRequest request
+            @Valid @RequestBody GroupRequest request
     ) {
         User creator = userService.getUserById(request.getCreatorId());
         Group group = new Group(request.getName());
@@ -95,7 +101,7 @@ public class GroupController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{group-id}")
     public ResponseEntity<GroupResponse> getGroupById(
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("group-id") UUID groupId
     ) {
         Group group = groupService.getGroupById(groupId);
         return ResponseEntity.ok(GroupResponse.fromEntity(group));
@@ -108,6 +114,7 @@ public class GroupController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Group updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid patch operation"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -129,8 +136,11 @@ public class GroupController {
     @JsonView(Views.Summary.class)
     public ResponseEntity<GroupResponse> updateGroup (
             @PathVariable("group-id") UUID groupId,
-            @RequestBody List<JsonPatchOperation> changes
+            @RequestBody List<JsonPatchOperation> changes,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Group updatedGroup = groupService.updateGroup(groupId, changes);
 
         GroupResponse groupResponse = GroupResponse.fromEntity(updatedGroup);
@@ -141,12 +151,16 @@ public class GroupController {
     @Operation(summary = "Delete a group", description = "Permanently deletes a group and all its associated data")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Group deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @DeleteMapping("/{group-id}")
     public ResponseEntity<Void> deleteGroup(
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("group-id") UUID groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         groupService.deleteGroup(groupId);
         return ResponseEntity.noContent().build();
     }
@@ -154,12 +168,16 @@ public class GroupController {
     @Operation(summary = "Get invite code", description = "Retrieves the unique invite code for the specified group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Invite code retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/invite-code")
     public ResponseEntity<InviteCodeResponse> getInviteCode(
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("group-id") UUID groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         String inviteCode = groupService.getInviteCode(groupId);
         return ResponseEntity.ok(new InviteCodeResponse(inviteCode));
     }
@@ -168,12 +186,16 @@ public class GroupController {
             "invalidating the previous one")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Invite code regenerated successfully"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @PostMapping("/{group-id}/invite-code/regenerate")
     public ResponseEntity<InviteCodeResponse> regenerateInviteCode(
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("group-id") UUID groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         String newCode = groupService.regenerateInviteCode(groupId);
         return ResponseEntity.ok(new InviteCodeResponse(newCode));
     }
@@ -182,13 +204,17 @@ public class GroupController {
             "of the specified group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Members retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/{group-id}/members")
     @JsonView(Views.Summary.class)
     public ResponseEntity<List<User>> getGroupMembers(
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("group-id") UUID groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         List<User> members = groupService.getGroupMembers(groupId);
 
         return ResponseEntity.ok(members);
@@ -199,13 +225,17 @@ public class GroupController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User added to group successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid operation - user already belongs to another group"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group or user not found")
     })
     @PostMapping("/{group-id}/members/{user-id}")
     public ResponseEntity<GroupResponse> addUserToGroup(
             @PathVariable("group-id") UUID groupId,
-            @PathVariable("user-id") UUID userId
+            @PathVariable("user-id") UUID userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Group updatedGroup = groupService.addUserToGroup(groupId, userId);
         return ResponseEntity.ok(GroupResponse.fromEntity(updatedGroup));
     }
@@ -216,13 +246,17 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "User removed from group successfully"),
             @ApiResponse(responseCode = "204", description = "User removed and group deleted as no members remain"),
             @ApiResponse(responseCode = "400", description = "Invalid operation - user not in specified group"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group or user not found")
     })
     @DeleteMapping("/{group-id}/members/{user-id}")
     public ResponseEntity<GroupResponse> removeUserFromGroup(
             @PathVariable("group-id") UUID groupId,
-            @PathVariable("user-id") UUID userId
+            @PathVariable("user-id") UUID userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         cleaningTaskService.deleteUser(userId);
         newsService.deleteUser(userId);
         expenseService.deleteUser(userId);
@@ -234,29 +268,5 @@ public class GroupController {
         }
 
         return ResponseEntity.ok(GroupResponse.fromEntity(updatedGroup));
-    }
-
-    // Request DTOs
-    @Schema(description = "Request object for updating a group's name")
-    public static class GroupNameRequest {
-        @NotNull(message = "Name is required")
-        @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
-        @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
-        @Schema(description = "New name of the group.", example = "Another Group Name", pattern = "^[a-zA-Z0-9 ]+$", maxLength = 50)
-        private String name;
-
-        public GroupNameRequest() {}
-
-        public GroupNameRequest(String name) {
-                this.name = name;
-        }
-
-        public String getName() {
-                return name;
-        }
-
-        public void setName(String name) {
-                this.name = name;
-        }
     }
 }

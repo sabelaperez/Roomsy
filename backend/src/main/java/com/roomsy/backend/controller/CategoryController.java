@@ -6,9 +6,10 @@ import com.roomsy.backend.dto.PageResponse;
 import com.roomsy.backend.dto.Views;
 import com.roomsy.backend.model.Category;
 import com.roomsy.backend.model.Group;
+import com.roomsy.backend.security.CustomUserDetails;
 import com.roomsy.backend.service.CategoryService;
 import com.roomsy.backend.service.GroupService;
-
+import com.roomsy.backend.util.GroupMembershipValidator;
 import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,25 +37,31 @@ import java.util.UUID;
 public class CategoryController {
     private final CategoryService categoryService;
     private final GroupService groupService;
+    private final GroupMembershipValidator groupMembershipValidator;
 
     @Autowired
-    public CategoryController(CategoryService categoryService, GroupService groupService) {
+    public CategoryController(CategoryService categoryService, GroupService groupService, GroupMembershipValidator groupMembershipValidator) {
         this.categoryService = categoryService;
         this.groupService = groupService;
+        this.groupMembershipValidator = groupMembershipValidator;
     }
 
     @Operation(summary = "Create a new category", description = "Creates a new category within the specified group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Category created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found"),
     })
     @PostMapping
     @JsonView(Views.Summary.class)
-    public ResponseEntity<Category> createCategory (
+    public ResponseEntity<Category> createCategory(
             @PathVariable("group-id") UUID groupId,
-            @RequestBody CategoryRequest request
-    ){        
+            @RequestBody CategoryRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Group group = groupService.getGroupById(groupId);
         Category category = new Category(group, request.getName(), request.getColor());
         Category savedCategory = categoryService.createCategory(category);
@@ -66,13 +74,17 @@ public class CategoryController {
     @Operation(summary = "Delete a category", description = "Deletes the specified category")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Category deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @DeleteMapping("/{category-id}")
     public ResponseEntity<Void> deleteCategory(
-        @PathVariable("category-id") UUID categoryId,
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("category-id") UUID categoryId,
+            @PathVariable("group-id") UUID groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         categoryService.deleteCategory(categoryId, groupId);
         return ResponseEntity.noContent().build();
     }
@@ -80,6 +92,7 @@ public class CategoryController {
     @Operation(summary = "Get group categories", description = "Retrieves a paginated list of categories for the specified group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categories retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping()
@@ -93,8 +106,11 @@ public class CategoryController {
             @Parameter(description = "Sort field", example = "name")
             @RequestParam(defaultValue = "name") String sortBy,
             @Parameter(description = "Sort direction (asc or desc)", example = "asc")
-            @RequestParam(defaultValue = "asc") String sortDirection
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
@@ -107,14 +123,18 @@ public class CategoryController {
     @Operation(summary = "Get category by id", description = "Retrieves the specified category within the given group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Category retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @GetMapping("/{category-id}")
     @JsonView(Views.Summary.class)
     public ResponseEntity<Category> getCategoryById(
             @PathVariable("group-id") UUID groupId,
-            @PathVariable("category-id") UUID categoryId
+            @PathVariable("category-id") UUID categoryId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Category category = categoryService.getCategory(categoryId, groupId);
         return ResponseEntity.ok(category);
     }
@@ -124,6 +144,7 @@ public class CategoryController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Category updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid patch operation"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Category not found"),
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -156,8 +177,11 @@ public class CategoryController {
     public ResponseEntity<Category> updateCategory(
             @PathVariable("category-id") UUID categoryId,
             @PathVariable("group-id") UUID groupId,
-            @RequestBody List<JsonPatchOperation> changes
+            @RequestBody List<JsonPatchOperation> changes,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Category updatedCategory = categoryService.updateCategory(categoryId, groupId, changes);
         return ResponseEntity.ok(updatedCategory);
     }

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.roomsy.backend.dto.PageResponse;
 import com.roomsy.backend.security.CustomUserDetails;
+import com.roomsy.backend.util.GroupMembershipValidator;
 import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,18 +44,21 @@ public class CleaningTaskController {
     private final CleaningTaskService cleaningTaskService;
     private final GroupService groupService;
     private final UserService userService;
+    private final GroupMembershipValidator groupMembershipValidator;
 
     @Autowired
-    public CleaningTaskController(CleaningTaskService cleaningTaskService, GroupService groupsService, UserService userService) {
+    public CleaningTaskController(CleaningTaskService cleaningTaskService, GroupService groupsService, UserService userService, GroupMembershipValidator groupMembershipValidator) {
         this.cleaningTaskService = cleaningTaskService;
         this.groupService = groupsService;
         this.userService = userService;
+        this.groupMembershipValidator = groupMembershipValidator;
     }
 
     @Operation(summary = "Create a new cleaning task", description = "Creates a new cleaning task within the specified group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Cleaning task created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group or user not found")
     })
     @PostMapping
@@ -64,6 +68,9 @@ public class CleaningTaskController {
             @Valid @RequestBody CleaningTaskRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        UUID userId = userDetails.getId();
+        groupMembershipValidator.verifyGroupMembership(groupId, userId);
+
         Group group = groupService.getGroupById(groupId);
 
         List<User> assignees = request.getAssignedToIds().stream()
@@ -81,14 +88,18 @@ public class CleaningTaskController {
     @Operation(summary = "Get a cleaning task by id", description = "Returns the specified cleaning task")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cleaning task returned"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @GetMapping("/{task-id}")
     @JsonView(Views.Summary.class)
     public ResponseEntity<CleaningTask> getTask(
-        @PathVariable("task-id") UUID taskId,
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("task-id") UUID taskId,
+            @PathVariable("group-id") UUID groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         CleaningTask task = cleaningTaskService.getTask(taskId, groupId);
         return ResponseEntity.ok(task);
     }
@@ -96,13 +107,17 @@ public class CleaningTaskController {
     @Operation(summary = "Delete a cleaning task", description = "Deletes the specified cleaning task")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Cleaning task deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @DeleteMapping("/{task-id}")
     public ResponseEntity<Void> deleteTask(
-        @PathVariable("task-id") UUID taskId,
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("task-id") UUID taskId,
+            @PathVariable("group-id") UUID groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         cleaningTaskService.deleteTask(taskId, groupId);
         return ResponseEntity.noContent().build();
     }
@@ -110,6 +125,7 @@ public class CleaningTaskController {
     @Operation(summary = "Reassign a cleaning task", description = "Replace assigned users for the specified task")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task reassigned successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Task or some user not found"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
@@ -118,8 +134,11 @@ public class CleaningTaskController {
     public ResponseEntity<CleaningTask> reassignTask(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody ReassignRequest request
+            @Valid @RequestBody ReassignRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         List<User> newAssignees = request.getAssignedToIds().stream()
                 .map(userService::getUserById)
                 .collect(Collectors.toList());
@@ -132,6 +151,7 @@ public class CleaningTaskController {
             "within the group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cleaning tasks retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping()
@@ -145,8 +165,11 @@ public class CleaningTaskController {
             @Parameter(description = "Sort field", example = "createdAt")
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @Parameter(description = "Sort direction (asc or desc)", example = "desc")
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
@@ -162,6 +185,7 @@ public class CleaningTaskController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cleaning task updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid patch operation"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Cleaning task not found"),
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -196,11 +220,14 @@ public class CleaningTaskController {
     )
     @PatchMapping("/{task-id}")
     @JsonView(Views.Summary.class)
-    public ResponseEntity<CleaningTask> updateCleaningTask (
+    public ResponseEntity<CleaningTask> updateCleaningTask(
             @PathVariable("task-id") UUID taskId,
             @PathVariable("group-id") UUID groupId,
-            @RequestBody List<JsonPatchOperation> changes
+            @RequestBody List<JsonPatchOperation> changes,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         CleaningTask updatedTask = cleaningTaskService.updateCleaningTask(taskId, groupId, changes);
         return ResponseEntity.ok(updatedTask);
     }

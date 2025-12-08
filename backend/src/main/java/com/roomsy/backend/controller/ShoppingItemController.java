@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.UUID;
 
 import com.roomsy.backend.dto.PageResponse;
+import com.roomsy.backend.exception.ForbiddenException;
+import com.roomsy.backend.model.User;
+import com.roomsy.backend.security.CustomUserDetails;
+import com.roomsy.backend.service.UserService;
+import com.roomsy.backend.util.GroupMembershipValidator;
 import com.roomsy.backend.util.patch.JsonPatchOperation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -44,26 +50,33 @@ public class ShoppingItemController {
     private final ShoppingItemService shoppingItemService;
     private final GroupService groupService;
     private final CategoryService categoryService;
+    private final GroupMembershipValidator groupMembershipValidator;
 
     @Autowired
-    public ShoppingItemController(ShoppingItemService shoppingItemService, GroupService groupService, CategoryService categoryService) {
+    public ShoppingItemController(ShoppingItemService shoppingItemService, GroupService groupService, CategoryService categoryService, GroupMembershipValidator groupMembershipValidator) {
         this.shoppingItemService = shoppingItemService;
         this.groupService = groupService;
         this.categoryService = categoryService;
+        this.groupMembershipValidator = groupMembershipValidator;
     }
 
     @Operation(summary = "Create a new shopping item", description = "Creates a new shopping item within the specified group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Shopping item created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group or category not found")
     })
     @PostMapping
     @JsonView(Views.Summary.class)
     public ResponseEntity<ShoppingItem> createShoppingItem(
             @PathVariable("group-id") UUID groupId,
-            @Valid @RequestBody ShoppingItemRequest request
+            @Valid @RequestBody ShoppingItemRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Group group = groupService.getGroupById(groupId);
 
         Category category = null;
@@ -80,13 +93,17 @@ public class ShoppingItemController {
     @Operation(summary = "Delete a shopping item", description = "Deletes the specified shopping item")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Shopping item deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Shopping item not found")
     })
     @DeleteMapping("/{item-id}")
     public ResponseEntity<Void> deleteShoppingItem(
         @PathVariable("item-id") UUID itemId,
-        @PathVariable("group-id") UUID groupId
+        @PathVariable("group-id") UUID groupId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         shoppingItemService.deleteShoppingItem(itemId, groupId);
         return ResponseEntity.noContent().build();
     }
@@ -97,6 +114,7 @@ public class ShoppingItemController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Shopping item updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid patch operation or invalid values"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Shopping item or category not found")
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -134,8 +152,11 @@ public class ShoppingItemController {
     public ResponseEntity<ShoppingItem> updateShoppingItem (
             @PathVariable("item-id") UUID itemId,
             @PathVariable("group-id") UUID groupId,
-            @RequestBody List<JsonPatchOperation> changes
+            @RequestBody List<JsonPatchOperation> changes,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         ShoppingItem updatedItem = shoppingItemService.updateShoppingItem(itemId, groupId, changes);
         return ResponseEntity.ok(updatedItem);
     }
@@ -143,6 +164,7 @@ public class ShoppingItemController {
     @Operation(summary = "Get group shopping items", description = "Retrieves all shopping list items for the group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Shopping items retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Requester is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping()
@@ -156,8 +178,11 @@ public class ShoppingItemController {
             @Parameter(description = "Sort field", example = "name")
             @RequestParam(defaultValue = "name") String sortBy,
             @Parameter(description = "Sort direction (asc or desc)", example = "asc")
-            @RequestParam(defaultValue = "asc") String sortDirection
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
@@ -165,65 +190,5 @@ public class ShoppingItemController {
 
         Page<ShoppingItem> shoppingItems = shoppingItemService.getGroupShoppingItems(groupId, pageable);
         return ResponseEntity.ok(new PageResponse<>(shoppingItems));
-    }
-
-
-    // Request DTOs
-    @Schema(description = "Request object for updating a shopping item's category")
-    public static class UpdateCategoryRequest {
-        @NotNull
-        @Schema(description = "The ID of the new category for the shopping item",
-                example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
-        private UUID categoryId;
-
-        public UpdateCategoryRequest() {}
-
-        public UUID getCategoryId() { 
-            return categoryId; 
-        }
-        public void setCategoryId(UUID categoryId) { 
-            this.categoryId = categoryId; 
-        }
-    }
-
-    @Schema(description = "Request object for updating a shopping item's name")
-    public static class UpdateNameRequest {
-        @NotNull
-        @Size(min = 3, max = 100)
-        @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Name can only contain letters, numbers, and spaces")
-        @Schema(description = "The new name for the shopping item",
-                example = "Bread",
-                minLength = 3,
-                maxLength = 100,
-                pattern = "^[a-zA-Z0-9 ]+$")
-        private String name;
-
-        public UpdateNameRequest() {}
-
-        public String getName() { 
-            return name; 
-        }
-        public void setName(String name) { 
-            this.name = name; 
-        }
-    }
-
-    @Schema(description = "Request object for updating a shopping item's quantity")
-    public static class UpdateQuantityRequest {
-        @NotNull
-        @Min(1)
-        @Schema(description = "The new quantity for the shopping item",
-                example = "5",
-                minimum = "1")
-        private Integer quantity;
-
-        public UpdateQuantityRequest() {}
-
-        public Integer getQuantity() { 
-            return quantity; 
-        }
-        public void setQuantity(Integer quantity) { 
-            this.quantity = quantity; 
-        }
     }
 }
