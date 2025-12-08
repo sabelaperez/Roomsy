@@ -69,6 +69,18 @@ public class GlobalHandlerException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiErrorResponse> handleForbiddenException(ForbiddenException ex) {
+        log.warn("Forbidden access: {}", ex.getMessage());
+
+        ApiErrorResponse error = new ApiErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
     @ExceptionHandler(InvalidOperationException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidOperationException(InvalidOperationException ex) {
         log.warn("Invalid operation: {}", ex.getMessage());

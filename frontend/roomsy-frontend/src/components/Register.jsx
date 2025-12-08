@@ -5,16 +5,36 @@ import { useNavigate } from 'react-router-dom';
 export default function Register({ switchToLogin }) {
   const { register } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', username: '', fullName: '', password: '' });
+  const [form, setForm] = useState({ 
+    email: '', 
+    username: '', 
+    fullName: '', 
+    password: '',
+    confirmPassword: '' 
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
     setError('');
+    
+    // Check if passwords match
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    // Check minimum password length
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
     setLoading(true);
     try {
-      await register(form);
-      navigate('/dashboard', { replace: true }); // <-- navegar al dashboard tras registro
+      const { confirmPassword, ...registrationData } = form;
+      await register(registrationData);
+      navigate('/dashboard', { replace: true });
     } catch (e) {
       setError(e.message || 'Registration failed');
     } finally {
@@ -25,7 +45,6 @@ export default function Register({ switchToLogin }) {
   return (
     <div className="bg-white rounded-lg shadow-md p-8 max-w-md mx-auto mt-10">
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Create Account</h2>
-
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -85,6 +104,23 @@ export default function Register({ switchToLogin }) {
           <p className="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Confirm Password
+          </label>
+          <input
+            type="password"
+            value={form.confirmPassword}
+            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+            onKeyPress={(e) => e.key === 'Enter' && submit()}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="••••••••"
+          />
+          {form.confirmPassword && form.password !== form.confirmPassword && (
+            <p className="text-xs text-red-600 mt-1">Passwords do not match</p>
+          )}
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             {error}
@@ -93,7 +129,7 @@ export default function Register({ switchToLogin }) {
 
         <button
           onClick={submit}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium disabled:bg-blue-400 disabled:cursor-not-allowed"
           disabled={loading}
         >
           {loading ? 'Registering...' : 'Register'}
