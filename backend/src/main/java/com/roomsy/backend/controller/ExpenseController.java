@@ -10,10 +10,12 @@ import com.roomsy.backend.model.ExpenseItem;
 import com.roomsy.backend.model.Group;
 import com.roomsy.backend.model.SharedExpense;
 import com.roomsy.backend.model.User;
+import com.roomsy.backend.security.CustomUserDetails;
 import com.roomsy.backend.service.ExpenseService;
 import com.roomsy.backend.service.GroupService;
 import com.roomsy.backend.service.UserService;
 
+import com.roomsy.backend.util.GroupMembershipValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -27,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,38 +40,44 @@ import java.util.stream.Collectors;
 @RequestMapping("/groups/{group-id}/expenses")
 @Tag(name = "Expenses", description = "Endpoints for managing expenses within groups")
 public class ExpenseController {
-    
+
     private final ExpenseService expenseService;
     private final GroupService groupService;
     private final UserService userService;
+    private final GroupMembershipValidator groupMembershipValidator;
 
     @Autowired
-    public ExpenseController(ExpenseService expenseService, GroupService groupService, UserService userService) {
+    public ExpenseController(ExpenseService expenseService, GroupService groupService, UserService userService, GroupMembershipValidator groupMembershipValidator) {
         this.expenseService = expenseService;
         this.groupService = groupService;
         this.userService = userService;
+        this.groupMembershipValidator = groupMembershipValidator;
     }
 
-    @Operation(summary = "Create a new expense item in a group", description = "Creates a new expense" + 
+    @Operation(summary = "Create a new expense item in a group", description = "Creates a new expense" +
             " and generates split expenses among the involved users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Expense item and split expenses created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group or some user not found"),
     })
     @PostMapping
     @JsonView(Views.Basic.class)
     public ResponseEntity<ExpenseItemResponse> createExpenseItem(
-        @PathVariable("group-id") UUID groupId,
-        @Valid @RequestBody ExpenseItemRequest request
-    ) {        
+            @PathVariable("group-id") UUID groupId,
+            @Valid @RequestBody ExpenseItemRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Group group = groupService.getGroupById(groupId);
         User owner = userService.getUserById(request.getOwnerId());
-        
+
         List<User> usersInvolved = request.getUsersInvolvedIds().stream()
                 .map(userId -> userService.getUserById(userId))
                 .collect(Collectors.toList());
-        
+
         ExpenseItem expenseItem = new ExpenseItem(
                 group,
                 owner,
@@ -78,10 +87,10 @@ public class ExpenseController {
                 request.getPrice(),
                 request.getExpenseDate()
         );
-        
+
         ExpenseItem savedExpenseItem = expenseService.createExpenseItem(expenseItem);
         expenseService.generateSplitExpenses(group, savedExpenseItem);
-        
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ExpenseItemResponse.fromEntity(savedExpenseItem));
@@ -91,13 +100,17 @@ public class ExpenseController {
             " and updates the split expenses")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Expense item deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Expense item not found"),
     })
     @DeleteMapping("/items/{expense-item-id}")
     public ResponseEntity<Void> deleteExpenseItem(
-        @PathVariable("expense-item-id") UUID expenseItemId,
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("expense-item-id") UUID expenseItemId,
+            @PathVariable("group-id") UUID groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         expenseService.deleteExpenseItem(expenseItemId, groupId);
         return ResponseEntity.noContent().build();
     }
@@ -106,15 +119,19 @@ public class ExpenseController {
             " indicating that it has been paid")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Shared expense paid successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Shared expense not found"),
     })
     @DeleteMapping("/shared/{shared-expense-id}")
     public ResponseEntity<Void> paySharedExpense(
-        @PathVariable("shared-expense-id") UUID sharedExpenseId,
-        @PathVariable("group-id") UUID groupId
+            @PathVariable("shared-expense-id") UUID sharedExpenseId,
+            @PathVariable("group-id") UUID groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         boolean paid = expenseService.paySharedExpense(sharedExpenseId, groupId);
-        
+
         if (paid) {
             return ResponseEntity.noContent().build();
         } else {
@@ -126,6 +143,7 @@ public class ExpenseController {
             "with the group")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Expenses retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping()
@@ -139,8 +157,11 @@ public class ExpenseController {
             @Parameter(description = "Sort field", example = "createdAt")
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @Parameter(description = "Sort direction (asc or desc)", example = "desc")
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
@@ -154,6 +175,7 @@ public class ExpenseController {
             "among group members")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Shared expenses retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/shared-expenses")
@@ -167,8 +189,11 @@ public class ExpenseController {
             @Parameter(description = "Sort field", example = "createdAt")
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @Parameter(description = "Sort direction (asc or desc)", example = "desc")
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        groupMembershipValidator.verifyGroupMembership(groupId, userDetails.getId());
+
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;

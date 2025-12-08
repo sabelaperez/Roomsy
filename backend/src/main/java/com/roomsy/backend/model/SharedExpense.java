@@ -28,7 +28,6 @@ public class SharedExpense {
 
     @NotNull
     @JsonBackReference
-    //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
     @JsonView(Views.Summary.class)
@@ -36,7 +35,6 @@ public class SharedExpense {
     private Group group;
 
     @NotNull
-    //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "payer_id", nullable = false)
     @JsonView(Views.Summary.class)
@@ -44,7 +42,6 @@ public class SharedExpense {
     private User payer;
 
     @NotNull
-    //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "not_paid_id", nullable = false)
     @JsonView(Views.Summary.class)

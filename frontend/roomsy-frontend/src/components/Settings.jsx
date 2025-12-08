@@ -358,7 +358,7 @@ export default function Settings() {
               {!loadingMembers && members.length > 0 && (
                 <ul className="space-y-2 mt-2">
                   {members.map(m => (
-                    <li key={m.id} className="p-3 border rounded p-3 bg-gray-50 flex justify-between items-center">
+                    <li key={m.id} className="p-3 border rounded bg-gray-50 flex justify-between items-center">
                       <div>
                         <div className="text-sm font-medium text-gray-800">{m.fullName ?? m.username}</div>
                         <div className="text-xs text-gray-500">{m.email}</div>

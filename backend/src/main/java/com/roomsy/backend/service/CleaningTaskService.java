@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.roomsy.backend.exception.ForbiddenException;
 import com.roomsy.backend.model.*;
 import com.roomsy.backend.util.patch.JsonPatch;
 import com.roomsy.backend.util.patch.JsonPatchOperation;
@@ -53,7 +54,12 @@ public class CleaningTaskService {
 
     @Transactional
     public CleaningTask createTask(CleaningTask task) {
-        // Xerar unha noticia de tipo CLEANING_TASK_ADDED
+        for (User user : task.getAssignedTo()) {
+            if(!task.getGroup().getMembers().contains(user)) {
+                throw new ForbiddenException("User " + user.getUsername() + " is not a member of this group");
+            }
+        }
+
         String description = "";
         for (User user : task.getAssignedTo()) {
             description += user.getUsername() + " ,";
@@ -62,7 +68,6 @@ public class CleaningTaskService {
         News addedNews = new News(task.getGroup(), task.getAssignedTo().getFirst(), NewsType.CLEANING_TASK_ADDED,
             "Cleaning task " + task.getTitle() + " added to the group", description);
 
-        // Persistir cambios
         newsRepository.save(addedNews);
         return cleaningTaskRepository.save(task);
     }
@@ -77,24 +82,6 @@ public class CleaningTaskService {
     public CleaningTask reassignTask(@NonNull UUID taskId, @Nonnull UUID groupId, @NonNull List<User> newAssignees) throws ResourceNotFoundException {
         CleaningTask existingTask = getTask(taskId, groupId);
         existingTask.setAssignedTo(newAssignees);
-        return cleaningTaskRepository.save(existingTask);
-    }
-
-    public CleaningTask setTaskCompleted(@NonNull UUID taskId, @Nonnull UUID groupId, @NonNull boolean completed) throws ResourceNotFoundException {
-        CleaningTask existingTask = getTask(taskId, groupId);
-        existingTask.setCompleted(completed);
-        return cleaningTaskRepository.save(existingTask);
-    }
-
-    public CleaningTask changeTaskDate(@NonNull UUID taskId, @NonNull UUID groupId, @NonNull LocalDateTime newDate) throws ResourceNotFoundException {
-        CleaningTask existingTask = getTask(taskId, groupId);
-        existingTask.setDate(newDate);
-        return cleaningTaskRepository.save(existingTask);
-    }
-
-    public CleaningTask changeTaskTitle(@NonNull UUID taskId, @NonNull UUID groupId, @NonNull String newTitle) throws ResourceNotFoundException {
-        CleaningTask existingTask = getTask(taskId, groupId);
-        existingTask.setTitle(newTitle);
         return cleaningTaskRepository.save(existingTask);
     }
 
