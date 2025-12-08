@@ -16,7 +16,6 @@ export default function TasksCalendar() {
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [error, setError] = useState('');
 
-  const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState('');
@@ -25,6 +24,9 @@ export default function TasksCalendar() {
   const [titleDraft, setTitleDraft] = useState('');
   const [editingDate, setEditingDate] = useState(false);
   const [dateDraft, setDateDraft] = useState('');
+
+  const [createModalAlert, setCreateModalAlert] = useState({ visible: false, text: "" });
+  const [detailModalAlert, setDetailModalAlert] = useState({ visible: false, text: "" });
 
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -43,16 +45,6 @@ export default function TasksCalendar() {
     if (isNaN(d)) return '';
     const pad = (n) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  };
-
-  const toYMD = (d) => {
-    if (!d) return null;
-    const dt = new Date(d);
-    if (isNaN(dt)) return null;
-    const y = dt.getFullYear();
-    const m = String(dt.getMonth() + 1).padStart(2, '0');
-    const day = String(dt.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
   };
 
   const parseLocalDateTime = (s) => {
@@ -133,10 +125,6 @@ export default function TasksCalendar() {
     };
   }), [tasks]);
 
-  const handleDayOpen = (ymd) => {
-    setSelectedDay(ymd);
-  };
-
   const handleEventClick = (ev) => {
     const found = ev?.id ? tasks.find(t => String(t.id) === String(ev.id)) : null;
     setSelectedTask(found ?? null);
@@ -196,6 +184,7 @@ export default function TasksCalendar() {
 
   const toggleAssignedForSelectedTask = async (userId) => {
     if (!group?.id || !selectedTask?.id) return;
+    setDetailModalAlert({ visible: false, text: "" });
     const currentIds = Array.isArray(selectedTask.assignedTo)
       ? selectedTask.assignedTo.map(a => String(a.id ?? a.userId ?? a))
       : [];
@@ -203,7 +192,7 @@ export default function TasksCalendar() {
     const next = currentIds.includes(idStr) ? currentIds.filter(x => x !== idStr) : [...currentIds, idStr];
 
     if (next.length === 0) {
-      setErrorMessage('At least 1 assignee is required');
+      setDetailModalAlert(true, "At least 1 assignee is required");
       return;
     }
 
@@ -229,13 +218,18 @@ export default function TasksCalendar() {
 
   const submitCreate = async () => {
     if (!group?.id) return;
+
+    if(newTask.title.trim() === '') {
+      setCreateModalAlert({ visible: true, text: "Title is required" });
+      return;
+    }
     
     if(newTask.date === '') {
-      setErrorMessage('Date is required');
+      setCreateModalAlert({ visible: true, text: "Date is required" });
       return;
     }
     if(newTask.assignedToIds.length === 0) {
-      setErrorMessage('At least 1 assignee is required');
+      setCreateModalAlert({ visible: true, text: "At least 1 assignee is required" });
       return;
     }
 
@@ -279,6 +273,7 @@ export default function TasksCalendar() {
   };
 
   const toggleSelectedTaskCompleted = async (checked) => {
+    setCreateModalAlert({ visible: false, text: "" });
     if(!group?.id || !selectedTask?.id) return;
     try {
       setSelectedTask(prev => ({ ...prev, completed: !!checked }));
@@ -322,7 +317,7 @@ export default function TasksCalendar() {
       <Calendar
         events={events}
         onEventsChange={() => {}}
-        onDayOpen={handleDayOpen}
+        onDayOpen={null}
         onEventClick={handleEventClick}
       />
 
@@ -332,6 +327,11 @@ export default function TasksCalendar() {
           <div className="bg-white rounded-lg w-full max-w-2xl shadow-lg p-6" onClick={e => e.stopPropagation()}>
             {detailsLoading && <div className="mt-4 text-sm text-gray-600">Loading...</div>}
             {detailsError && <div className="mt-4 text-sm text-red-600">{detailsError}</div>}
+            {detailModalAlert.visible && (
+              <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+                {detailModalAlert}
+              </div>
+            )}
 
             <div className="flex justify-between items-start">
               <div>
@@ -420,6 +420,11 @@ export default function TasksCalendar() {
 
             {!group && loadingGroup && <div className="text-sm text-gray-600">Loading group...</div>}
             {!group && !loadingGroup && <div className="text-sm text-red-600">You are not in a group</div>}
+            {createModalAlert.visible && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+                {createModalAlert.text}
+              </div>
+            )}
 
             <div className="space-y-3">
               <div>

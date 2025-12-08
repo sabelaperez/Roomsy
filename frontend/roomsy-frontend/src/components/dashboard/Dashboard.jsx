@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../context/AuthContext';
-import { groupApi } from '../api';
+import { AuthContext } from '../../context/AuthContext';
+import { groupApi } from '../../api';
 import GroupCreateJoin from './GroupCreateJoin';
 import GroupNews from './GroupNews';
+import UserExpenses from './UserExpenses';
+import UserTasks from './UserTasks';
 
 export default function Dashboard() {
   const { user, setUser } = useContext(AuthContext);
@@ -53,20 +55,30 @@ export default function Dashboard() {
                 <div className="text-sm text-green-700">No group info</div>
               ) : (
                 <div className="flex flex-col md:flex-row items-start gap-6">
-                  <div className="bg-white rounded-lg shadow-md p-4 w-full md:w-80">
-                    <p className="text-sm text-gray-600">Welcome back!</p>
-                    <p className="font-semibold text-gray-800">{user.fullName}</p>
-                    <p className="text-sm text-gray-600">{user.email}</p>
+                  <div className=" w-full md:w-80">
+                    <div className='bg-white rounded-lg shadow-md p-4'>
+                      <p className="text-sm text-gray-600 mb-2">Welcome back!</p>
+                      <p className="font-semibold text-gray-800">{user.fullName}</p>
+                      <p className="text-sm text-gray-600">{user.email}</p>
+                    </div>
+                    <div className='mt-6'>
+                      <UserExpenses />
+                    </div>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow-md p-4 w-full md:w-80">
-                    <p className="font-semibold text-gray-800 mb-2">Your Group</p>
-                    <div>
-                      <p className="text-sm text-gray-600">
-                        Group: <span className="font-semibold text-gray-800">{groupInfo.name}</span>
-                      </p>
-                      <p className="text-sm text-gray-600">Members: {groupInfo.memberCount ?? '-'}</p>
+                  <div className="w-full md:w-80">
+                    <div className='bg-white rounded-lg shadow-md p-4'>
+                      <p className="font-semibold text-gray-800 mb-2">Your Group</p>
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          Group: <span className="font-semibold text-gray-800">{groupInfo.name}</span>
+                        </p>
+                        <p className="text-sm text-gray-600">Members: {groupInfo.memberCount ?? '-'}</p>
+                      </div>
                     </div>
+                    <div className="mt-6">
+                        <UserTasks />
+                      </div>
                   </div>
                 </div>
               )}
@@ -78,8 +90,8 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="w-full space-y-6">
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-md mb-6 w-full">
-            <p className="text-sm text-gray-600">Welcome back!</p>
+          <div className='bg-white rounded-lg shadow-md p-4'>
+            <p className="text-sm text-gray-600 mb-2">Welcome back!</p>
             <p className="font-semibold text-gray-800">{user.fullName}</p>
             <p className="text-sm text-gray-600">{user.email}</p>
           </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { groupApi, userApi } from '../api';
+import { groupApi, userApi } from '../../api';
 
 export default function GroupCreateJoin({ user, onCreate, onJoin }) {
   const [groupName, setGroupName] = useState('');
@@ -61,7 +61,7 @@ export default function GroupCreateJoin({ user, onCreate, onJoin }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <h3 className="text-lg font-semibold mb-4 text-gray-800">Create a Group</h3>
 
@@ -101,7 +101,7 @@ export default function GroupCreateJoin({ user, onCreate, onJoin }) {
         </div>
       </div>
 
-      <div className="border-t pt-6">
+      <div className="border-t pt-6 md:border-t-0 md:border-l md:pl-6 md:pt-0">
         <h3 className="text-lg font-semibold mb-4 text-gray-800">Join a Group</h3>
 
         <div className="space-y-4">

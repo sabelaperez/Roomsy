@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { groupApi } from '../api';
+import { groupApi } from '../../api';
 
 export default function GroupNews({ groupId }) {
   const [newsPage, setNewsPage] = useState(null);
@@ -163,7 +163,6 @@ export default function GroupNews({ groupId }) {
 
             {!detailsLoading && !detailsError && (
               <div className="mt-4 text-sm text-gray-800">
-                {/* prefer detailed content if available, fallback to preview */}
                 {selectedDetails?.content ?? selectedDetails?.description ?? selected?.description ?? 'No content available.'}
               </div>
             )}
