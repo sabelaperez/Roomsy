@@ -77,8 +77,6 @@ public class CleaningTaskController {
                 .map(userService::getUserById)
                 .collect(Collectors.toList());
 
-        // todo: comprobar que los users sean de ese grupo
-
         CleaningTask task = new CleaningTask(group, request.getTitle(), request.getDate(), assignees);
         CleaningTask saved = cleaningTaskService.createTask(task);
 
