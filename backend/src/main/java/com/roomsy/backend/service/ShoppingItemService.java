@@ -92,10 +92,10 @@ public class ShoppingItemService {
                     // If it's a number node
                     if (val.isNumber()) {
                         numeric = val.asInt();
-                    } else if (val.isTextual()) {
+                    } else if (val.isString()) {
                         // try to parse numeric string
                         try {
-                            numeric = Integer.parseInt(val.asText().trim());
+                            numeric = Integer.parseInt(val.asString().trim());
                         } catch (NumberFormatException ignored) {
                             // will throw below as invalid
                         }
