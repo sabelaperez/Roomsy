@@ -6,18 +6,19 @@ Roomsy is a web application to manage the chores, the shopping list and the shar
 
 ## Overview
 
-- Backend: Java + Spring Boot (REST API)
+- Backend: Java + Spring Boot
     - JWT-based authentication & session management with short-lived access tokens and refresh tokens (cookies + server-side token revocation)
     - USER / ADMIN roles to restrict endpoints
     - JSON View annotations to control serialization per endpoint
     - JSON Patch (RFC 6902) support for fine-grained updates
     - OpenAPI/Swagger documentation auto-generate
+    - Pageable endpoints for list retrievals (supports page, size, sortBy, sortDirection parameters)
 
 - Frontend: React + Tailwind CSS, component-based UI that consumes backend API via a small client wrapper.
 
 ## Architecture & Project Structure
 
-- Backend (MVC-style)
+- Backend
   - Controllers: REST endpoints that validate requests and call services.
   - Services: Business logic and transactions.
   - Repositories: Spring Data JPA repositories 
