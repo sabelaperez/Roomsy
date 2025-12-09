@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.roomsy.backend.dto.GroupResponse;
 import com.roomsy.backend.model.*;
 import com.roomsy.backend.repository.*;
 import com.roomsy.backend.util.patch.JsonPatch;
@@ -11,6 +12,8 @@ import com.roomsy.backend.util.patch.JsonPatchOperation;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.roomsy.backend.exception.InvalidOperationException;
@@ -227,7 +230,8 @@ public class GroupService {
         return new ArrayList<>(group.getMembers());
     }
 
-    public List<Group> getGroups() throws ResourceNotFoundException {
-        return groupRepository.findAll();
+    public Page<GroupResponse> getGroups(@NonNull Pageable pageable) throws ResourceNotFoundException {
+        Page<Group> groups = groupRepository.findAll(pageable);
+        return groups.map(GroupResponse::fromEntity);
     }
 }
