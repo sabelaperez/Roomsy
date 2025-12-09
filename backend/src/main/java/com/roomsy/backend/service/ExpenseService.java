@@ -36,7 +36,6 @@ public class ExpenseService {
 
     @Transactional
     public ExpenseItem createExpenseItem(@NonNull ExpenseItem expenseItem) {
-        // Xerar unha noticia do tipo EXPENSE_ADDED
         StringBuilder usersInvolvedNames = new StringBuilder();
         for (User user : expenseItem.getUsersInvolved()) {
             usersInvolvedNames.append(user.getUsername()).append(", ");
@@ -53,7 +52,6 @@ public class ExpenseService {
         return expenseItemRepository.save(expenseItem);
     }
 
-    // Pensar nas precondicións
     @Transactional
     public void deleteExpenseItem(@NonNull UUID id, @NonNull UUID groupId) throws ResourceNotFoundException {
         ExpenseItem expenseItem = expenseItemRepository.findById(id)
@@ -98,7 +96,7 @@ public class ExpenseService {
             UUID notPaidId = sharedExpense.getNotPaid().getId();
             Double quantity = sharedExpense.getQuantity();
 
-            balances.put(payerId, balances.getOrDefault(payerId, 0.0) + quantity); // ó reves?????
+            balances.put(payerId, balances.getOrDefault(payerId, 0.0) + quantity); 
             balances.put(notPaidId, balances.getOrDefault(notPaidId, 0.0) - quantity);
         }
 
@@ -106,7 +104,7 @@ public class ExpenseService {
         Map<User, Double> debtorsMap = new HashMap<>();
 
         Map<UUID, User> userMap = new HashMap<>();
-        for (User member : group.getMembers()) { // innecesario recuperar todos los miembros del grupo
+        for (User member : group.getMembers()) { 
             userMap.put(member.getId(), member);
         }
 
@@ -208,7 +206,6 @@ public class ExpenseService {
         }
         boolean result = sharedExpenseRepository.deleteByIdReturningBoolean(id);
         if (result) {
-            // Xerar unha noticia do tipo EXPENSE_PAID
             News paidExpNews = new News(payedExpense.getGroup(), payedExpense.getNotPaid(), NewsType.EXPENSE_PAID,
                     "An expense has been paid", "The user " + payedExpense.getNotPaid().getUsername() + " has paid an expense of amount " + payedExpense.getQuantity() + " € to " + payedExpense.getPayer().getFullName() + ".");
             newsRepository.save(paidExpNews);

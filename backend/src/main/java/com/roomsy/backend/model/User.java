@@ -89,8 +89,7 @@ public class User {
 
     @ManyToOne()
     @JsonBackReference
-    //@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id") // Pode non pertencer a ningún grupo
+    @JoinColumn(name = "group_id") 
     @JsonView(Views.Summary.class)
     @Schema(description = "The group to which the user belongs.")
     private Group group;

@@ -30,7 +30,6 @@ public class Category {
 
     @NotNull
     @JsonBackReference
-    //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
     @JsonView(Views.Summary.class)
@@ -106,5 +105,4 @@ public class Category {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
-
 }
