@@ -31,14 +31,12 @@ public class ShoppingItem {
 
     @NotNull
     @JsonBackReference
-    //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
     @JsonView(Views.Summary.class)
     @Schema(description = "The group to which the shopping item belongs.")
     private Group group;
 
-    //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "category_id", nullable = true)
     @JsonView(Views.Summary.class)

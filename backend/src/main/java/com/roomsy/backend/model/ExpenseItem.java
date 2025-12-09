@@ -29,14 +29,12 @@ public class ExpenseItem {
 
     @NotNull
     @JsonBackReference
-    //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "group_id", nullable = false)
     @Schema(description = "The group to which the expense item belongs.")
     private Group group;
 
     @NotNull
-    //@ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne()
     @JoinColumn(name = "owner_id", nullable = false)
     @Schema(description = "The user who created the expense item.")

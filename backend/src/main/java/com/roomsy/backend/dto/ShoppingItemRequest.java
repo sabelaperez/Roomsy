@@ -21,7 +21,6 @@ public class ShoppingItemRequest {
     @Schema(description = "Quantity of the shopping item.", example = "2")
     private Integer quantity = 1;
 
-    // optional
     @Schema(description = "ID of the category the shopping item belongs to.", example = "3c9e27b0-d3b6-4b7e-a8c1-470f659cb8c9")
     private UUID categoryId;
 

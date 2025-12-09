@@ -65,10 +65,8 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request,
             HttpServletResponse response) {
 
-        // Hash the password
         String hashedPassword = passwordEncoder.encode(request.password());
 
-        // Create user
         User user = new User(
                 request.email(),
                 request.username(),
@@ -162,7 +160,6 @@ public class AuthController {
             HttpServletResponse response) {
 
         if (userDetails != null) {
-            // Revoke all tokens for this user
             tokenService.revokeAllUserTokens(userDetails.getId());
         }
 
@@ -223,7 +220,6 @@ public class AuthController {
         User user = userService.getUserById(userDetails.getId());
       
         UUID groupId = user.getGroup() != null ? user.getGroup().getId() : null;
-
 
         AuthResponse response = new AuthResponse(
                 user.getId(),

@@ -1,11 +1,8 @@
 package com.roomsy.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonView;
-
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import org.springframework.data.domain.Page;
-
 import java.util.List;
 
 @Schema(description = "Page response")

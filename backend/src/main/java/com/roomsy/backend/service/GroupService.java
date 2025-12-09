@@ -66,16 +66,15 @@ public class GroupService {
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             String newCode = InviteCodeGenerator.generate(CODE_LENGTH);
             if (groupRepository.existsByInviteCode(newCode)) {
-                continue; // colisión, reintentar
+                continue; // try again
             }
             try {
                 Group group = getGroupById(groupId);
                 group.setInviteCode(newCode);
-                groupRepository.saveAndFlush(group); // forzar persistencia inmediata
+                groupRepository.saveAndFlush(group); 
                 return newCode;
             } catch (DataIntegrityViolationException e) {
-                // posible condición de carrera: otro hilo creó el mismo code entre exists y save
-                // reintentar
+                // collision, try again
             }
         }
         throw new IllegalStateException("Could not generate unique invite code after retries");
@@ -86,7 +85,7 @@ public class GroupService {
         group.setInviteCode(generateUniqueCode());
         group.addMember(creator);
         Group savedGroup = groupRepository.save(group);
-        creator.setGroup(savedGroup); // mantener ambos lados
+        creator.setGroup(savedGroup); 
         userRepository.save(creator);
         return savedGroup;
     }
@@ -97,23 +96,20 @@ public class GroupService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        // Si quieres impedir que un usuario esté en más de un grupo simultáneamente:
+        // one group per user restriction
         if (user.getGroup() != null) {
             if (user.getGroup().getId().equals(groupId)) {
-                // ya es miembro -> nada que hacer
+                // already a member
                 return group;
             }
             throw new InvalidOperationException("User already belongs to another group. Remove or move before adding.");
         }
 
-        // Mantener ambos lados de la relación
         group.addMember(user);
         
-        // Xerar unha noticia de tipo MEMBER_ADDED
         News addedNews = new News(group, user, NewsType.MEMBER_ADDED, 
                 "User " + user.getUsername() + " added to the group", null);
 
-        // Persistir cambios
         newsRepository.save(addedNews);
         userRepository.save(user);
         return groupRepository.save(group);
@@ -126,23 +122,20 @@ public class GroupService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        // Si quieres impedir que un usuario esté en más de un grupo simultáneamente:
+        // one group per user restriction
         if (user.getGroup() != null) {
             if (user.getGroup().getId().equals(group.getId())) {
-                // ya es miembro -> nada que hacer
+                // already a member
                 return group;
             }
             throw new InvalidOperationException("User already belongs to another group. Remove or move before adding.");
         }
 
-        // Mantener ambos lados de la relación
         group.addMember(user);
-        
-        // Xerar unha noticia de tipo MEMBER_ADDED
+
         News addedNews = new News(group, user, NewsType.MEMBER_ADDED, 
                 "User " + user.getUsername() + " added to the group", null);
 
-        // Persistir cambios
         newsRepository.save(addedNews);
         userRepository.save(user);
         return groupRepository.save(group);
@@ -158,23 +151,20 @@ public class GroupService {
             throw new InvalidOperationException("User is not a member of the specified group.");
         }
 
-        // Mantener ambos lados
-        group.removeMember(user); // usa método auxiliar
-        user.setGroup(null); // desvincular usuario
-        userRepository.save(user); // persistir el cambio (user.group = null)
+        group.removeMember(user); 
+        user.setGroup(null); 
+        userRepository.save(user); 
 
-        // Si no quedan miembros, eliminar el grupo entero
+        // last member leaves, delete group
         if (group.getMembers() == null || group.getMembers().isEmpty()) {
             newsRepository.deleteByGroupId(group.getId());
             categoryRepository.deleteByGroupId(group.getId());
             groupRepository.delete(group);
-            return null; // el grupo ya no existe
+            return null; 
         } else {
-            // Xerar unha noticia de tipo MEMBER_REMOVED
             News removedNews = new News(group, null, NewsType.MEMBER_REMOVED, 
                 "User " + user.getUsername() + " removed from the group", null); 
 
-            // Persistir cambios
             newsRepository.save(removedNews);
             return groupRepository.save(group);
         }

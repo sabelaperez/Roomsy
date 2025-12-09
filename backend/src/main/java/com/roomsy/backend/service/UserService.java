@@ -30,7 +30,6 @@ public class UserService {
 
     @Transactional
     public User createUser(@NonNull User user) throws DuplicateResourceException {
-        // Check if email already exists
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new DuplicateResourceException("Email already in use");
         }
@@ -48,7 +47,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // Completar cuando se implemente seguridad
     @Transactional
     public void updatePassword(UUID id, String currentPassword, String newPassword) throws ResourceNotFoundException {
         User user = getUserById(id);

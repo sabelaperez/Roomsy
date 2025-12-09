@@ -46,6 +46,18 @@ public class GlobalHandlerException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateResourceException(DuplicateResourceException ex) {
+        log.warn("Duplicate resource: {}", ex.getMessage());
+
+        ApiErrorResponse error = new ApiErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponse> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
