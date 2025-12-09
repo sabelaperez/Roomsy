@@ -14,7 +14,7 @@ export default function Login({ switchToRegister }) {
     setLoading(true);
     try {
       await login(loginData);
-      navigate('/dashboard', { replace: true }); // <-- navegar al dashboard
+      navigate('/dashboard', { replace: true }); 
     } catch (e) {
       setLoginError(e.message || 'Login failed');
     } finally {
@@ -35,7 +35,7 @@ export default function Login({ switchToRegister }) {
             type="email"
             value={loginData.email}
             onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="your@email.com"
           />
@@ -49,7 +49,7 @@ export default function Login({ switchToRegister }) {
             type="password"
             value={loginData.password}
             onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="••••••••"
           />

@@ -15,7 +15,6 @@ export default function Calendar({
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showDayModal, setShowDayModal] = useState(false);
 
-  // accept events as plain array (backend paginated content should be passed as content)
   useEffect(() => {
     setInternalEvents(Array.isArray(events) ? events.slice() : []);
   }, [events]);
@@ -49,7 +48,6 @@ export default function Calendar({
     return map;
   }, [internalEvents]);
 
-  // calendar weeks for currentMonth
   const calendar = useMemo(() => {
     const first = new Date(currentMonth);
     const year = first.getFullYear();

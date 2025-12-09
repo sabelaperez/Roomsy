@@ -325,7 +325,7 @@ export default function ShoppingItems() {
                                 type="text"
                                 defaultValue={item.name}
                                 onBlur={(e) => handleUpdateItemName(item.id, e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleUpdateItemName(item.id, e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleUpdateItemName(item.id, e.target.value)}
                                 className="text-sm font-medium px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 autoFocus
                               />
@@ -391,7 +391,7 @@ export default function ShoppingItems() {
                           type="text"
                           defaultValue={cat.name}
                           onBlur={(e) => handleUpdateCategoryName(cat.id, e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && handleUpdateCategoryName(cat.id, e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleUpdateCategoryName(cat.id, e.target.value)}
                           className="flex-1 text-sm font-medium px-1 py-1 max-w-[150px] border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                           autoFocus
                         />

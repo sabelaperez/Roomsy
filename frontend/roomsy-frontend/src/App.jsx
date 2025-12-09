@@ -5,8 +5,8 @@ import { onTokenExpired } from './api';
 import TokenRefreshModal from './components/TokenRefreshModal';
 import Login from './components/Login';
 import Register from './components/Register';
-import Dashboard from './components/Dashboard';
-import DashboardLayout from './components/DashboardLayout';
+import Dashboard from './components/dashboard/Dashboard';
+import DashboardLayout from './components/dashboard/DashboardLayout';
 import Expenses from './components/Expenses';
 import CalendarPage from './components/TasksCalendar';
 import ShoppingList from './components/ShoppingItems';
@@ -45,7 +45,6 @@ function AppContent() {
       setShowRefreshModal(false);
     } catch (error) {
       console.error('Failed to refresh token:', error);
-      // If refresh fails, log out
       await logout();
       setShowRefreshModal(false);
     }

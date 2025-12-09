@@ -224,17 +224,6 @@ export default function Settings() {
 
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Settings</h2>
 
-      {opSuccess && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
-          {opSuccess}
-        </div>
-      )}
-      {opError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-          {opError}
-        </div>
-      )}
-
       <section className="bg-white shadow-md rounded-md p-6 mb-6">
         {loadingMe && <div className="text-sm text-gray-600">Loading user...</div>}
         {meError && <div className="text-sm text-red-600">{meError}</div>}
