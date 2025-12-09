@@ -12,7 +12,12 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
-      - mariadb_network
+      - roomsy_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:8
@@ -23,15 +28,76 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - mariadb_network
+      - roomsy_network
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "1234", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-roomsy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/roomsydb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: roomsy_user
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.mariadb.jdbc.Driver
+      
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MariaDBDialect
+
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: "1234"
+      SPRING_DATA_REDIS_TIMEOUT: 2000
+
+      JWT_SECRET: ${JWT_SECRET:-your-very-long-secret-key-at-least-256-bits-change-this-in-production}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-900000}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-604800000}
+      JWT_TOKEN_RENEWAL_THRESHOLD: ${JWT_TOKEN_RENEWAL_THRESHOLD:-300000}
+      
+      # Cookie Configuration
+      COOKIE_ACCESS_TOKEN_NAME: access_token
+      COOKIE_REFRESH_TOKEN_NAME: refresh_token
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-localhost}
+      COOKIE_PATH: /
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_HTTP_ONLY: "true"
+      COOKIE_SAME_SITE: Lax
+      
+      # Server Configuration
+      SERVER_SERVLET_CONTEXT_PATH: /api/v1
+
+    ports:
+      - "8080:8080"
+    networks:
+      - roomsy_network
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend/roomsy-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api/v1}
+    container_name: frontend-roomsy
+    ports:
+      - "5173:80"
+    networks:
+      - roomsy_network
+    depends_on:
+      - backend
+
 networks:
-  mariadb_network:
+  roomsy_network:
     driver: bridge
 
 volumes:
