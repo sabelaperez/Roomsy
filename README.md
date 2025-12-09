@@ -18,6 +18,8 @@ Roomsy is a web application to manage the chores, the shopping list and the shar
 
 ## Architecture & Project Structure
 
+![Architecture Diagram](./diagram1.png) 
+
 - Backend
   - Controllers: REST endpoints that validate requests and call services.
   - Services: Business logic and transactions.
@@ -36,8 +38,6 @@ Roomsy is a web application to manage the chores, the shopping list and the shar
   - Secondary ephemeral store: Redis (used to store and revoke tokens)
 
 - Docker compose config
-
-![Architecture Diagram](./diagram1.png) 
 
 ## Main Features
 
