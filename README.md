@@ -68,7 +68,7 @@ To run this app locally just follow this steps:
        ```sh
        docker compose build
        ```
-     ```
+
 2. Run the app
    - Using Docker Compose:
      - File: [docker-compose.yml](docker-compose.yml)
@@ -76,7 +76,6 @@ To run this app locally just follow this steps:
        ```sh
        docker compose up
        ```
-     ```
 
 ## License
 
