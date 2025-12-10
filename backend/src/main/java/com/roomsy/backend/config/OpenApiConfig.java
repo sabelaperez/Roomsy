@@ -29,7 +29,7 @@ public class OpenApiConfig {
 
         Info info = new Info()
                 .title("Roomsy Backend API")
-                .version("0.0.1-SNAPSHOT")
+                .version("1.0.0")
                 .contact(contact)
                 .description("API documentation for Roomsy backend application")
                 .license(mitLicense);
