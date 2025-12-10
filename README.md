@@ -2,7 +2,7 @@
 
 Roomsy is a web application to manage the chores, the shopping list and the shared expenses for your household.  
 
-![Dashboard](./dashboard.png)
+![Dashboard](./imgs/dashboard.png)
 
 
 ## Overview
@@ -19,7 +19,7 @@ Roomsy is a web application to manage the chores, the shopping list and the shar
 
 ## Architecture & Project Structure
 
-![Architecture Diagram](./diagram1.png) 
+![Architecture Diagram](./imgs/diagram1.png) 
 
 - Backend
   - Controllers: REST endpoints that validate requests and call services.
