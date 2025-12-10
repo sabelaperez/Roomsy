@@ -2,7 +2,8 @@
 
 Roomsy is a web application to manage the chores, the shopping list and the shared expenses for your household.  
 
-![alt text](image.png)
+![Dashboard](./dashboard.png)
+
 
 ## Overview
 
