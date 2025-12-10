@@ -40,6 +40,10 @@ Roomsy is a web application to manage the chores, the shopping list and the shar
 
 - Docker compose config
 
+### Authentication Flow Diagram
+
+![Authentication Flow Diagram](./imgs/diagram2.png) 
+
 ## Main Features
 
 - Login / Register using mail and password
