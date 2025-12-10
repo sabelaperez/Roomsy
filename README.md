@@ -61,27 +61,24 @@ Roomsy is a web application to manage the chores, the shopping list and the shar
 ## Deployment
 
 To run this app locally just follow this steps:
-1. Start required services (MariaDB + Redis)
+1. Build the app (backend + frontend)
    - Using Docker Compose:
      - File: [docker-compose.yml](docker-compose.yml)
-     - Command:  
+     - Command:
        ```sh
-       docker compose up -d
+       docker compose build
        ```
-
-2. Backend
-   - From project root, run the Gradle wrapper:
-     ```sh
-     cd backend
-     ./gradlew bootRun
      ```
-
-3. Frontend
-   - From the frontend folder:
-     ```sh
-     cd frontend/roomsy-frontend
-     npm install
-     npm run dev   
+2. Run the app
+   - Using Docker Compose:
+     - File: [docker-compose.yml](docker-compose.yml)
+     - Command:
+       ```sh
+       docker compose up
+       ```
      ```
 
 ## License
+
+This project is licensed under the Apache License, Version 2.0.  
+See the [LICENSE](LICENSE) file for details.
