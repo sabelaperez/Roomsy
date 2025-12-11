@@ -24,12 +24,12 @@ public class OpenApiConfig {
         contact.setName("Roomsy Team");
 
         License mitLicense = new License()
-                .name("MIT License")
-                .url("");
+                .name("Apache License 2.0")
+                .url("https://github.com/sabelaperez/Roomsy/blob/main/LICENSE");
 
         Info info = new Info()
                 .title("Roomsy Backend API")
-                .version("0.0.1-SNAPSHOT")
+                .version("1.0.0")
                 .contact(contact)
                 .description("API documentation for Roomsy backend application")
                 .license(mitLicense);
