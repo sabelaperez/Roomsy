@@ -2,22 +2,26 @@
 
 Roomsy is a web application to manage the chores, the shopping list and the shared expenses for your household.  
 
-![alt text](image.png)
+![Dashboard](./imgs/dashboard.png)
+
 
 ## Overview
 
-- Backend: Java + Spring Boot (REST API)
+- Backend: Java + Spring Boot
     - JWT-based authentication & session management with short-lived access tokens and refresh tokens (cookies + server-side token revocation)
     - USER / ADMIN roles to restrict endpoints
     - JSON View annotations to control serialization per endpoint
     - JSON Patch (RFC 6902) support for fine-grained updates
     - OpenAPI/Swagger documentation auto-generate
+    - Pageable endpoints for list retrievals (supports page, size, sortBy, sortDirection parameters)
 
 - Frontend: React + Tailwind CSS, component-based UI that consumes backend API via a small client wrapper.
 
 ## Architecture & Project Structure
 
-- Backend (MVC-style)
+![Architecture Diagram](./imgs/diagram1.png) 
+
+- Backend
   - Controllers: REST endpoints that validate requests and call services.
   - Services: Business logic and transactions.
   - Repositories: Spring Data JPA repositories 
@@ -35,6 +39,10 @@ Roomsy is a web application to manage the chores, the shopping list and the shar
   - Secondary ephemeral store: Redis (used to store and revoke tokens)
 
 - Docker compose config
+
+### Authentication Flow Diagram
+
+![Authentication Flow Diagram](./imgs/diagram2.png) 
 
 ## Main Features
 
@@ -57,27 +65,23 @@ Roomsy is a web application to manage the chores, the shopping list and the shar
 ## Deployment
 
 To run this app locally just follow this steps:
-1. Start required services (MariaDB + Redis)
+1. Build the app (backend + frontend)
    - Using Docker Compose:
      - File: [docker-compose.yml](docker-compose.yml)
-     - Command:  
+     - Command:
        ```sh
-       docker compose up -d
+       docker compose build
        ```
 
-2. Backend
-   - From project root, run the Gradle wrapper:
-     ```sh
-     cd backend
-     ./gradlew bootRun
-     ```
-
-3. Frontend
-   - From the frontend folder:
-     ```sh
-     cd frontend/roomsy-frontend
-     npm install
-     npm run dev   
-     ```
+2. Run the app
+   - Using Docker Compose:
+     - File: [docker-compose.yml](docker-compose.yml)
+     - Command:
+       ```sh
+       docker compose up
+       ```
 
 ## License
+
+This project is licensed under the Apache License, Version 2.0.  
+See the [LICENSE](LICENSE) file for details.
