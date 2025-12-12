@@ -65,9 +65,10 @@ public class UserController {
         User user = userService.getUserById(userDetails.getId());
         expenseService.deleteUser(userDetails.getId());
         cleaningTaskService.deleteUser(userDetails.getId());
-        System.out.println("Deleting news");
         newsService.deleteUser(userDetails.getId());
-        groupService.removeUserFromGroup(user.getGroup().getId(), user.getId());
+        if(user.getGroup() != null){
+            groupService.removeUserFromGroup(user.getGroup().getId(), user.getId());
+        }
         userService.deleteUser(user.getId());
         return ResponseEntity.noContent().build();
     }
